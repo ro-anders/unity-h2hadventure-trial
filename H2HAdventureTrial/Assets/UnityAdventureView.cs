@@ -15,7 +15,7 @@ public class UnityAdventureView: AdventureView
     private int at = 0;
 
     public void AdventureSetup(RenderTexture inRenderTexture, Texture2D inTexture) {
-        gameEngine = new AdventureGame(this);
+        gameEngine = new AdventureGame(this, 2, 0);
         renderTexture = inRenderTexture;
         texture = inTexture;
 

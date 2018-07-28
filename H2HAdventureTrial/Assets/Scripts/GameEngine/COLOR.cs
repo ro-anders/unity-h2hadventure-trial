@@ -38,8 +38,14 @@ namespace GameEngine
             this.b = b;
         }
 
-        public static COLOR table(_COLOR color) {
+        public static COLOR table(_COLOR color)
+        {
             return colorTable[(int)color];
+        }
+
+        public static COLOR table(int color)
+        {
+            return colorTable[color];
         }
 
         private static readonly COLOR[] colorTable = new COLOR[] {

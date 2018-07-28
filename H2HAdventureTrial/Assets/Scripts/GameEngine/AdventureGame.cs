@@ -27,10 +27,157 @@ namespace GameEngine
         private const double ADVENTURE_FRAME_PERIOD = Adv.ADVENTURE_FRAME_PERIOD;
         private const int ADVENTURE_MAX_NAME_LENGTH = Adv.ADVENTURE_MAX_NAME_LENGTH;
 
+        ////// finite state machine values
+        private const int GAMESTATE_GAMESELECT = 0;
+        private const int GAMESTATE_ACTIVE_1 = 1;
+        private const int GAMESTATE_ACTIVE_2 = 2;
+        private const int GAMESTATE_ACTIVE_3 = 3;
+        private const int GAMESTATE_WIN = 4;
+
         private AdventureView view;
 
-        public AdventureGame(AdventureView inView) {
+        private int winFlashTimer = 0;
+        private int winningRoom = -1; // The room number of the castle of the winning player.  -1 if the game is not won yet.
+        private bool displayWinningRoom = false; // At the end of the game we show the player who won.
+        private int numPlayers;
+        private int gameMapLayout = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
+        private int gameState = GAMESTATE_GAMESELECT;
+        private int flashColorHue = 0;
+        private int flashColorLum = 0;
+
+        /** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
+         * a new fourth, gameMode 3, which I call The Gauntlet. The fifth is used for generating videos and plays a preplanned script. */
+        private int gameMode = 0;
+
+        private ROOM[] roomDefs;
+        private Map gameMap;
+
+        public AdventureGame(AdventureView inView, int inNumPlayers,////int inThisPlayer, Transport* inTransport,
+                             int inGameNum
+////                             ,int initialLeftDiff, int initialRightDiff
+                             ) {
             view = inView;
+
+            numPlayers = inNumPlayers;
+////            thisPlayer = inThisPlayer;
+            gameMode = inGameNum;
+////            joystickDisabled = (gameMode == GAME_MODE_SCRIPTING);
+////            timeToStartGame = 60 * 3;
+
+////            // The map for game 3 is the same as 2 and the map for scripting is hard-coded here
+////            // so it could be easily changed.
+            gameMapLayout = (gameMode == Adv.GAME_MODE_SCRIPTING ? Adv.GAME_MODE_2 :
+                             (gameMode == Adv.GAME_MODE_3 ? Adv.GAME_MODE_2 : gameMode));
+            gameMap = new Map(numPlayers, gameMapLayout);
+            roomDefs = gameMap.roomDefs;
+////            gameBoard.map = gameMap;
+////            EasterEgg::setup(gameBoard);
+
+////            surrounds = new OBJECT*[numPlayers];
+////            char surroundName[16];
+////            for (int ctr = 0; ctr < numPlayers; ++ctr)
+////            {
+////                sprintf(surroundName, "surround%d", ctr);
+////                surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, OBJECT::FIXED_LOCATION, 0x07);
+////            }
+
+////            Dragon::Difficulty difficulty = (gameMode == GAME_MODE_1 ?
+////                                             (initialLeftDiff == DIFFICULTY_B ? Dragon::TRIVIAL : Dragon::EASY) :
+////                                             (initialLeftDiff == DIFFICULTY_B ? Dragon::MODERATE : Dragon::HARD));
+////            Dragon::setRunFromSword(initialRightDiff == DIFFICULTY_A);
+
+////            if (gameMode == GAME_MODE_SCRIPTING) difficulty = Dragon::EASY;
+////            Dragon::setDifficulty(difficulty);
+////            dragons = new Dragon*[numDragons];
+////            dragons[0] = new Dragon("grindle", 0, COLOR_LIMEGREEN, 2, greenDragonMatrix);
+////            dragons[1] = new Dragon("yorgle", 1, COLOR_YELLOW, 2, yellowDragonMatrix);
+////            dragons[2] = new Dragon("rhindle", 2, COLOR_RED, 3, redDragonMatrix);
+////            bat = new Bat(COLOR_BLACK);
+
+////            OBJECT* goldKey = new OBJECT("gold key", objectGfxKey, 0, 0, COLOR_YELLOW, OBJECT::OUT_IN_OPEN);
+////            OBJECT* copperKey = new OBJECT("coppey key", objectGfxKey, 0, 0, COLOR_COPPER, OBJECT::OUT_IN_OPEN);
+////            OBJECT* jadeKey = new OBJECT("jade key", objectGfxKey, 0, 0, COLOR_JADE, OBJECT::OUT_IN_OPEN);
+////            OBJECT* whiteKey = new OBJECT("white key", objectGfxKey, 0, 0, COLOR_WHITE);
+////            OBJECT* blackKey = new OBJECT("black key", objectGfxKey, 0, 0, COLOR_BLACK);
+////            OBJECT** crystalKeys = new OBJECT*[3];
+////            for (int ctr = 0; ctr < 3; ++ctr)
+////            {
+////                crystalKeys[ctr] = new OBJECT("crystal key", objectGfxKey, 0, 0, COLOR_CRYSTAL, OBJECT::FIXED_LOCATION);
+////                crystalKeys[ctr].setPrivateToPlayer(ctr);
+////            }
+
+////            numPorts = numPlayers + 3;
+////            ports = new Portcullis*[6]; // We always create 6 even though we might only use 5.
+////            ports[0] = new Portcullis("gold gate", GOLD_CASTLE, gameMap.getRoom(GOLD_FOYER), goldKey); // Gold
+////            ports[1] = new Portcullis("white gate", WHITE_CASTLE, gameMap.getRoom(RED_MAZE_1), whiteKey); // White
+////            addAllRoomsToPort(ports[1], RED_MAZE_3, RED_MAZE_1);
+////            ports[2] = new Portcullis("black gate", BLACK_CASTLE, gameMap.getRoom(BLACK_FOYER), blackKey); // Black
+////            addAllRoomsToPort(ports[2], BLACK_MAZE_1, BLACK_MAZE_ENTRY);
+////            ports[2].addRoom(gameMap.getRoom(BLACK_FOYER));
+////            ports[2].addRoom(gameMap.getRoom(BLACK_INNERMOST_ROOM));
+////            ports[3] = new CrystalPortcullis(gameMap.getRoom(CRYSTAL_FOYER), crystalKeys);
+////            ports[4] = new Portcullis("copper gate", COPPER_CASTLE, gameMap.getRoom(COPPER_FOYER), copperKey);
+////            ports[5] = new Portcullis("jade gate", JADE_CASTLE, gameMap.getRoom(JADE_FOYER), jadeKey);
+////            gameMap.addCastles(numPorts, ports);
+
+
+////            // Setup the number.  Unlike other objects we need to position the number immediately.
+////            OBJECT* number = new OBJECT("number", objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, OBJECT::FIXED_LOCATION);
+////            gameBoard.addObject(OBJECT_NUMBER, number);
+////            number.init(NUMBER_ROOM, 0x50, 0x40);
+
+////            // Setup the rest of the objects
+////            gameBoard.addObject(OBJECT_YELLOW_PORT, ports[0]);
+////            gameBoard.addObject(OBJECT_COPPER_PORT, ports[4]);
+////            gameBoard.addObject(OBJECT_JADE_PORT, ports[5]);
+////            gameBoard.addObject(OBJECT_WHITE_PORT, ports[1]);
+////            gameBoard.addObject(OBJECT_BLACK_PORT, ports[2]);
+////            gameBoard.addObject(OBJECT_CRYSTAL_PORT, ports[3]);
+////            gameBoard.addObject(OBJECT_NAME, new OBJECT("easter egg message", objectGfxAuthor, 0, 0, COLOR_FLASH, OBJECT::FIXED_LOCATION));
+////            gameBoard.addObject(OBJECT_REDDRAGON, dragons[2]);
+////            gameBoard.addObject(OBJECT_YELLOWDRAGON, dragons[1]);
+////            gameBoard.addObject(OBJECT_GREENDRAGON, dragons[0]);
+////            gameBoard.addObject(OBJECT_SWORD, new OBJECT("sword", objectGfxSword, 0, 0, COLOR_YELLOW));
+////            gameBoard.addObject(OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, 0, 0, COLOR_PURPLE,
+////                                                           OBJECT::OPEN_OR_IN_CASTLE, 0x07));
+////            gameBoard.addObject(OBJECT_YELLOWKEY, goldKey);
+////            gameBoard.addObject(OBJECT_COPPERKEY, copperKey);
+////            gameBoard.addObject(OBJECT_JADEKEY, jadeKey);
+////            gameBoard.addObject(OBJECT_WHITEKEY, whiteKey);
+////            gameBoard.addObject(OBJECT_BLACKKEY, blackKey);
+////            gameBoard.addObject(OBJECT_CRYSTALKEY1, crystalKeys[0]);
+////            gameBoard.addObject(OBJECT_CRYSTALKEY2, crystalKeys[1]);
+////            gameBoard.addObject(OBJECT_CRYSTALKEY3, crystalKeys[2]);
+////            gameBoard.addObject(OBJECT_BAT, bat);
+////            gameBoard.addObject(OBJECT_DOT, new OBJECT("dot", objectGfxDot, 0, 0, COLOR_LTGRAY, OBJECT::FIXED_LOCATION));
+////            gameBoard.addObject(OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, 0, 0, COLOR_FLASH));
+////            gameBoard.addObject(OBJECT_EASTEREGG, new OBJECT("easteregg", objectGfxEasterEgg, 0, 0, COLOR_FLASH,
+////                                                           OBJECT::OPEN_OR_IN_CASTLE, 0x03));
+////            gameBoard.addObject(OBJECT_MAGNET, new OBJECT("magnet", objectGfxMagnet, 0, 0, COLOR_BLACK));
+
+////            // Setup the players
+
+////            gameBoard.addPlayer(new BALL(0, ports[0]), thisPlayer == 0);
+////            Portcullis* p2Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[4]);
+////            gameBoard.addPlayer(new BALL(1, p2Home), thisPlayer == 1);
+////            if (numPlayers > 2)
+////            {
+////                Portcullis* p3Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[5]);
+////                gameBoard.addPlayer(new BALL(2, p3Home), thisPlayer == 2);
+////            }
+////            objectBall = gameBoard.getPlayer(thisPlayer);
+
+////            // Setup the transport
+////            transport = inTransport;
+////            sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
+////                                                      new Sync(numPlayers, thisPlayer, transport));
+
+////            // Need to have the transport setup before we setup the objects,
+////            // because we may be broadcasting randomized locations to other machines
+////            SetupRoomObjects();
+
+////            Logger::log() << "Player " << thisPlayer << " starting game at " << Sys::datetime() << "." << Logger::EOM;
+////        }
         }
 
         public void Adventure_Run()
@@ -40,38 +187,30 @@ namespace GameEngine
 
         public void PrintDisplay()
         {
-            //// get the playfield data
-            //int displayedRoom = (displayWinningRoom ? winningRoom : objectBall->displayedRoom);
-            //const ROOM* currentRoom = roomDefs[displayedRoom];
-            //const byte* roomData = currentRoom->graphicsData;
-            byte[] roomData = new byte[] {
-                0xF0,0xFE,0x15,      // XXXXXXXXXXX X X X      R R R RRRRRRRRRRR
-                0x30,0x03,0x1F,      // XX        XXXXXXX      RRRRRRR        RR
-                0x30,0x03,0xFF,      // XX        XXXXXXXXXXRRRRRRRRRR        RR
-                0x30,0x00,0xFF,      // XX          XXXXXXXXRRRRRRRR          RR
-                0x30,0x00,0x3F,      // XX          XXXXXX    RRRRRR          RR
-                0x30,0x00,0x00,      // XX                                    RR
-                0xF0,0xFF,0x0F       // XXXXXXXXXXXXXX            RRRRRRRRRRRRRR
-            };
+            ////// get the playfield data
+            ////int displayedRoom = (displayWinningRoom ? winningRoom : objectBall.displayedRoom);
+            int displayedRoom = 0x11; //// TEMP
+
+            ROOM currentRoom = roomDefs[displayedRoom];
+            byte[] roomData = currentRoom.graphicsData;
 
             //// get the playfield color
-            //COLOR color = ((gameState == GAMESTATE_WIN) && (winFlashTimer > 0)) ? GetFlashColor() : colorTable[currentRoom->color];
-            COLOR color = COLOR.table(_COLOR.YELLOW);
+            COLOR color = ((gameState == GAMESTATE_WIN) && (winFlashTimer > 0)) ? GetFlashColor() : COLOR.table(currentRoom.color);
             COLOR colorBackground = COLOR.table(_COLOR.LTGRAY);
 
             // Fill the entire backbuffer with the playfield background color before we draw anything else
             view.Platform_PaintPixel(colorBackground.r, colorBackground.g, colorBackground.b, 0, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
 
-            //// paint the surround under the playfield layer
-            //for (int ctr = 0; ctr < numPlayers; ++ctr)
-            //{
-            //    if ((surrounds[ctr]->room == displayedRoom) && (surrounds[ctr]->state == 0))
-            //    {
-            //        DrawObject(surrounds[ctr]);
-            //    }
-            //}
-            //// get the playfield mirror flag
-            //bool mirror = currentRoom->flags & ROOMFLAG_MIRROR;
+            ////// paint the surround under the playfield layer
+            ////for (int ctr = 0; ctr < numPlayers; ++ctr)
+            ////{
+            ////    if ((surrounds[ctr].room == displayedRoom) && (surrounds[ctr].state == 0))
+            ////    {
+            ////        DrawObject(surrounds[ctr]);
+            ////    }
+            ////}
+            ////// get the playfield mirror flag
+            ////bool mirror = currentRoom.flags & ROOMFLAG_MIRROR;
             bool mirror = false;
                 
             //
@@ -86,7 +225,7 @@ namespace GameEngine
             //
 
             // mask values for playfield bits
-                byte[] shiftreg = new byte[20] {
+                byte[] shiftreg = {
                 0x10,0x20,0x40,0x80,
                 0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
                 0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
@@ -128,210 +267,137 @@ namespace GameEngine
                 }
             }
 
-            ////
-            //// Draw the balls
-            ////
-            //COLOR defaultColor = colorTable[roomDefs[displayedRoom]->color];
+            //////
+            ////// Draw the balls
+            //////
+            ////COLOR defaultColor = colorTable[roomDefs[displayedRoom].color];
 
-            //for (int i = 0; i < numPlayers; ++i)
-            //{
-            //    BALL* player = gameBoard->getPlayer(i);
-            //    if (player->displayedRoom == displayedRoom)
-            //    {
-            //        COLOR ballColor = (player->isGlowing() ? GetFlashColor() : defaultColor);
-            //        DrawBall(gameBoard->getPlayer(i), ballColor);
-            //    }
-            //}
+            ////for (int i = 0; i < numPlayers; ++i)
+            ////{
+            ////    BALL* player = gameBoard.getPlayer(i);
+            ////    if (player.displayedRoom == displayedRoom)
+            ////    {
+            ////        COLOR ballColor = (player.isGlowing() ? GetFlashColor() : defaultColor);
+            ////        DrawBall(gameBoard.getPlayer(i), ballColor);
+            ////    }
+            ////}
 
-            ////
-            //// Draw any objects in the room
-            ////
-            //DrawObjects(displayedRoom);
+            //////
+            ////// Draw any objects in the room
+            //////
+            ////DrawObjects(displayedRoom);
 
+        }
+
+        COLOR GetFlashColor()
+        {
+            float r = 0, g = 0, b = 0;
+            float h = flashColorHue / (360.0f / 3);
+            if (h < 1)
+            {
+                r = h * 255;
+                g = 0;
+                b = (1 - h) * 255;
+            }
+            else if (h < 2)
+            {
+                h -= 1;
+                r = (1 - h) * 255;
+                g = h * 255;
+                b = 0;
+            }
+            else
+            {
+                h -= 2;
+                r = 0;
+                g = (1 - h) * 255;
+                b = h * 255;
+            }
+
+            int color_r = (flashColorLum > r ? flashColorLum : (int)r);
+            int color_g = (flashColorLum > r ? flashColorLum : (int)g);
+            int color_b = (flashColorLum > r ? flashColorLum : (int)b);
+
+            return new COLOR(color_r, color_g, color_b);
+        }
+
+        void AdvanceFlashColor()
+        {
+            flashColorHue += 2;
+            if (flashColorHue >= 360)
+                flashColorHue -= 360;
+
+            flashColorLum += 11;
+            if (flashColorLum > 200)
+                flashColorLum = 0;
 
         }
 
 
 
-////void Adventure_Setup(int inNumPlayers, int inThisPlayer, Transport* inTransport, int inGameNum,
-////                             int initialLeftDiff, int initialRightDiff)
-////        {
-////            numPlayers = inNumPlayers;
-////            thisPlayer = inThisPlayer;
-////            gameMode = inGameNum;
-////            joystickDisabled = (gameMode == GAME_MODE_SCRIPTING);
-////            timeToStartGame = 60 * 3;
-
-////            // The map for game 3 is the same as 2 and the map for scripting is hard-coded here
-////            // so it could be easily changed.
-////            gameMapLayout = (gameMode == GAME_MODE_SCRIPTING ? GAME_MODE_2 :
-////                             (gameMode == GAME_MODE_3 ? GAME_MODE_2 : gameMode));
-////            gameMap = new Map(numPlayers, gameMapLayout);
-////            roomDefs = gameMap->roomDefs;
-////            gameBoard->map = gameMap;
-////            EasterEgg::setup(gameBoard);
-
-////            surrounds = new OBJECT*[numPlayers];
-////            char surroundName[16];
-////            for (int ctr = 0; ctr < numPlayers; ++ctr)
-////            {
-////                sprintf(surroundName, "surround%d", ctr);
-////                surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, OBJECT::FIXED_LOCATION, 0x07);
-////            }
-
-////            Dragon::Difficulty difficulty = (gameMode == GAME_MODE_1 ?
-////                                             (initialLeftDiff == DIFFICULTY_B ? Dragon::TRIVIAL : Dragon::EASY) :
-////                                             (initialLeftDiff == DIFFICULTY_B ? Dragon::MODERATE : Dragon::HARD));
-////            Dragon::setRunFromSword(initialRightDiff == DIFFICULTY_A);
-
-////            if (gameMode == GAME_MODE_SCRIPTING) difficulty = Dragon::EASY;
-////            Dragon::setDifficulty(difficulty);
-////            dragons = new Dragon*[numDragons];
-////            dragons[0] = new Dragon("grindle", 0, COLOR_LIMEGREEN, 2, greenDragonMatrix);
-////            dragons[1] = new Dragon("yorgle", 1, COLOR_YELLOW, 2, yellowDragonMatrix);
-////            dragons[2] = new Dragon("rhindle", 2, COLOR_RED, 3, redDragonMatrix);
-////            bat = new Bat(COLOR_BLACK);
-
-////            OBJECT* goldKey = new OBJECT("gold key", objectGfxKey, 0, 0, COLOR_YELLOW, OBJECT::OUT_IN_OPEN);
-////            OBJECT* copperKey = new OBJECT("coppey key", objectGfxKey, 0, 0, COLOR_COPPER, OBJECT::OUT_IN_OPEN);
-////            OBJECT* jadeKey = new OBJECT("jade key", objectGfxKey, 0, 0, COLOR_JADE, OBJECT::OUT_IN_OPEN);
-////            OBJECT* whiteKey = new OBJECT("white key", objectGfxKey, 0, 0, COLOR_WHITE);
-////            OBJECT* blackKey = new OBJECT("black key", objectGfxKey, 0, 0, COLOR_BLACK);
-////            OBJECT** crystalKeys = new OBJECT*[3];
-////            for (int ctr = 0; ctr < 3; ++ctr)
-////            {
-////                crystalKeys[ctr] = new OBJECT("crystal key", objectGfxKey, 0, 0, COLOR_CRYSTAL, OBJECT::FIXED_LOCATION);
-////                crystalKeys[ctr]->setPrivateToPlayer(ctr);
-////            }
-
-////            numPorts = numPlayers + 3;
-////            ports = new Portcullis*[6]; // We always create 6 even though we might only use 5.
-////            ports[0] = new Portcullis("gold gate", GOLD_CASTLE, gameMap->getRoom(GOLD_FOYER), goldKey); // Gold
-////            ports[1] = new Portcullis("white gate", WHITE_CASTLE, gameMap->getRoom(RED_MAZE_1), whiteKey); // White
-////            addAllRoomsToPort(ports[1], RED_MAZE_3, RED_MAZE_1);
-////            ports[2] = new Portcullis("black gate", BLACK_CASTLE, gameMap->getRoom(BLACK_FOYER), blackKey); // Black
-////            addAllRoomsToPort(ports[2], BLACK_MAZE_1, BLACK_MAZE_ENTRY);
-////            ports[2]->addRoom(gameMap->getRoom(BLACK_FOYER));
-////            ports[2]->addRoom(gameMap->getRoom(BLACK_INNERMOST_ROOM));
-////            ports[3] = new CrystalPortcullis(gameMap->getRoom(CRYSTAL_FOYER), crystalKeys);
-////            ports[4] = new Portcullis("copper gate", COPPER_CASTLE, gameMap->getRoom(COPPER_FOYER), copperKey);
-////            ports[5] = new Portcullis("jade gate", JADE_CASTLE, gameMap->getRoom(JADE_FOYER), jadeKey);
-////            gameMap->addCastles(numPorts, ports);
 
 
-////            // Setup the number.  Unlike other objects we need to position the number immediately.
-////            OBJECT* number = new OBJECT("number", objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, OBJECT::FIXED_LOCATION);
-////            gameBoard->addObject(OBJECT_NUMBER, number);
-////            number->init(NUMBER_ROOM, 0x50, 0x40);
 
-////            // Setup the rest of the objects
-////            gameBoard->addObject(OBJECT_YELLOW_PORT, ports[0]);
-////            gameBoard->addObject(OBJECT_COPPER_PORT, ports[4]);
-////            gameBoard->addObject(OBJECT_JADE_PORT, ports[5]);
-////            gameBoard->addObject(OBJECT_WHITE_PORT, ports[1]);
-////            gameBoard->addObject(OBJECT_BLACK_PORT, ports[2]);
-////            gameBoard->addObject(OBJECT_CRYSTAL_PORT, ports[3]);
-////            gameBoard->addObject(OBJECT_NAME, new OBJECT("easter egg message", objectGfxAuthor, 0, 0, COLOR_FLASH, OBJECT::FIXED_LOCATION));
-////            gameBoard->addObject(OBJECT_REDDRAGON, dragons[2]);
-////            gameBoard->addObject(OBJECT_YELLOWDRAGON, dragons[1]);
-////            gameBoard->addObject(OBJECT_GREENDRAGON, dragons[0]);
-////            gameBoard->addObject(OBJECT_SWORD, new OBJECT("sword", objectGfxSword, 0, 0, COLOR_YELLOW));
-////            gameBoard->addObject(OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, 0, 0, COLOR_PURPLE,
-////                                                           OBJECT::OPEN_OR_IN_CASTLE, 0x07));
-////            gameBoard->addObject(OBJECT_YELLOWKEY, goldKey);
-////            gameBoard->addObject(OBJECT_COPPERKEY, copperKey);
-////            gameBoard->addObject(OBJECT_JADEKEY, jadeKey);
-////            gameBoard->addObject(OBJECT_WHITEKEY, whiteKey);
-////            gameBoard->addObject(OBJECT_BLACKKEY, blackKey);
-////            gameBoard->addObject(OBJECT_CRYSTALKEY1, crystalKeys[0]);
-////            gameBoard->addObject(OBJECT_CRYSTALKEY2, crystalKeys[1]);
-////            gameBoard->addObject(OBJECT_CRYSTALKEY3, crystalKeys[2]);
-////            gameBoard->addObject(OBJECT_BAT, bat);
-////            gameBoard->addObject(OBJECT_DOT, new OBJECT("dot", objectGfxDot, 0, 0, COLOR_LTGRAY, OBJECT::FIXED_LOCATION));
-////            gameBoard->addObject(OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, 0, 0, COLOR_FLASH));
-////            gameBoard->addObject(OBJECT_EASTEREGG, new OBJECT("easteregg", objectGfxEasterEgg, 0, 0, COLOR_FLASH,
-////                                                           OBJECT::OPEN_OR_IN_CASTLE, 0x03));
-////            gameBoard->addObject(OBJECT_MAGNET, new OBJECT("magnet", objectGfxMagnet, 0, 0, COLOR_BLACK));
 
-////            // Setup the players
 
-////            gameBoard->addPlayer(new BALL(0, ports[0]), thisPlayer == 0);
-////            Portcullis* p2Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[4]);
-////            gameBoard->addPlayer(new BALL(1, p2Home), thisPlayer == 1);
-////            if (numPlayers > 2)
-////            {
-////                Portcullis* p3Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[5]);
-////                gameBoard->addPlayer(new BALL(2, p3Home), thisPlayer == 2);
-////            }
-////            objectBall = gameBoard->getPlayer(thisPlayer);
 
-////            // Setup the transport
-////            transport = inTransport;
-////            sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
-////                                                      new Sync(numPlayers, thisPlayer, transport));
 
-////            // Need to have the transport setup before we setup the objects,
-////            // because we may be broadcasting randomized locations to other machines
-////            SetupRoomObjects();
-
-////            Logger::log() << "Player " << thisPlayer << " starting game at " << Sys::datetime() << "." << Logger::EOM;
-////        }
 
 ////        void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom)
 ////        {
 ////            for (int nextKey = firstRoom; nextKey <= lastRoom; ++nextKey)
 ////            {
-////                ROOM* nextRoom = gameMap->getRoom(nextKey);
-////                port->addRoom(nextRoom);
+////                ROOM* nextRoom = gameMap.getRoom(nextKey);
+////                port.addRoom(nextRoom);
 ////            }
 ////        }
 
 ////        void ResetPlayers()
 ////        {
-////            for (int ctr = 0; ctr < gameBoard->getNumPlayers(); ++ctr)
+////            for (int ctr = 0; ctr < gameBoard.getNumPlayers(); ++ctr)
 ////            {
-////                ResetPlayer(gameBoard->getPlayer(ctr));
+////                ResetPlayer(gameBoard.getPlayer(ctr));
 ////            }
 ////        }
 
 ////        void ResetPlayer(BALL* ball)
 ////        {
-////            ball->room = ball->homeGate->room;                 // Put us at our home castle
-////            ball->previousRoom = ball->room;
-////            ball->displayedRoom = ball->room;
-////            ball->x = 0x50 * 2;                  //
-////            ball->y = 0x20 * 2;                  //
-////            ball->previousX = ball->x;
-////            ball->previousY = ball->y;
-////            ball->linkedObject = OBJECT_NONE;  // Not carrying anything
-////            ball->setGlowing(false);
+////            ball.room = ball.homeGate.room;                 // Put us at our home castle
+////            ball.previousRoom = ball.room;
+////            ball.displayedRoom = ball.room;
+////            ball.x = 0x50 * 2;                  //
+////            ball.y = 0x20 * 2;                  //
+////            ball.previousX = ball.x;
+////            ball.previousY = ball.y;
+////            ball.linkedObject = OBJECT_NONE;  // Not carrying anything
+////            ball.setGlowing(false);
 
 ////            // Make the bat want something right away
 ////            // I guess the bat is reset just like the dragons are reset.
-////            if (bat->exists())
+////            if (bat.exists())
 ////            {
-////                bat->lookForNewObject();
+////                bat.lookForNewObject();
 ////            }
 
 ////            // Bring the dragons back to life
 ////            for (int ctr = 0; ctr < numDragons; ++ctr)
 ////            {
 ////                Dragon* dragon = dragons[ctr];
-////                if (dragon->state == Dragon::DEAD)
+////                if (dragon.state == Dragon::DEAD)
 ////                {
-////                    dragon->state = Dragon::STALKING;
+////                    dragon.state = Dragon::STALKING;
 ////                }
-////                else if (dragon->eaten == ball)
+////                else if (dragon.eaten == ball)
 ////                {
-////                    dragon->state = Dragon::STALKING;
-////                    dragon->eaten = NULL;
+////                    dragon.state = Dragon::STALKING;
+////                    dragon.eaten = NULL;
 ////                }
 ////            }
 ////        }
 
 ////        void SyncWithOthers()
 ////        {
-////            sync->PullLatestMessages();
+////            sync.PullLatestMessages();
 
 ////            // Check for any setup messages first.
 ////            handleSetupMessages();
@@ -344,40 +410,40 @@ namespace GameEngine
 ////            SyncDragons();
 
 ////            // Move the bat
-////            RemoteAction* batAction = sync->GetNextBatAction();
-////            while ((batAction != NULL) && bat->exists())
+////            RemoteAction* batAction = sync.GetNextBatAction();
+////            while ((batAction != NULL) && bat.exists())
 ////            {
-////                bat->handleAction(batAction, objectBall);
+////                bat.handleAction(batAction, objectBall);
 ////                delete batAction;
-////                batAction = sync->GetNextBatAction();
+////                batAction = sync.GetNextBatAction();
 ////            }
 
 
 
 ////            // Handle any remote changes to the portal.
-////            PortcullisStateAction* nextAction = sync->GetNextPortcullisAction();
+////            PortcullisStateAction* nextAction = sync.GetNextPortcullisAction();
 ////            while (nextAction != NULL)
 ////            {
-////                Portcullis* port = (Portcullis*)gameBoard->getObject(nextAction->portPkey);
-////                port->setState(nextAction->newState, nextAction->allowsEntry);
+////                Portcullis* port = (Portcullis*)gameBoard.getObject(nextAction.portPkey);
+////                port.setState(nextAction.newState, nextAction.allowsEntry);
 ////                delete nextAction;
-////                nextAction = sync->GetNextPortcullisAction();
+////                nextAction = sync.GetNextPortcullisAction();
 ////            }
 
 ////            // Do reset after dragon and move actions.
-////            PlayerResetAction* otherReset = sync->GetNextResetAction();
+////            PlayerResetAction* otherReset = sync.GetNextResetAction();
 ////            while (otherReset != NULL)
 ////            {
-////                ResetPlayer(gameBoard->getPlayer(otherReset->sender));
+////                ResetPlayer(gameBoard.getPlayer(otherReset.sender));
 ////                delete otherReset;
-////                otherReset = sync->GetNextResetAction();
+////                otherReset = sync.GetNextResetAction();
 ////            }
 
 ////            // Handle won games last.
-////            PlayerWinAction* lost = sync->GetGameWon();
+////            PlayerWinAction* lost = sync.GetGameWon();
 ////            if (lost != NULL)
 ////            {
-////                WinGame(lost->winInRoom);
+////                WinGame(lost.winInRoom);
 ////                delete lost;
 ////                lost = NULL;
 ////            }
@@ -434,7 +500,7 @@ namespace GameEngine
 
 ////        void Adventure_Run()
 ////        {
-////            sync->StartFrame();
+////            sync.StartFrame();
 ////            SyncWithOthers();
 ////            checkPlayers();
 
@@ -462,7 +528,7 @@ namespace GameEngine
 ////                    ResetPlayer(objectBall);
 ////                    // Broadcast to everyone else
 ////                    PlayerResetAction* action = new PlayerResetAction();
-////                    sync->BroadcastAction(action);
+////                    sync.BroadcastAction(action);
 
 ////                }
 ////            }
@@ -480,16 +546,16 @@ namespace GameEngine
 ////                    else
 ////                    {
 ////                        int displayNum = timeToStartGame / 60;
-////                        board[OBJECT_NUMBER]->state = displayNum;
+////                        board[OBJECT_NUMBER].state = displayNum;
 
 ////                        // Display the room and objects
-////                        objectBall->room = 0;
-////                        objectBall->previousRoom = 0;
-////                        objectBall->displayedRoom = 0;
-////                        objectBall->x = 0;
-////                        objectBall->y = 0;
-////                        objectBall->previousX = 0;
-////                        objectBall->previousY = 0;
+////                        objectBall.room = 0;
+////                        objectBall.previousRoom = 0;
+////                        objectBall.displayedRoom = 0;
+////                        objectBall.x = 0;
+////                        objectBall.y = 0;
+////                        objectBall.previousX = 0;
+////                        objectBall.previousY = 0;
 ////                        PrintDisplay();
 ////                    }
 ////                }
@@ -498,17 +564,17 @@ namespace GameEngine
 ////                    // Has someone won the game.
 ////                    if (checkWonGame())
 ////                    {
-////                        WinGame(objectBall->room);
-////                        PlayerWinAction* won = new PlayerWinAction(objectBall->room);
-////                        sync->BroadcastAction(won);
+////                        WinGame(objectBall.room);
+////                        PlayerWinAction* won = new PlayerWinAction(objectBall.room);
+////                        sync.BroadcastAction(won);
 ////                        // Report back to the server.
 ////                        Platform_ReportToServer("Has won a game");
 ////                    }
-////                    else if (EasterEgg::isGauntletTimeUp(sync->getFrameNumber()))
+////                    else if (EasterEgg::isGauntletTimeUp(sync.getFrameNumber()))
 ////                    {
 ////                        EasterEgg::endGauntlet();
 ////                        gameState = GAMESTATE_WIN;
-////                        winningRoom = objectBall->displayedRoom;
+////                        winningRoom = objectBall.displayedRoom;
 ////                    }
 ////                    else
 ////                    {
@@ -519,7 +585,7 @@ namespace GameEngine
 ////                            Robot::ControlJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
 ////                        }
 
-////                        if (EasterEgg::shouldStartGauntlet(sync->getFrameNumber()))
+////                        if (EasterEgg::shouldStartGauntlet(sync.getFrameNumber()))
 ////                        {
 ////                            EasterEgg::startGauntlet();
 ////                            gameMode = GAME_MODE_GAUNTLET;
@@ -533,7 +599,7 @@ namespace GameEngine
 ////                            {
 ////                                if (i != thisPlayer)
 ////                                {
-////                                    BallMovement(gameBoard->getPlayer(i));
+////                                    BallMovement(gameBoard.getPlayer(i));
 ////                                }
 ////                            }
 
@@ -543,8 +609,8 @@ namespace GameEngine
 ////                            // Collision check the balls in their new coordinates against walls and objects
 ////                            for (int i = 0; i < numPlayers; ++i)
 ////                            {
-////                                BALL* nextBall = gameBoard->getPlayer(i);
-////                                nextBall->hit = CollisionCheckBallWithEverything(nextBall, nextBall->room, nextBall->x, nextBall->y, false, &nextBall->hitObject);
+////                                BALL* nextBall = gameBoard.getPlayer(i);
+////                                nextBall.hit = CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false, &nextBall.hitObject);
 ////                            }
 
 ////                            // Setup the room and object
@@ -559,7 +625,7 @@ namespace GameEngine
 
 ////                            for (int i = 0; i < numPlayers; ++i)
 ////                            {
-////                                ReactToCollisionX(gameBoard->getPlayer(i));
+////                                ReactToCollisionX(gameBoard.getPlayer(i));
 ////                            }
 
 ////                            // Increment the last object drawn
@@ -569,9 +635,9 @@ namespace GameEngine
 ////                            Surround();
 
 ////                            // Move and deal with bat
-////                            if (bat->exists())
+////                            if (bat.exists())
 ////                            {
-////                                bat->moveOneTurn(sync, objectBall);
+////                                bat.moveOneTurn(sync, objectBall);
 ////                            }
 
 ////                            // Move and deal with portcullises
@@ -588,25 +654,25 @@ namespace GameEngine
 ////                            for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
 ////                            {
 ////                                Dragon* dragon = dragons[dragonCtr];
-////                                RemoteAction* dragonAction = dragon->move();
+////                                RemoteAction* dragonAction = dragon.move();
 ////                                if (dragonAction != NULL)
 ////                                {
-////                                    sync->BroadcastAction(dragonAction);
+////                                    sync.BroadcastAction(dragonAction);
 ////                                }
 ////                                // In gauntlet mode, getting eaten immediately triggers a reset.
-////                                if ((gameMode == GAME_MODE_GAUNTLET) && (dragon->state == Dragon::EATEN) && (dragon->eaten == objectBall))
+////                                if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon::EATEN) && (dragon.eaten == objectBall))
 ////                                {
 ////                                    ResetPlayer(objectBall);
 ////                                    // Broadcast to everyone else
 ////                                    PlayerResetAction* action = new PlayerResetAction();
-////                                    sync->BroadcastAction(action);
+////                                    sync.BroadcastAction(action);
 
 ////                                }
 ////                            }
 
 ////                            for (int i = 0; i < numPlayers; ++i)
 ////                            {
-////                                ReactToCollisionY(gameBoard->getPlayer(i));
+////                                ReactToCollisionY(gameBoard.getPlayer(i));
 ////                            }
 
 
@@ -635,7 +701,7 @@ namespace GameEngine
 ////                    }
 
 ////                    // Increment the last object drawn
-////                    if (sync->getFrameNumber() % 3 == 0)
+////                    if (sync.getFrameNumber() % 3 == 0)
 ////                    {
 ////                        ++displayListIndex;
 ////                    }
@@ -652,20 +718,20 @@ namespace GameEngine
 ////        void SetupRoomObjects()
 ////        {
 ////            // Init all objects
-////            Board::ObjIter iter = gameBoard->getObjects();
+////            Board::ObjIter iter = gameBoard.getObjects();
 ////            while (iter.hasNext())
 ////            {
 ////                OBJECT * object = iter.next();
-////                object->setMovementX(0);
-////                object->setMovementY(0);
+////                object.setMovementX(0);
+////                object.setMovementY(0);
 ////            }
 
 ////            // Set to no carried objects
 ////            for (int ctr = 0; ctr < numDragons; ++ctr)
 ////            {
-////                dragons[ctr]->eaten = NULL;
+////                dragons[ctr].eaten = NULL;
 ////            }
-////            bat->linkedObject = OBJECT_NONE;
+////            bat.linkedObject = OBJECT_NONE;
 
 ////            // Read the object initialization table for the current game level
 ////            const byte* p;
@@ -693,14 +759,14 @@ namespace GameEngine
 ////                signed char movementY = *(p++);
 
 ////                OBJECT* toInit = board[object];
-////                toInit->init(room, xpos, ypos, state, movementX, movementY);
+////                toInit.init(room, xpos, ypos, state, movementX, movementY);
 ////            };
 
 ////            // Hide the jade key if only 2 player
 ////            if (numPlayers <= 2)
 ////            {
-////                board[OBJECT_JADEKEY]->setExists(false);
-////                board[OBJECT_JADEKEY]->randomPlacement = OBJECT::FIXED_LOCATION;
+////                board[OBJECT_JADEKEY].setExists(false);
+////                board[OBJECT_JADEKEY].randomPlacement = OBJECT::FIXED_LOCATION;
 ////            }
 
 ////            // Put objects in random rooms for level 3.
@@ -714,9 +780,9 @@ namespace GameEngine
 ////            if (gameMode == GAME_MODE_GAUNTLET)
 ////            {
 ////                Portcullis* blackPort = (Portcullis*)board[OBJECT_BLACK_PORT];
-////                blackPort->setState(Portcullis::OPEN_STATE, true);
+////                blackPort.setState(Portcullis::OPEN_STATE, true);
 ////                Portcullis* goldPort = (Portcullis*)board[OBJECT_YELLOW_PORT];
-////                goldPort->setState(Portcullis::OPEN_STATE, true);
+////                goldPort.setState(Portcullis::OPEN_STATE, true);
 ////            }
 ////        }
 
@@ -731,54 +797,54 @@ namespace GameEngine
 ////         */
 ////        void randomizeRoomObjects()
 ////        {
-////            int numRooms = gameMap->getNumRooms();
+////            int numRooms = gameMap.getNumRooms();
 ////            Portcullis* blackCastle = (Portcullis*)board[OBJECT_BLACK_PORT];
 ////            Portcullis* whiteCastle = (Portcullis*)board[OBJECT_WHITE_PORT];
 
 ////            // Run through all the objects in the game.  The ones that shouldn't be
 ////            // randomized will have their random location flag turned off.
-////            int numObjects = gameBoard->getNumObjects();
+////            int numObjects = gameBoard.getNumObjects();
 ////            // TODO: Bug in windows requires we reseed now.
 ////            Sys::randomized = false;
 ////            for (int objCtr = 0; objCtr < numObjects; ++objCtr)
 ////            {
-////                OBJECT* nextObj = gameBoard->getObject(objCtr);
-////                if (nextObj->randomPlacement != OBJECT::FIXED_LOCATION)
+////                OBJECT* nextObj = gameBoard.getObject(objCtr);
+////                if (nextObj.randomPlacement != OBJECT::FIXED_LOCATION)
 ////                {
 ////                    bool ok = false;
 ////                    while (!ok)
 ////                    {
 ////                        int randomKey = (int)(Sys::random() * numRooms);
-////                        ROOM* randomRoom = gameMap->getRoom(randomKey);
+////                        ROOM* randomRoom = gameMap.getRoom(randomKey);
 
 ////                        // Make sure the object isn't put in a hidden room
-////                        ok = randomRoom->visibility != ROOM::HIDDEN;
+////                        ok = randomRoom.visibility != ROOM::HIDDEN;
 
 ////                        // if the object can only be in the open, make sure that it's put in the open.
-////                        ok = ok && ((nextObj->randomPlacement != OBJECT::OUT_IN_OPEN) || (randomRoom->visibility == ROOM::OPEN));
+////                        ok = ok && ((nextObj.randomPlacement != OBJECT::OUT_IN_OPEN) || (randomRoom.visibility == ROOM::OPEN));
 
 ////                        // Make sure chalice is in a castle
 ////                        if (ok && (objCtr == OBJECT_CHALISE))
 ////                        {
-////                            ok = (blackCastle->containsRoom(randomKey) || whiteCastle->containsRoom(randomKey));
+////                            ok = (blackCastle.containsRoom(randomKey) || whiteCastle.containsRoom(randomKey));
 ////                        }
 
 ////                        // Make sure white key not in white castle.
 ////                        if (ok && (objCtr == OBJECT_WHITEKEY))
 ////                        {
-////                            ok = ok && !whiteCastle->containsRoom(randomKey);
+////                            ok = ok && !whiteCastle.containsRoom(randomKey);
 ////                        }
 
 ////                        // Make sure white and black key not cyclical
 ////                        // We happen to know that the white key is placed first, so set the black.
 ////                        if (ok && (objCtr == OBJECT_BLACKKEY))
 ////                        {
-////                            if (blackCastle->containsRoom(board[OBJECT_WHITEKEY]->room))
+////                            if (blackCastle.containsRoom(board[OBJECT_WHITEKEY].room))
 ////                            {
-////                                ok = !whiteCastle->containsRoom(randomKey);
+////                                ok = !whiteCastle.containsRoom(randomKey);
 ////                            }
 ////                            // Also make sure black key not in black castle
-////                            ok = ok && !blackCastle->containsRoom(randomKey);
+////                            ok = ok && !blackCastle.containsRoom(randomKey);
 ////                        }
 
 ////                        // There are parts of the white castle not accessible without the bridge, but the bat
@@ -786,17 +852,17 @@ namespace GameEngine
 ////                        // that the bat is not in the black castle.
 ////                        if (ok && (objCtr == OBJECT_BAT))
 ////                        {
-////                            if (whiteCastle->containsRoom(board[OBJECT_BLACKKEY]->room))
+////                            if (whiteCastle.containsRoom(board[OBJECT_BLACKKEY].room))
 ////                            {
-////                                ok = !blackCastle->containsRoom(randomKey);
+////                                ok = !blackCastle.containsRoom(randomKey);
 ////                            }
 ////                        }
 
 ////                        if (ok)
 ////                        {
-////                            nextObj->room = randomKey;
-////                            ObjectMoveAction* action = new ObjectMoveAction(objCtr, randomKey, nextObj->x, nextObj->y);
-////                            sync->BroadcastAction(action);
+////                            nextObj.room = randomKey;
+////                            ObjectMoveAction* action = new ObjectMoveAction(objCtr, randomKey, nextObj.x, nextObj.y);
+////                            sync.BroadcastAction(action);
 ////                        }
 ////                    }
 ////                }
@@ -806,9 +872,9 @@ namespace GameEngine
 ////            // Only for debugging - keep commented out
 ////#if 0
 ////    for(int objCtr=0; objCtr < numObjects; ++objCtr) {
-////        OBJECT* nextObj = gameBoard->getObject(objCtr);
-////        if (nextObj->randomPlacement != OBJECT::FIXED_LOCATION) {
-////            printf("%s placed in %s.\n", nextObj->label, gameMap->getRoom(nextObj->room)->label);
+////        OBJECT* nextObj = gameBoard.getObject(objCtr);
+////        if (nextObj.randomPlacement != OBJECT::FIXED_LOCATION) {
+////            printf("%s placed in %s.\n", nextObj.label, gameMap.getRoom(nextObj.room).label);
 ////        }
 ////    }
 ////#endif
@@ -820,14 +886,14 @@ namespace GameEngine
 ////         */
 ////        void handleSetupMessages()
 ////        {
-////            ObjectMoveAction* nextMsg = sync->GetNextSetupAction();
+////            ObjectMoveAction* nextMsg = sync.GetNextSetupAction();
 ////            while (nextMsg != NULL)
 ////            {
-////                OBJECT* toSetup = board[nextMsg->object];
-////                toSetup->room = nextMsg->room;
-////                toSetup->x = nextMsg->x;
-////                toSetup->y = nextMsg->y;
-////                nextMsg = sync->GetNextSetupAction();
+////                OBJECT* toSetup = board[nextMsg.object];
+////                toSetup.room = nextMsg.room;
+////                toSetup.x = nextMsg.x;
+////                toSetup.y = nextMsg.y;
+////                nextMsg = sync.GetNextSetupAction();
 ////            }
 ////        }
 
@@ -836,7 +902,7 @@ namespace GameEngine
 ////            float NEAR_VOLUME = MAX_VOLUME / 3;
 ////            float FAR_VOLUME = MAX_VOLUME / 9;
 
-////            int distance = gameMap->distance(room, objectBall->room);
+////            int distance = gameMap.distance(room, objectBall.room);
 
 ////            float volume = 0.0;
 ////            switch (distance)
@@ -866,7 +932,7 @@ namespace GameEngine
 ////            bool won = false;
 ////            if (gameMode == GAME_MODE_GAUNTLET)
 ////            {
-////                won = (objectBall->isGlowing() && (objectBall->room == objectBall->homeGate->insideRoom));
+////                won = (objectBall.isGlowing() && (objectBall.room == objectBall.homeGate.insideRoom));
 ////                if (won && (EasterEgg::getEggState() == EasterEgg::EGG_STATE_IN_GAUNTLET))
 ////                {
 ////                    EasterEgg::winEgg();
@@ -876,19 +942,19 @@ namespace GameEngine
 ////            {
 ////                // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
 ////                // Another player can't win for you.
-////                if ((objectBall->linkedObject == OBJECT_CHALISE) ||
-////                    ((objectBall->linkedObject == OBJECT_BAT) && (bat->linkedObject == OBJECT_CHALISE)))
+////                if ((objectBall.linkedObject == OBJECT_CHALISE) ||
+////                    ((objectBall.linkedObject == OBJECT_BAT) && (bat.linkedObject == OBJECT_CHALISE)))
 ////                {
 ////                    // Player either has to bring the chalise into the castle or touch the chalise to the gate
-////                    if (board[OBJECT_CHALISE]->room == objectBall->homeGate->insideRoom)
+////                    if (board[OBJECT_CHALISE].room == objectBall.homeGate.insideRoom)
 ////                    {
 ////                        won = true;
 ////                    }
 ////                    else
 ////                    {
-////                        if ((objectBall->room == objectBall->homeGate->room) &&
-////                            (objectBall->homeGate->state == Portcullis::OPEN_STATE) &&
-////                            gameBoard->CollisionCheckObjectObject(objectBall->homeGate, board[OBJECT_CHALISE]))
+////                        if ((objectBall.room == objectBall.homeGate.room) &&
+////                            (objectBall.homeGate.state == Portcullis::OPEN_STATE) &&
+////                            gameBoard.CollisionCheckObjectObject(objectBall.homeGate, board[OBJECT_CHALISE]))
 ////                        {
 
 ////                            won = true;
@@ -912,83 +978,83 @@ namespace GameEngine
 
 ////        void ReactToCollisionX(BALL* ball)
 ////        {
-////            if (ball->hit)
+////            if (ball.hit)
 ////            {
-////                if (ball->velx != 0)
+////                if (ball.velx != 0)
 ////                {
-////                    if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
+////                    if ((ball.hitObject > OBJECT_NONE) && (ball.hitObject == ball.linkedObject))
 ////                    {
-////                        ball->linkedObjectX += ball->velx;
+////                        ball.linkedObjectX += ball.velx;
 ////                        if (ball == objectBall)
 ////                        {
 ////                            // If this is adjusting how the current player holds an object,
 ////                            // we broadcast to other players as a pickup action
-////                            PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
-////                                objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
-////                            sync->BroadcastAction(action);
+////                            PlayerPickupAction* action = new PlayerPickupAction(ball.hitObject,
+////                                objectBall.linkedObjectX, objectBall.linkedObjectY, OBJECT_NONE, 0, 0, 0);
+////                            sync.BroadcastAction(action);
 ////                        }
 ////                    }
 
-////                    if ((ball->room != ball->previousRoom) && (ABS(ball->x - ball->previousX) > ABS(ball->velx)))
+////                    if ((ball.room != ball.previousRoom) && (ABS(ball.x - ball.previousX) > ABS(ball.velx)))
 ////                    {
 ////                        // We switched rooms, kick them back
-////                        ball->room = ball->previousRoom;
+////                        ball.room = ball.previousRoom;
 ////                    }
-////                    ball->x = ball->previousX;
+////                    ball.x = ball.previousX;
 ////                }
 ////                // Try recompute hit allowing for the bridge.
-////                ball->hit = CollisionCheckBallWithEverything(ball, ball->room, ball->x, ball->y, true, &ball->hitObject);
+////                ball.hit = CollisionCheckBallWithEverything(ball, ball.room, ball.x, ball.y, true, &ball.hitObject);
 ////            }
 ////        }
 
 ////        void ReactToCollisionY(BALL* ball)
 ////        {
-////            if ((ball->hit) && (ball->vely != 0))
+////            if ((ball.hit) && (ball.vely != 0))
 ////            {
-////                if ((ball->hitObject > OBJECT_NONE) && (ball->hitObject == ball->linkedObject))
+////                if ((ball.hitObject > OBJECT_NONE) && (ball.hitObject == ball.linkedObject))
 ////                {
-////                    ball->linkedObjectY += ball->vely;
+////                    ball.linkedObjectY += ball.vely;
 ////                    if (ball == objectBall)
 ////                    {
 ////                        // If this is adjusting how the current player holds an object,
 ////                        // we broadcast to other players as a pickup action
-////                        PlayerPickupAction* action = new PlayerPickupAction(ball->hitObject,
-////                            objectBall->linkedObjectX, objectBall->linkedObjectY, OBJECT_NONE, 0, 0, 0);
-////                        sync->BroadcastAction(action);
+////                        PlayerPickupAction* action = new PlayerPickupAction(ball.hitObject,
+////                            objectBall.linkedObjectX, objectBall.linkedObjectY, OBJECT_NONE, 0, 0, 0);
+////                        sync.BroadcastAction(action);
 ////                    }
 ////                }
 
 ////                // We put y back to the last y, but if we are moving diagonally, we
 ////                // put x back to the new x value which we had reverted last phase and try again.
 ////                // if new x and old y is still a collision we revert at the beginning of the next phase
-////                if ((ball->room != ball->previousRoom) && (ABS(ball->y - ball->previousY) > ABS(ball->vely)))
+////                if ((ball.room != ball.previousRoom) && (ABS(ball.y - ball.previousY) > ABS(ball.vely)))
 ////                {
 ////                    // We switched rooms, kick them back
-////                    ball->room = ball->previousRoom;
+////                    ball.room = ball.previousRoom;
 ////                }
-////                ball->y = ball->previousY;
-////                ball->x += ball->velx;
+////                ball.y = ball.previousY;
+////                ball.x += ball.velx;
 ////                // Need to check if new X takes us to new room (again)
-////                if (ball->x >= RIGHT_EDGE)
+////                if (ball.x >= RIGHT_EDGE)
 ////                {
-////                    ball->x = ENTER_AT_LEFT;
-////                    ball->room = ball->displayedRoom; // The displayed room hasn't changed
+////                    ball.x = ENTER_AT_LEFT;
+////                    ball.room = ball.displayedRoom; // The displayed room hasn't changed
 ////                }
-////                else if (ball->x < LEFT_EDGE)
+////                else if (ball.x < LEFT_EDGE)
 ////                {
-////                    ball->x = ENTER_AT_RIGHT;
-////                    ball->room = ball->displayedRoom;
+////                    ball.x = ENTER_AT_RIGHT;
+////                    ball.room = ball.displayedRoom;
 ////                }
 
-////                ball->hit = CollisionCheckBallWithEverything(ball, ball->displayedRoom, ball->x, ball->y, false, &ball->hitObject);
+////                ball.hit = CollisionCheckBallWithEverything(ball, ball.displayedRoom, ball.x, ball.y, false, &ball.hitObject);
 ////            }
 ////        }
 
 ////        void ThisBallMovement()
 ////        {
 ////            // Read the joystick and translate into a velocity
-////            int prevVelX = objectBall->velx;
-////            int prevVelY = objectBall->vely;
+////            int prevVelX = objectBall.velx;
+////            int prevVelY = objectBall.vely;
 ////            // If we are scripting, we don't ever look at the joystick or change the velocity here.
 ////            if (!joystickDisabled)
 ////            {
@@ -1004,7 +1070,7 @@ namespace GameEngine
 ////                {
 ////                    newVelY = -6;
 ////                }
-////                objectBall->vely = newVelY;
+////                objectBall.vely = newVelY;
 
 ////                int newVelX = 0;
 ////                if (joyRight)
@@ -1018,16 +1084,16 @@ namespace GameEngine
 ////                {
 ////                    newVelX = -6;
 ////                }
-////                objectBall->velx = newVelX;
+////                objectBall.velx = newVelX;
 ////            }
 
 ////            BallMovement(objectBall);
 
-////            if (!joystickDisabled && ((objectBall->velx != prevVelX) || (objectBall->vely != prevVelY)))
+////            if (!joystickDisabled && ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY)))
 ////            {
 ////                // TODO: Do we want to be constantly allocating space?
-////                PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
-////                sync->BroadcastAction(moveAction);
+////                PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+////                sync.BroadcastAction(moveAction);
 ////            }
 ////        }
 
@@ -1037,38 +1103,38 @@ namespace GameEngine
 ////            bool eaten = false;
 ////            for (int ctr = 0; ctr < numDragons && !eaten; ++ctr)
 ////            {
-////                eaten = (dragons[ctr]->eaten == ball);
+////                eaten = (dragons[ctr].eaten == ball);
 ////            }
 
 ////            // Save the last, non-colliding position
-////            if (ball->hit)
+////            if (ball.hit)
 ////            {
-////                ball->x = ball->previousX;
-////                ball->y = ball->previousY;
-////                ball->room = ball->previousRoom;
+////                ball.x = ball.previousX;
+////                ball.y = ball.previousY;
+////                ball.room = ball.previousRoom;
 ////            }
 ////            else
 ////            {
-////                ball->previousX = ball->x;
-////                ball->previousY = ball->y;
-////                ball->previousRoom = ball->room;
+////                ball.previousX = ball.x;
+////                ball.previousY = ball.y;
+////                ball.previousRoom = ball.room;
 ////            }
 
-////            ball->hit = eaten;
-////            ball->hitObject = OBJECT_NONE;
+////            ball.hit = eaten;
+////            ball.hitObject = OBJECT_NONE;
 
 ////            // Move the ball
-////            ball->x += ball->velx;
-////            ball->y += ball->vely;
+////            ball.x += ball.velx;
+////            ball.y += ball.vely;
 
 
 ////            // Wrap rooms in Y if necessary
-////            if (ball->y > TOP_EDGE)
+////            if (ball.y > TOP_EDGE)
 ////            {
-////                ball->y = ENTER_AT_BOTTOM;
-////                ball->room = roomDefs[ball->room]->roomUp;
+////                ball.y = ENTER_AT_BOTTOM;
+////                ball.room = roomDefs[ball.room].roomUp;
 ////            }
-////            else if (ball->y < BOTTOM_EDGE)
+////            else if (ball.y < BOTTOM_EDGE)
 ////            {
 ////                // Handle the ball leaving a castle.
 ////                bool canUnlockFromInside = ((gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE) != 0);
@@ -1076,23 +1142,23 @@ namespace GameEngine
 ////                for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr)
 ////                {
 ////                    Portcullis* port = ports[portalCtr];
-////                    if ((ball->room == port->insideRoom) &&
-////                        ((port->state != Portcullis::CLOSED_STATE) || canUnlockFromInside))
+////                    if ((ball.room == port.insideRoom) &&
+////                        ((port.state != Portcullis::CLOSED_STATE) || canUnlockFromInside))
 ////                    {
-////                        ball->x = Portcullis::EXIT_X;
-////                        ball->y = Portcullis::EXIT_Y;
+////                        ball.x = Portcullis::EXIT_X;
+////                        ball.y = Portcullis::EXIT_Y;
 
-////                        ball->previousX = ball->x;
-////                        ball->previousY = ball->y;
+////                        ball.previousX = ball.x;
+////                        ball.previousY = ball.y;
 
-////                        ball->room = port->room;
-////                        ball->previousRoom = ball->room;
+////                        ball.room = port.room;
+////                        ball.previousRoom = ball.room;
 ////                        // If we were locked in the castle, open the portcullis.
-////                        if (port->state == Portcullis::CLOSED_STATE && canUnlockFromInside)
+////                        if (port.state == Portcullis::CLOSED_STATE && canUnlockFromInside)
 ////                        {
-////                            port->openFromInside();
-////                            PortcullisStateAction* gateAction = new PortcullisStateAction(port->getPKey(), port->state, port->allowsEntry);
-////                            sync->BroadcastAction(gateAction);
+////                            port.openFromInside();
+////                            PortcullisStateAction* gateAction = new PortcullisStateAction(port.getPKey(), port.state, port.allowsEntry);
+////                            sync.BroadcastAction(gateAction);
 
 ////                        }
 ////                        leftCastle = true;
@@ -1102,57 +1168,57 @@ namespace GameEngine
 ////                if (!leftCastle)
 ////                {
 ////                    // Wrap the ball to the top of the next screen
-////                    ball->y = ENTER_AT_TOP;
-////                    ball->room = roomDefs[ball->room]->roomDown;
+////                    ball.y = ENTER_AT_TOP;
+////                    ball.room = roomDefs[ball.room].roomDown;
 ////                }
 ////            }
 
-////            if (ball->x >= RIGHT_EDGE)
+////            if (ball.x >= RIGHT_EDGE)
 ////            {
 ////                // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
-////                if (ball->room != ball->previousRoom)
+////                if (ball.room != ball.previousRoom)
 ////                {
-////                    ball->x = ball->previousX;
-////                    ball->velx = 0;
+////                    ball.x = ball.previousX;
+////                    ball.velx = 0;
 ////                }
 ////                else
 ////                {
 ////                    // Wrap the ball to the left side of the next screen
-////                    ball->x = ENTER_AT_LEFT;
+////                    ball.x = ENTER_AT_LEFT;
 
 ////                    // Figure out the room to the right (which might be the secret room)
-////                    ball->room = (ball->room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
-////                                     roomDefs[ball->room]->roomRight);
+////                    ball.room = (ball.room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
+////                                     roomDefs[ball.room].roomRight);
 ////                }
 ////            }
-////            else if (ball->x < LEFT_EDGE)
+////            else if (ball.x < LEFT_EDGE)
 ////            {
 ////                // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
-////                if (ball->room != ball->previousRoom)
+////                if (ball.room != ball.previousRoom)
 ////                {
-////                    ball->x = ball->previousX;
-////                    ball->velx = 0;
+////                    ball.x = ball.previousX;
+////                    ball.velx = 0;
 ////                }
 ////                else
 ////                {
-////                    ball->x = ENTER_AT_RIGHT;
-////                    ball->room = roomDefs[ball->room]->roomLeft;
+////                    ball.x = ENTER_AT_RIGHT;
+////                    ball.room = roomDefs[ball.room].roomLeft;
 ////                }
 ////            }
 
 ////            if (ball == objectBall)
 ////            {
-////                if (ball->room == CRYSTAL_CASTLE)
+////                if (ball.room == CRYSTAL_CASTLE)
 ////                {
 ////                    EasterEgg::foundCastle(objectBall);
 ////                }
-////                else if (ball->room == ROBINETT_ROOM)
+////                else if (ball.room == ROBINETT_ROOM)
 ////                {
 ////                    EasterEgg::enteredRobinettRoom();
 ////                }
 ////            }
 
-////            ball->displayedRoom = ball->room;
+////            ball.displayedRoom = ball.room;
 
 ////        }
 
@@ -1188,19 +1254,19 @@ namespace GameEngine
 ////                // Unless we are scripting we ignore messages to move our own player
 ////                if ((gameMode == GAME_MODE_SCRIPTING) || (i != thisPlayer))
 ////                {
-////                    BALL* nextPayer = gameBoard->getPlayer(i);
-////                    PlayerMoveAction* movement = sync->GetLatestBallSync(i);
+////                    BALL* nextPayer = gameBoard.getPlayer(i);
+////                    PlayerMoveAction* movement = sync.GetLatestBallSync(i);
 ////                    if (movement != 0x0)
 ////                    {
-////                        nextPayer->room = movement->room;
-////                        nextPayer->previousRoom = movement->room;
-////                        nextPayer->displayedRoom = movement->room;
-////                        nextPayer->x = movement->posx;
-////                        nextPayer->previousX = movement->posx - movement->velx;
-////                        nextPayer->y = movement->posy;
-////                        nextPayer->previousY = movement->posy - movement->vely;
-////                        nextPayer->velx = movement->velx;
-////                        nextPayer->vely = movement->vely;
+////                        nextPayer.room = movement.room;
+////                        nextPayer.previousRoom = movement.room;
+////                        nextPayer.displayedRoom = movement.room;
+////                        nextPayer.x = movement.posx;
+////                        nextPayer.previousX = movement.posx - movement.velx;
+////                        nextPayer.y = movement.posy;
+////                        nextPayer.previousY = movement.posy - movement.vely;
+////                        nextPayer.velx = movement.velx;
+////                        nextPayer.vely = movement.vely;
 ////                    }
 ////                }
 ////            }
@@ -1209,16 +1275,16 @@ namespace GameEngine
 
 ////        void SyncDragons()
 ////        {
-////            RemoteAction* next = sync->GetNextDragonAction();
+////            RemoteAction* next = sync.GetNextDragonAction();
 ////            while (next != NULL)
 ////            {
-////                if (next->typeCode == DragonStateAction::CODE)
+////                if (next.typeCode == DragonStateAction::CODE)
 ////                {
 ////                    DragonStateAction* nextState = (DragonStateAction*)next;
-////                    Dragon* dragon = dragons[nextState->dragonNum];
+////                    Dragon* dragon = dragons[nextState.dragonNum];
 ////                    // If something causes a sound, we need to know how far away it is.
-////                    float volume = volumeAtDistance(dragon->room);
-////                    dragon->syncAction(nextState, volume);
+////                    float volume = volumeAtDistance(dragon.room);
+////                    dragon.syncAction(nextState, volume);
 ////                }
 ////                else
 ////                {
@@ -1227,17 +1293,17 @@ namespace GameEngine
 ////                    // If the dragon is not in stalking state we ignore it.
 ////                    // Otherwise, you use the reported state.
 ////                    DragonMoveAction* nextMove = (DragonMoveAction*)next;
-////                    Dragon* dragon = dragons[nextMove->dragonNum];
-////                    if ((dragon->state == Dragon::STALKING) &&
-////                        ((dragon->room != objectBall->room) ||
-////                        (objectBall->distanceTo(dragon->x, dragon->y) > nextMove->distance)))
+////                    Dragon* dragon = dragons[nextMove.dragonNum];
+////                    if ((dragon.state == Dragon::STALKING) &&
+////                        ((dragon.room != objectBall.room) ||
+////                        (objectBall.distanceTo(dragon.x, dragon.y) > nextMove.distance)))
 ////                    {
 
-////                        dragon->syncAction(nextMove);
+////                        dragon.syncAction(nextMove);
 ////                    }
 ////                }
 ////                delete next;
-////                next = sync->GetNextDragonAction();
+////                next = sync.GetNextDragonAction();
 ////            }
 ////        }
 
@@ -1250,13 +1316,13 @@ namespace GameEngine
 
 ////            for (int ctr = 0; ctr < numPlayers; ++ctr)
 ////            {
-////                BALL* nextBall = gameBoard->getPlayer(ctr);
-////                if (nextBall->linkedObject != OBJECT_NONE)
+////                BALL* nextBall = gameBoard.getPlayer(ctr);
+////                if (nextBall.linkedObject != OBJECT_NONE)
 ////                {
-////                    OBJECT * object = board[nextBall->linkedObject];
-////                    object->x = (nextBall->x / 2) + nextBall->linkedObjectX;
-////                    object->y = (nextBall->y / 2) + nextBall->linkedObjectY;
-////                    object->room = nextBall->room;
+////                    OBJECT * object = board[nextBall.linkedObject];
+////                    object.x = (nextBall.x / 2) + nextBall.linkedObjectX;
+////                    object.y = (nextBall.y / 2) + nextBall.linkedObjectY;
+////                    object.room = nextBall.room;
 ////                }
 ////            }
 
@@ -1268,41 +1334,41 @@ namespace GameEngine
 ////        {
 ////            for (int ctr = 0; ctr < numPlayers; ++ctr)
 ////            {
-////                BALL* nextBall = gameBoard->getPlayer(ctr);
+////                BALL* nextBall = gameBoard.getPlayer(ctr);
 ////                // Handle balls going into the castles
 ////                for (int portalCtr = 0; portalCtr < numPorts; ++portalCtr)
 ////                {
 ////                    Portcullis* nextPort = ports[portalCtr];
-////                    if (nextBall->room == nextPort->room && nextPort->allowsEntry && CollisionCheckObject(nextPort, (nextBall->x - 4), (nextBall->y - 1), 8, 8))
+////                    if (nextBall.room == nextPort.room && nextPort.allowsEntry && CollisionCheckObject(nextPort, (nextBall.x - 4), (nextBall.y - 1), 8, 8))
 ////                    {
-////                        nextBall->room = nextPort->insideRoom;
-////                        nextBall->previousRoom = nextBall->room;
-////                        nextBall->displayedRoom = nextBall->room;
-////                        nextBall->y = ENTER_AT_BOTTOM;
-////                        nextBall->previousY = nextBall->y;
-////                        nextBall->vely = 0;
-////                        nextBall->velx = 0;
+////                        nextBall.room = nextPort.insideRoom;
+////                        nextBall.previousRoom = nextBall.room;
+////                        nextBall.displayedRoom = nextBall.room;
+////                        nextBall.y = ENTER_AT_BOTTOM;
+////                        nextBall.previousY = nextBall.y;
+////                        nextBall.vely = 0;
+////                        nextBall.velx = 0;
 ////                        // make sure it stays unlocked in case we are walking in with the key
-////                        nextPort->forceOpen();
+////                        nextPort.forceOpen();
 ////                        // Report to all the other players only if its the current player entering
 ////                        if (ctr == thisPlayer)
 ////                        {
 ////                            PortcullisStateAction* gateAction =
-////                            new PortcullisStateAction(nextPort->getPKey(), nextPort->state, nextPort->allowsEntry);
-////                            sync->BroadcastAction(gateAction);
+////                            new PortcullisStateAction(nextPort.getPKey(), nextPort.state, nextPort.allowsEntry);
+////                            sync.BroadcastAction(gateAction);
 
 ////                            // Report the ball entering the castle
-////                            PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall->room, objectBall->x, objectBall->y, objectBall->velx, objectBall->vely);
-////                            sync->BroadcastAction(moveAction);
+////                            PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+////                            sync.BroadcastAction(moveAction);
 ////                        }
 ////                        // If entering the black castle in the gauntlet, glow.
-////                        if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == board[OBJECT_BLACK_PORT]) && !nextBall->isGlowing())
+////                        if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == board[OBJECT_BLACK_PORT]) && !nextBall.isGlowing())
 ////                        {
-////                            nextBall->setGlowing(true);
-////                            Platform_MakeSound(SOUND_GLOW, volumeAtDistance(nextBall->room));
+////                            nextBall.setGlowing(true);
+////                            Platform_MakeSound(SOUND_GLOW, volumeAtDistance(nextBall.room));
 ////                        }
 ////                        // If entering the crystal castle, trigger the easter egg
-////                        if ((nextBall->room == CRYSTAL_FOYER) && (EasterEgg::shouldStartChallenge()))
+////                        if ((nextBall.room == CRYSTAL_FOYER) && (EasterEgg::shouldStartChallenge()))
 ////                        {
 ////                            EasterEgg::showChallengeMessage();
 ////                        }
@@ -1322,63 +1388,63 @@ namespace GameEngine
 ////                OBJECT * object = iter.next();
 
 ////                // Apply movement
-////                if ((object->gfxData != Dragon::gfxData) || (object->state == 0))
+////                if ((object.gfxData != Dragon::gfxData) || (object.state == 0))
 ////                {
-////                    object->x += object->getMovementX();
-////                    object->y += object->getMovementY();
+////                    object.x += object.getMovementX();
+////                    object.y += object.getMovementY();
 ////                }
 
 ////                // Check and Deal with Up
-////                if (object->y > 0x6A)
+////                if (object.y > 0x6A)
 ////                {
-////                    object->y = 0x0D;
-////                    object->room = roomDefs[object->room]->roomUp;
+////                    object.y = 0x0D;
+////                    object.room = roomDefs[object.room].roomUp;
 ////                }
 
 ////                // Check and Deal with Left
-////                if (object->x < 0x03)
+////                if (object.x < 0x03)
 ////                {
-////                    object->x = 0x9A;
-////                    object->room = roomDefs[object->room]->roomLeft;
+////                    object.x = 0x9A;
+////                    object.room = roomDefs[object.room].roomLeft;
 ////                }
 
 ////                // Check and Deal with Down
-////                if (object->y < 0x0D)
+////                if (object.y < 0x0D)
 ////                {
 ////                    // Handle object leaving the castles
 ////                    bool leftCastle = false;
 ////                    for (int ctr = 0; (ctr < numPorts) && (!leftCastle); ++ctr)
 ////                    {
-////                        if ((object->room == ports[ctr]->insideRoom) && (ports[ctr]->allowsEntry))
+////                        if ((object.room == ports[ctr].insideRoom) && (ports[ctr].allowsEntry))
 ////                        {
-////                            object->x = Portcullis::EXIT_X / 2;
-////                            object->y = Portcullis::EXIT_Y / 2;
-////                            object->room = ports[ctr]->room;
+////                            object.x = Portcullis::EXIT_X / 2;
+////                            object.y = Portcullis::EXIT_Y / 2;
+////                            object.room = ports[ctr].room;
 ////                            // TODO: Do we need to broadcast leaving the castle?  Seems there might be quite a jump.
 ////                            leftCastle = true;
 ////                        }
 ////                    }
 ////                    if (!leftCastle)
 ////                    {
-////                        object->y = 0x69;
-////                        object->room = roomDefs[object->room]->roomDown;
+////                        object.y = 0x69;
+////                        object.room = roomDefs[object.room].roomDown;
 ////                    }
 ////                }
 
 ////                // Check and Deal with Right
-////                if (object->x > 0x9B)
+////                if (object.x > 0x9B)
 ////                {
-////                    object->x = 0x03;
-////                    object->room = roomDefs[object->room]->roomRight;
+////                    object.x = 0x03;
+////                    object.room = roomDefs[object.room].roomRight;
 ////                }
 
 ////                // If the object has a linked object
-////                if ((object == bat) && (bat->linkedObject != OBJECT_NONE))
+////                if ((object == bat) && (bat.linkedObject != OBJECT_NONE))
 ////                {
-////                    OBJECT* linkedObj = board[bat->linkedObject];
-////                    linkedObj->x = object->x + bat->linkedObjectX;
-////                    linkedObj->y = object->y + bat->linkedObjectY;
-////                    linkedObj->room = object->room;
+////                    OBJECT* linkedObj = board[bat.linkedObject];
+////                    linkedObj.x = object.x + bat.linkedObjectX;
+////                    linkedObj.y = object.y + bat.linkedObjectY;
+////                    linkedObj.room = object.room;
 ////                }
 ////            }
 ////        }
@@ -1386,12 +1452,12 @@ namespace GameEngine
 ////        void PrintDisplay()
 ////        {
 ////            // get the playfield data
-////            int displayedRoom = (displayWinningRoom ? winningRoom : objectBall->displayedRoom);
+////            int displayedRoom = (displayWinningRoom ? winningRoom : objectBall.displayedRoom);
 ////            const ROOM* currentRoom = roomDefs[displayedRoom];
-////            const byte* roomData = currentRoom->graphicsData;
+////            const byte* roomData = currentRoom.graphicsData;
 
 ////            // get the playfield color
-////            COLOR color = ((gameState == GAMESTATE_WIN) && (winFlashTimer > 0)) ? GetFlashColor() : colorTable[currentRoom->color];
+////            COLOR color = ((gameState == GAMESTATE_WIN) && (winFlashTimer > 0)) ? GetFlashColor() : colorTable[currentRoom.color];
 ////            COLOR colorBackground = colorTable[COLOR_LTGRAY];
 
 ////            // Fill the entire backbuffer with the playfield background color before we draw anything else
@@ -1400,13 +1466,13 @@ namespace GameEngine
 ////            // paint the surround under the playfield layer
 ////            for (int ctr = 0; ctr < numPlayers; ++ctr)
 ////            {
-////                if ((surrounds[ctr]->room == displayedRoom) && (surrounds[ctr]->state == 0))
+////                if ((surrounds[ctr].room == displayedRoom) && (surrounds[ctr].state == 0))
 ////                {
 ////                    DrawObject(surrounds[ctr]);
 ////                }
 ////            }
 ////            // get the playfield mirror flag
-////            bool mirror = currentRoom->flags & ROOMFLAG_MIRROR;
+////            bool mirror = currentRoom.flags & ROOMFLAG_MIRROR;
 
 ////            //
 ////            // Extract the playfield register bits and paint the playfield
@@ -1466,15 +1532,15 @@ namespace GameEngine
 ////            //
 ////            // Draw the balls
 ////            //
-////            COLOR defaultColor = colorTable[roomDefs[displayedRoom]->color];
+////            COLOR defaultColor = colorTable[roomDefs[displayedRoom].color];
 
 ////            for (int i = 0; i < numPlayers; ++i)
 ////            {
-////                BALL* player = gameBoard->getPlayer(i);
-////                if (player->displayedRoom == displayedRoom)
+////                BALL* player = gameBoard.getPlayer(i);
+////                if (player.displayedRoom == displayedRoom)
 ////                {
-////                    COLOR ballColor = (player->isGlowing() ? GetFlashColor() : defaultColor);
-////                    DrawBall(gameBoard->getPlayer(i), ballColor);
+////                    COLOR ballColor = (player.isGlowing() ? GetFlashColor() : defaultColor);
+////                    DrawBall(gameBoard.getPlayer(i), ballColor);
 ////                }
 ////            }
 
@@ -1487,52 +1553,52 @@ namespace GameEngine
 
 ////        void OthersPickupPutdown()
 ////        {
-////            PlayerPickupAction* action = sync->GetNextPickupAction();
+////            PlayerPickupAction* action = sync.GetNextPickupAction();
 ////            while (action != NULL)
 ////            {
-////                int actorNum = action->sender;
-////                BALL* actor = gameBoard->getPlayer(actorNum);
-////                if (action->dropObject != OBJECT_NONE)
+////                int actorNum = action.sender;
+////                BALL* actor = gameBoard.getPlayer(actorNum);
+////                if (action.dropObject != OBJECT_NONE)
 ////                {
 ////                }
-////                if ((action->dropObject != OBJECT_NONE) && (actor->linkedObject == action->dropObject))
+////                if ((action.dropObject != OBJECT_NONE) && (actor.linkedObject == action.dropObject))
 ////                {
-////                    actor->linkedObject = OBJECT_NONE;
-////                    OBJECT* dropped = board[action->dropObject];
-////                    dropped->room = action->dropRoom;
-////                    dropped->x = action->dropX;
-////                    dropped->y = action->dropY;
+////                    actor.linkedObject = OBJECT_NONE;
+////                    OBJECT* dropped = board[action.dropObject];
+////                    dropped.room = action.dropRoom;
+////                    dropped.x = action.dropX;
+////                    dropped.y = action.dropY;
 ////                    // Only play a sound if the drop isn't caused by picking up a different object.
-////                    if (action->pickupObject == OBJECT_NONE)
+////                    if (action.pickupObject == OBJECT_NONE)
 ////                    {
-////                        Platform_MakeSound(SOUND_PUTDOWN, volumeAtDistance(actor->room));
+////                        Platform_MakeSound(SOUND_PUTDOWN, volumeAtDistance(actor.room));
 ////                    }
 ////                }
-////                if (action->pickupObject != OBJECT_NONE)
+////                if (action.pickupObject != OBJECT_NONE)
 ////                {
-////                    actor->linkedObject = action->pickupObject;
-////                    actor->linkedObjectX = action->pickupX;
-////                    actor->linkedObjectY = action->pickupY;
+////                    actor.linkedObject = action.pickupObject;
+////                    actor.linkedObjectX = action.pickupX;
+////                    actor.linkedObjectY = action.pickupY;
 ////                    // If anybody else was carrying this object, take it away.
 ////                    for (int ctr = 0; ctr < numPlayers; ++ctr)
 ////                    {
-////                        if ((ctr != actorNum) && (gameBoard->getPlayer(ctr)->linkedObject == action->pickupObject))
+////                        if ((ctr != actorNum) && (gameBoard.getPlayer(ctr).linkedObject == action.pickupObject))
 ////                        {
-////                            gameBoard->getPlayer(ctr)->linkedObject = OBJECT_NONE;
+////                            gameBoard.getPlayer(ctr).linkedObject = OBJECT_NONE;
 ////                        }
 ////                    }
 
-////                    if ((EasterEgg::getCrystalShade() < COLOR_DARK_CRYSTAL2) && (action->pickupObject >= OBJECT_CRYSTALKEY1) &&
-////                        (action->pickupObject <= OBJECT_CRYSTALKEY3))
+////                    if ((EasterEgg::getCrystalShade() < COLOR_DARK_CRYSTAL2) && (action.pickupObject >= OBJECT_CRYSTALKEY1) &&
+////                        (action.pickupObject <= OBJECT_CRYSTALKEY3))
 ////                    {
 ////                        EasterEgg::darkenCastle(COLOR_DARK_CRYSTAL2);
 ////                    }
 
 ////                    // If they are within hearing distance play the pickup sound
-////                    Platform_MakeSound(SOUND_PICKUP, volumeAtDistance(actor->room));
+////                    Platform_MakeSound(SOUND_PICKUP, volumeAtDistance(actor.room));
 ////                }
 ////                delete action;
-////                action = sync->GetNextPickupAction();
+////                action = sync.GetNextPickupAction();
 ////            }
 ////        }
 
@@ -1543,19 +1609,19 @@ namespace GameEngine
 ////        void unhideKey(OBJECT* droppedObject)
 ////        {
 
-////            int objectPkey = droppedObject->getPKey();
+////            int objectPkey = droppedObject.getPKey();
 ////            if ((objectPkey == OBJECT_YELLOWKEY) || (objectPkey == OBJECT_COPPERKEY) || (objectPkey == OBJECT_JADEKEY))
 ////            {
-////                int roomNum = droppedObject->room;
+////                int roomNum = droppedObject.room;
 ////                if ((roomNum == GOLD_FOYER) || (roomNum == COPPER_FOYER) || (roomNum == JADE_FOYER))
 ////                {
-////                    if (droppedObject->y < 15)
+////                    if (droppedObject.y < 15)
 ////                    {
-////                        droppedObject->y = 15;
+////                        droppedObject.y = 15;
 ////                    }
-////                    else if (droppedObject->y > 99)
+////                    else if (droppedObject.y > 99)
 ////                    {
-////                        droppedObject->y = 99;
+////                        droppedObject.y = 99;
 ////                    }
 ////                }
 ////            }
@@ -1563,13 +1629,13 @@ namespace GameEngine
 
 ////        void PickupPutdown()
 ////        {
-////            if (!joystickDisabled && joyFire && (objectBall->linkedObject >= 0))
+////            if (!joystickDisabled && joyFire && (objectBall.linkedObject >= 0))
 ////            {
-////                int dropped = objectBall->linkedObject;
+////                int dropped = objectBall.linkedObject;
 ////                OBJECT* droppedObject = board[dropped];
 
 ////                // Put down the current object!
-////                objectBall->linkedObject = OBJECT_NONE;
+////                objectBall.linkedObject = OBJECT_NONE;
 
 ////                if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0)
 ////                {
@@ -1577,9 +1643,9 @@ namespace GameEngine
 ////                }
 
 ////                // Tell other clients about the drop
-////                PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, dropped, droppedObject->room,
-////                                                                   droppedObject->x, droppedObject->y);
-////                sync->BroadcastAction(action);
+////                PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, dropped, droppedObject.room,
+////                                                                   droppedObject.x, droppedObject.y);
+////                sync.BroadcastAction(action);
 
 ////                // Play the sound
 ////                Platform_MakeSound(SOUND_PUTDOWN, MAX_VOLUME);
@@ -1587,12 +1653,12 @@ namespace GameEngine
 ////            else
 ////            {
 ////                // See if we are touching any carryable objects
-////                Board::ObjIter iter = gameBoard->getCarryableObjects();
+////                Board::ObjIter iter = gameBoard.getCarryableObjects();
 ////                int hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
 ////                if (hitIndex > OBJECT_NONE)
 ////                {
 ////                    // Ignore the object we are already carrying
-////                    if (hitIndex == objectBall->linkedObject)
+////                    if (hitIndex == objectBall.linkedObject)
 ////                    {
 ////                        // Check the remainder of the objects
 ////                        hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
@@ -1602,11 +1668,11 @@ namespace GameEngine
 ////                    {
 ////                        // Collect info about whether we are also dropping an object (for when we broadcast the action)
 ////                        PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
-////                        int dropIndex = objectBall->linkedObject;
+////                        int dropIndex = objectBall.linkedObject;
 ////                        if (dropIndex > OBJECT_NONE)
 ////                        {
 ////                            OBJECT* dropped = board[dropIndex];
-////                            action->setDrop(dropIndex, dropped->room, dropped->x, dropped->y);
+////                            action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
 ////                        }
 
 ////                        // If the bat is holding the object we do some of the pickup things but not all.
@@ -1615,13 +1681,13 @@ namespace GameEngine
 ////                        // NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
 ////                        // not totally sure what should be done.  As a guess, we just set linkedObject to none and
 ////                        // play the sound.
-////                        if (bat->exists() && (bat->linkedObject == hitIndex))
+////                        if (bat.exists() && (bat.linkedObject == hitIndex))
 ////                        {
 ////                            if (dropIndex > OBJECT_NONE)
 ////                            {
 ////                                // Drop our current object and broadcast it
-////                                objectBall->linkedObject = OBJECT_NONE;
-////                                sync->BroadcastAction(action);
+////                                objectBall.linkedObject = OBJECT_NONE;
+////                                sync.BroadcastAction(action);
 ////                            }
 ////                            else
 ////                            {
@@ -1633,18 +1699,18 @@ namespace GameEngine
 ////                        {
 
 ////                            // Pick up this object!
-////                            objectBall->linkedObject = hitIndex;
+////                            objectBall.linkedObject = hitIndex;
 
 ////                            // calculate the XY offsets from the ball's position
-////                            objectBall->linkedObjectX = board[hitIndex]->x - (objectBall->x / 2);
-////                            objectBall->linkedObjectY = board[hitIndex]->y - (objectBall->y / 2);
+////                            objectBall.linkedObjectX = board[hitIndex].x - (objectBall.x / 2);
+////                            objectBall.linkedObjectY = board[hitIndex].y - (objectBall.y / 2);
 
 ////                            // Take it away from anyone else if they were holding it.
 ////                            for (int ctr = 0; ctr < numPlayers; ++ctr)
 ////                            {
-////                                if ((ctr != thisPlayer) && (gameBoard->getPlayer(ctr)->linkedObject == hitIndex))
+////                                if ((ctr != thisPlayer) && (gameBoard.getPlayer(ctr).linkedObject == hitIndex))
 ////                                {
-////                                    gameBoard->getPlayer(ctr)->linkedObject = OBJECT_NONE;
+////                                    gameBoard.getPlayer(ctr).linkedObject = OBJECT_NONE;
 ////                                }
 ////                            }
 
@@ -1654,8 +1720,8 @@ namespace GameEngine
 ////                            }
 
 ////                            // Broadcast that we picked up an object
-////                            action->setPickup(hitIndex, objectBall->linkedObjectX, objectBall->linkedObjectY);
-////                            sync->BroadcastAction(action);
+////                            action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
+////                            sync.BroadcastAction(action);
 
 ////                        }
 
@@ -1669,23 +1735,23 @@ namespace GameEngine
 ////        void Surround()
 ////        {
 ////            // get the playfield data
-////            int roomNum = objectBall->room;
+////            int roomNum = objectBall.room;
 ////            const ROOM* currentRoom = roomDefs[roomNum];
-////            if (currentRoom->color == COLOR_LTGRAY)
+////            if (currentRoom.color == COLOR_LTGRAY)
 ////            {
 ////                for (int ctr = 0; ctr < numPlayers; ++ctr)
 ////                {
-////                    BALL* nextBall = gameBoard->getPlayer(ctr);
-////                    if (nextBall->room == roomNum)
+////                    BALL* nextBall = gameBoard.getPlayer(ctr);
+////                    if (nextBall.room == roomNum)
 ////                    {
 ////                        // Put it in the same room as the ball (player) and center it under the ball
-////                        surrounds[ctr]->room = roomNum;
-////                        surrounds[ctr]->x = (nextBall->x - 0x1E) / 2;
-////                        surrounds[ctr]->y = (nextBall->y + 0x18) / 2;
+////                        surrounds[ctr].room = roomNum;
+////                        surrounds[ctr].x = (nextBall.x - 0x1E) / 2;
+////                        surrounds[ctr].y = (nextBall.y + 0x18) / 2;
 ////                    }
 ////                    else
 ////                    {
-////                        surrounds[ctr]->room = -1;
+////                        surrounds[ctr].room = -1;
 ////                    }
 ////                }
 ////            }
@@ -1693,7 +1759,7 @@ namespace GameEngine
 ////            {
 ////                for (int ctr = 0; ctr < numPlayers; ++ctr)
 ////                {
-////                    surrounds[ctr]->room = -1;
+////                    surrounds[ctr].room = -1;
 ////                }
 ////            }
 ////        }
@@ -1709,15 +1775,15 @@ namespace GameEngine
 ////                bool seen = false;
 ////                for (int ctr = 0; !seen && ctr < numPlayers; ++ctr)
 ////                {
-////                    seen = (gameBoard->getPlayer(ctr)->room == port->room);
+////                    seen = (gameBoard.getPlayer(ctr).room == port.room);
 ////                }
 ////                if (seen)
 ////                {
 ////                    // Check if a key unlocks the gate
-////                    PortcullisStateAction* gateAction = port->checkKeyInteraction();
+////                    PortcullisStateAction* gateAction = port.checkKeyInteraction();
 ////                    if (gateAction != NULL)
 ////                    {
-////                        sync->BroadcastAction(gateAction);
+////                        sync.BroadcastAction(gateAction);
 ////                    }
 
 ////                    // Check if anything runs into the gate
@@ -1725,25 +1791,25 @@ namespace GameEngine
 ////                    while (iter.hasNext())
 ////                    {
 ////                        OBJECT* next = iter.next();
-////                        ObjectMoveAction* reaction = port->checkObjectEnters(next);
+////                        ObjectMoveAction* reaction = port.checkObjectEnters(next);
 ////                        if (reaction != NULL)
 ////                        {
-////                            sync->BroadcastAction(reaction);
+////                            sync.BroadcastAction(reaction);
 ////                        }
 ////                    }
 ////                }
 
 ////                // Raise/lower the port
-////                port->moveOneTurn();
-////                if (port->allowsEntry)
+////                port.moveOneTurn();
+////                if (port.allowsEntry)
 ////                {
 ////                    // Port is unlocked
-////                    roomDefs[port->insideRoom]->roomDown = port->room;
+////                    roomDefs[port.insideRoom].roomDown = port.room;
 ////                }
 ////                else
 ////                {
 ////                    // Port is locked
-////                    roomDefs[port->insideRoom]->roomDown = port->insideRoom;
+////                    roomDefs[port.insideRoom].roomDown = port.insideRoom;
 ////                }
 
 ////            }
@@ -1761,19 +1827,19 @@ namespace GameEngine
 ////            {
 ////                // Look for items in the magnet matrix that are in the same room as the magnet
 ////                OBJECT * object = board[magnetMatrix[i]];
-////                if ((magnetMatrix[i] != objectBall->linkedObject) && (object->room == magnet->room) && (object->exists()))
+////                if ((magnetMatrix[i] != objectBall.linkedObject) && (object.room == magnet.room) && (object.exists()))
 ////                {
 ////                    // horizontal axis
-////                    if (object->x < magnet->x)
-////                        object->x++;
-////            else if (object->x > magnet->x)
-////                        object->x--;
+////                    if (object.x < magnet.x)
+////                        object.x++;
+////            else if (object.x > magnet.x)
+////                        object.x--;
 
 ////                    // vertical axis - offset by the height of the magnet so items stick to the "bottom"
-////                    if (object->y < (magnet->y - magnet->gfxData[0]))
-////                        object->y++;
-////            else if (object->y > (magnet->y - magnet->gfxData[0]))
-////                        object->y--;
+////                    if (object.y < (magnet.y - magnet.gfxData[0]))
+////                        object.y++;
+////            else if (object.y > (magnet.y - magnet.gfxData[0]))
+////                        object.y--;
 
 ////                    // Only attract the first item found in the matrix
 ////                    break;
@@ -1795,7 +1861,7 @@ namespace GameEngine
 
 ////            for (int ctr = 0; ctr < numPlayers; ++ctr)
 ////            {
-////                if (surrounds[ctr]->room == room)
+////                if (surrounds[ctr].room == room)
 ////                {
 ////                    displayList[numAdded++] = OBJECT_SURROUND - ctr;
 ////                }
@@ -1809,14 +1875,14 @@ namespace GameEngine
 ////            {
 ////                OBJECT* toDisplay = iter.next();
 ////                // Init it to not displayed
-////                toDisplay->displayed = false;
-////                if (toDisplay->room == room)
+////                toDisplay.displayed = false;
+////                if (toDisplay.room == room)
 ////                {
 ////                    // This object is in the current room - add it to the list
-////                    displayList[numAdded++] = toDisplay->getPKey();
+////                    displayList[numAdded++] = toDisplay.getPKey();
 
-////                    if (colorFirst < 0) colorFirst = toDisplay->color;
-////                    colorLast = toDisplay->color;
+////                    if (colorFirst < 0) colorFirst = toDisplay.color;
+////                    colorLast = toDisplay.color;
 ////                }
 ////            }
 
@@ -1836,7 +1902,7 @@ namespace GameEngine
 
 ////            for (int ctr = 0; ctr < numPlayers; ++ctr)
 ////            {
-////                surrounds[ctr]->displayed = false;
+////                surrounds[ctr].displayed = false;
 ////            }
 
 ////            int numDisplayed = 0;
@@ -1853,12 +1919,12 @@ namespace GameEngine
 ////                    {
 ////                        OBJECT* toDraw = board[displayList[i]];
 ////                        DrawObject(toDraw);
-////                        toDraw->displayed = true;
-////                        colorLast = toDraw->color;
+////                        toDraw.displayed = true;
+////                        colorLast = toDraw.color;
 ////                    }
 ////                    else if (displayList[i] <= OBJECT_SURROUND)
 ////                    {
-////                        surrounds[OBJECT_SURROUND - displayList[i]]->displayed = true;
+////                        surrounds[OBJECT_SURROUND - displayList[i]].displayed = true;
 ////                    }
 
 ////                    // wrap to the beginning of the list if we've reached the end
@@ -1879,12 +1945,12 @@ namespace GameEngine
 ////                    if (displayList[i] > OBJECT_NONE)
 ////                    {
 ////                        OBJECT* toDraw = board[displayList[i]];
-////                        toDraw->displayed = true;
-////                        colorLast = toDraw->color;
+////                        toDraw.displayed = true;
+////                        colorLast = toDraw.color;
 ////                    }
 ////                    else if (displayList[i] <= OBJECT_SURROUND)
 ////                    {
-////                        surrounds[OBJECT_SURROUND - displayList[i]]->displayed = true;
+////                        surrounds[OBJECT_SURROUND - displayList[i]].displayed = true;
 ////                    }
 
 ////                    // wrap to the beginning of the list if we've reached the end
@@ -1900,18 +1966,18 @@ namespace GameEngine
 ////                while (iter.hasNext())
 ////                {
 ////                    OBJECT* next = iter.next();
-////                    if (next->room == room)
+////                    if (next.room == room)
 ////                        DrawObject(next);
 ////                }
 ////            }
 
-////            if (roomDefs[room]->flags & ROOMFLAG_LEFTTHINWALL)
+////            if (roomDefs[room].flags & ROOMFLAG_LEFTTHINWALL)
 ////            {
 ////                // Position missile 00 to 0D,00 - left thin wall
 ////                COLOR color = colorTable[(colorFirst > 0) ? colorFirst : COLOR_BLACK];
 ////                Platform_PaintPixel(color.r, color.g, color.b, 0x0D * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
 ////            }
-////            if (roomDefs[room]->flags & ROOMFLAG_RIGHTTHINWALL)
+////            if (roomDefs[room].flags & ROOMFLAG_RIGHTTHINWALL)
 ////            {
 ////                // Position missile 01 to 96,00 - right thin wall
 ////                COLOR color = colorTable[(colorFirst > 0) ? colorLast : COLOR_BLACK];
@@ -1922,11 +1988,11 @@ namespace GameEngine
 
 ////        void DrawBall(const BALL* ball, COLOR color)
 ////{
-////    int left = (ball->x - 4) & ~0x00000001;
-////        int bottom = (ball->y - 10) & ~0x00000001; // Don't know why ball is drawn 2 pixels below y value
+////    int left = (ball.x - 4) & ~0x00000001;
+////        int bottom = (ball.y - 10) & ~0x00000001; // Don't know why ball is drawn 2 pixels below y value
 
 ////        // scan the data
-////        const byte* rowByte = ball->gfxData;
+////        const byte* rowByte = ball.gfxData;
 ////    ++rowByte; // We know the ball is height=8 so skip that entry in the array
 ////    for (int row = bottom + 7; row >= bottom; --row, ++rowByte)
 ////    {
@@ -1948,17 +2014,17 @@ namespace GameEngine
 ////void DrawObject(const OBJECT* object)
 ////{
 ////    // Get object color, size, and position
-////    COLOR color = object->color == COLOR_FLASH ? GetFlashColor() : colorTable[object->color];
-////    int cx = object->x * 2;
-////    int cy = object->y * 2;
-////    int size = (object->size / 2) + 1;
+////    COLOR color = object.color == COLOR_FLASH ? GetFlashColor() : colorTable[object.color];
+////    int cx = object.x * 2;
+////    int cy = object.y * 2;
+////    int size = (object.size / 2) + 1;
 
 ////    // Look up the index to the current state for this object
-////    int stateIndex = object->states ? object->states[object->state] : 0;
+////    int stateIndex = object.states ? object.states[object.state] : 0;
 
 ////    // Get the height, then the data
 ////    // (the first byte of the data is the height)
-////    const byte* dataP = object->gfxData;
+////    const byte* dataP = object.gfxData;
 ////    int objHeight = *dataP;
 ////    ++dataP;
 
@@ -2005,10 +2071,10 @@ namespace GameEngine
 
 ////    // get the playfield data
 ////    const ROOM* currentRoom = roomDefs[room];
-////    const byte* roomData = currentRoom->graphicsData;
+////    const byte* roomData = currentRoom.graphicsData;
 
 ////    // get the playfield mirror flag
-////    bool mirror = currentRoom->flags & ROOMFLAG_MIRROR;
+////    bool mirror = currentRoom.flags & ROOMFLAG_MIRROR;
 
 ////    // mask values for playfield bits
 ////    byte shiftreg[20] =
@@ -2022,14 +2088,14 @@ namespace GameEngine
 ////    const int cell_width = 8;
 ////    const int cell_height = 32;
 
-////    if ((currentRoom->flags & ROOMFLAG_LEFTTHINWALL) && ((x - (4 + 4)) < 0x0D * 2) && ((x + 4) > 0x0D * 2))
+////    if ((currentRoom.flags & ROOMFLAG_LEFTTHINWALL) && ((x - (4 + 4)) < 0x0D * 2) && ((x + 4) > 0x0D * 2))
 ////    {
 ////        hitWall = true;
 ////    }
-////    if ((currentRoom->flags & ROOMFLAG_RIGHTTHINWALL) && ((x + 4) > 0x96 * 2) && ((x - (4 + 4) < 0x96 * 2)))
+////    if ((currentRoom.flags & ROOMFLAG_RIGHTTHINWALL) && ((x + 4) > 0x96 * 2) && ((x - (4 + 4) < 0x96 * 2)))
 ////    {
 ////        // If the dot is in this room, allow passage through the wall into the Easter Egg room
-////        if (board[OBJECT_DOT]->room != room)
+////        if (board[OBJECT_DOT].room != room)
 ////            hitWall = true;
 ////    }
 
@@ -2090,13 +2156,13 @@ namespace GameEngine
 ////{
 ////    // Check going through the bridge
 ////    const OBJECT* bridge = board[OBJECT_BRIDGE];
-////    if ((bridge->room == room)
-////        && (ball->linkedObject != OBJECT_BRIDGE))
+////    if ((bridge.room == room)
+////        && (ball.linkedObject != OBJECT_BRIDGE))
 ////    {
-////        int xDiff = (x / 2) - bridge->x;
+////        int xDiff = (x / 2) - bridge.x;
 ////        if ((xDiff >= 0x0A) && (xDiff <= 0x17))
 ////        {
-////            int yDiff = bridge->y - (y / 2);
+////            int yDiff = bridge.y - (y / 2);
 
 ////            if ((yDiff >= -5) && (yDiff <= 0x15))
 ////            {
@@ -2113,7 +2179,7 @@ namespace GameEngine
 //// */
 ////static int CollisionCheckBallWithAllObjects(BALL* ball)
 ////{
-////    Board::ObjIter iter = gameBoard->getObjects();
+////    Board::ObjIter iter = gameBoard.getObjects();
 ////    return CollisionCheckBallWithObjects(ball, iter);
 ////}
 
@@ -2130,7 +2196,7 @@ namespace GameEngine
 ////        const OBJECT* object = iter.next();
 ////        if (CollisionCheckBallWithObject(ball, object))
 ////        {
-////            return object->getPKey();
+////            return object.getPKey();
 ////        }
 ////    }
 
@@ -2142,10 +2208,10 @@ namespace GameEngine
 //// */
 ////static bool CollisionCheckBallWithObject(BALL* ball, const OBJECT* object)
 ////{
-////    bool collision = (object->displayed &&
-////                      object->isTangibleTo(thisPlayer) &&
-////                      (ball->room == object->room) &&
-////                      (CollisionCheckObject(object, ball->x - 4, (ball->y - 1), 8, 8)) ? true : false);
+////    bool collision = (object.displayed &&
+////                      object.isTangibleTo(thisPlayer) &&
+////                      (ball.room == object.room) &&
+////                      (CollisionCheckObject(object, ball.x - 4, (ball.y - 1), 8, 8)) ? true : false);
 ////    return collision;
 ////}
 
@@ -2153,54 +2219,9 @@ namespace GameEngine
 ////// On the 2600 this is done in hardware by the Player/Missile collision registers
 ////bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height)
 ////{
-////    return gameBoard->CollisionCheckObject(object, x, y, width, height);
+////    return gameBoard.CollisionCheckObject(object, x, y, width, height);
 ////}
 
-////COLOR GetFlashColor()
-////{
-////    COLOR color;
-
-////    float r = 0, g = 0, b = 0;
-////    float h = flashColorHue / (360.0f / 3);
-////    if (h < 1)
-////    {
-////        r = h * 255;
-////        g = 0;
-////        b = (1 - h) * 255;
-////    }
-////    else if (h < 2)
-////    {
-////        h -= 1;
-////        r = (1 - h) * 255;
-////        g = h * 255;
-////        b = 0;
-////    }
-////    else
-////    {
-////        h -= 2;
-////        r = 0;
-////        g = (1 - h) * 255;
-////        b = h * 255;
-////    }
-
-////    color.r = (int)max(flashColorLum, r);
-////    color.g = (int)max(flashColorLum, g);
-////    color.b = (int)max(flashColorLum, b);
-
-////    return color;
-////}
-
-////void AdvanceFlashColor()
-////{
-////    flashColorHue += 2;
-////    if (flashColorHue >= 360)
-////        flashColorHue -= 360;
-
-////    flashColorLum += 11;
-////    if (flashColorLum > 200)
-////        flashColorLum = 0;
-
-////}
 
 /////**
 //// * If the player has become disconnect them, remove them from the game.
@@ -2211,24 +2232,24 @@ namespace GameEngine
 ////    // are carrying and free any dragon they have been eaten by.
 ////    if (player != thisPlayer)
 ////    {
-////        BALL* toDrop = gameBoard->getPlayer(player);
+////        BALL* toDrop = gameBoard.getPlayer(player);
 
 ////        // Drop anything player is carrying
-////        toDrop->linkedObject = OBJECT_NONE;
+////        toDrop.linkedObject = OBJECT_NONE;
 
 ////        // Free the dragon if it has eaten the player
 ////        for (int ctr = 0; ctr < numDragons; ++ctr)
 ////        {
 ////            Dragon* dragon = dragons[ctr];
-////            if (dragon->eaten == toDrop)
+////            if (dragon.eaten == toDrop)
 ////            {
-////                dragon->state = Dragon::STALKING;
-////                dragon->eaten = NULL;
+////                dragon.state = Dragon::STALKING;
+////                dragon.eaten = NULL;
 ////            }
 ////        }
 
 ////        // Move the player to the 0 room.
-////        toDrop->room = 0;
+////        toDrop.room = 0;
 ////    }
 ////}
 
@@ -2309,7 +2330,7 @@ namespace GameEngine
 ////            {
 ////                if (ctr != thisPlayer)
 ////                {
-////                    if (sync->getMessagesReceived(ctr) == 0)
+////                    if (sync.getMessagesReceived(ctr) == 0)
 ////                    {
 ////                        ++missedChecks[ctr];
 ////                        if (missedChecks[ctr] == MAX_MISSED_CHECKS)
@@ -2330,8 +2351,8 @@ namespace GameEngine
 ////            }
 ////            warnOfDropoffRejoin(offline, online);
 ////            PingAction* action = new PingAction();
-////            sync->BroadcastAction(action);
-////            sync->resetMessagesReceived();
+////            sync.BroadcastAction(action);
+////            sync.resetMessagesReceived();
 ////            timeSinceLastMessageCheck = currentTime;
 ////        }
 
@@ -2364,20 +2385,8 @@ namespace GameEngine
 ////static const int maxDisplayableObjects = 2;             // The 2600 only has 2 Player (sprite) objects. Accuracy will be compromised if this is changed!
 ////static int displayListIndex = 0;
 
-////// finite state machine values
-////#define GAMESTATE_GAMESELECT    0
-////#define GAMESTATE_ACTIVE_1      1
-////#define GAMESTATE_ACTIVE_2      2
-////#define GAMESTATE_ACTIVE_3      3
-////#define GAMESTATE_WIN           4
-////static int gameState = GAMESTATE_GAMESELECT;            // finite state machine
 ////#define ISGAMEACTIVE() ((gameState==GAMESTATE_ACTIVE_1) || (gameState==GAMESTATE_ACTIVE_2) || (gameState==GAMESTATE_ACTIVE_3))
 
-////static int gameMapLayout = 0;                               // The board setup.  Level 1 = 0, Levels 2 & 3 = 1, Gauntlet = 2
-
-/////** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
-//// * a new fourth, gameMode 3, which I call The Gauntlet. The fifth is used for generating videos and plays a preplanned script. */
-////static int gameMode = 0;
 ////static bool joystickDisabled = false;
 
 ////#define GAMEOPTION_PRIVATE_MAGNETS  1
@@ -2387,12 +2396,6 @@ namespace GameEngine
 ////// It is a bitwise or of each game option
 ////static int gameOptions = GAMEOPTION_NO_HIDE_KEY_IN_CASTLE;
 
-////static int winFlashTimer = 0;
-////static int winningRoom = -1; // The room number of the castle of the winning player.  -1 if the game is not won yet.
-////static int displayWinningRoom = false; // At the end of the game we show the player who won.
-
-////static int flashColorHue = 0;
-////static int flashColorLum = 0;
 
 //////
 ////// Object definitions - 1st byte is the height
@@ -2703,8 +2706,6 @@ namespace GameEngine
 //////
 ////// Indexed array of all rooms and their properties
 //////
-////static ROOM** roomDefs = NULL;
-////static Map* gameMap = NULL;
 
 ////// Object locations (room and coordinate) for game 01
 //////        - object, room, x, y, state, movement(x/y)
@@ -2847,7 +2848,6 @@ namespace GameEngine
 
 ////static Sync* sync;
 ////static Transport* transport;
-////static int numPlayers;
 ////static int thisPlayer;
 
 /////** We wait a few seconds between when the game comes up connected and when the game actually starts.
