@@ -55,6 +55,12 @@ namespace GameEngine
         };
 
         public const int OBJECT_NONE = (int)OBJLIST.OBJECTLIST_NONE;
+        public const int OBJECT_YELLOW_PORT = (int)OBJLIST.OBJECTLIST_YELLOW_PORT;
+        public const int OBJECT_COPPER_PORT = (int)OBJLIST.OBJECTLIST_COPPER_PORT;
+        public const int OBJECT_JADE_PORT = (int)OBJLIST.OBJECTLIST_JADE_PORT;
+        public const int OBJECT_WHITE_PORT = (int)OBJLIST.OBJECTLIST_WHITE_PORT;
+        public const int OBJECT_BLACK_PORT = (int)OBJLIST.OBJECTLIST_BLACK_PORT;
+        public const int OBJECT_CRYSTAL_PORT = (int)OBJLIST.OBJECTLIST_CRYSTAL_PORT;
         public const int OBJECT_NAME = (int)OBJLIST.OBJECTLIST_NAME;
         public const int OBJECT_EASTEREGG = (int)OBJLIST.OBJECTLIST_EASTEREGG;
         public const int OBJECT_NUMBER = (int)OBJLIST.OBJECTLIST_NUMBER;

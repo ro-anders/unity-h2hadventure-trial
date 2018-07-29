@@ -20,12 +20,343 @@ namespace GameEngine
 
     public class AdventureGame
     {
+
+        //////
+        ////// Object definitions - 1st byte is the height
+        //////
+
+        ////static const byte objectGfxNum[] =
+        ////{
+        ////    // Object #5 State #1 Graphic :'1'
+        ////    7,
+        ////    0x04,                  //  X                                                                        
+        ////    0x0C,                  // XX                                                                        
+        ////    0x04,                  //  X                                                                        
+        ////    0x04,                  //  X                                                                        
+        ////    0x04,                  //  X                                                                        
+        ////    0x04,                  //  X                                                                        
+        ////    0x0E,                  // XXX                                                                       
+        ////    // Object #5 State #2 Grphic : '2'                                                                                   
+        ////    7,
+        ////    0x0E,                  //  XXX                                                                      
+        ////    0x11,                  // X   X                                                                     
+        ////    0x01,                  //     X                                                                     
+        ////    0x02,                  //    X                                                                      
+        ////    0x04,                  //   X                                                                       
+        ////    0x08,                  //  X                                                                        
+        ////    0x1F,                  // XXXXX                                                                     
+        ////    // Object #5 State #3 Graphic :'3'                                                                                   
+        ////    7,
+        ////    0x0E,                  //  XXX                                                                      
+        ////    0x11,                  // X   X                                                                     
+        ////    0x01,                  //     X                                                                     
+        ////    0x06,                  //   XX                                                                      
+        ////    0x01,                  //     X                                                                     
+        ////    0x11,                  // X   X                                                                     
+        ////    0x0E                   //  XXX                                                                      
+        ////};
+
+        ////// Number states
+        ////static const byte numberStates[] =
+        ////{
+        ////    0,1,2
+        ////};
+
+        // Object #0B : State FF : Graphic
+        byte[][] objectGfxKey = new byte[][]
+        { new byte[] {
+                0x07,                  //      XXX
+                0xFD,                  // XXXXXX X
+                0xA7                   // X X  XXX
+        } };
+
+
+        ////// Object #1 : Graphic
+        ////static const byte objectGfxSurround[] =
+        ////{
+        ////    32,
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF,                  // XXXXXXXX                                                                  
+        ////    0xFF                   // XXXXXXXX                                                                  
+        ////};
+
+        ////// Object #0A : State FF : Graphic                                                                                   
+        ////static const byte objectGfxBridge[] =
+        ////{
+        ////    24,
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0x42,                  //  X    X                                                                   
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3                   // XX    XX                                                                  
+        ////};
+
+        ////// Object #9 : State FF : Graphics                                                                                   
+        ////static const byte objectGfxSword[] =
+        ////{
+        ////    5,
+        ////    0x20,                  //   X                                                                       
+        ////    0x40,                  //  X                                                                        
+        ////    0xFF,                  // XXXXXXXX     
+        ////    0x40,                  //  X                                                                        
+        ////    0x20                   //   X                                                                       
+        ////};
+
+        ////// Object #0F : State FF : Graphic                                                                                   
+        ////static const byte objectGfxDot[] =
+        ////{
+        ////    1,
+        ////    0x80                   // X                                                                         
+        ////};
+
+        ////// Object #4 : State FF : Graphic                                                                                    
+        ////static const byte objectGfxAuthor[] =
+        ////{
+        ////    95,
+        ////    0xF0,                  // XXXX                                                                      
+        ////    0x80,                  // X                                                                         
+        ////    0x80,                  // X                                                                         
+        ////    0x80,                  // X                                                                         
+        ////    0xF4,                  // XXXX X                                                                    
+        ////    0x04,                  //      X                                                                    
+        ////    0x87,                  // X    XXX                                                                  
+        ////    0xE5,                  // XXX  X X                                                                  
+        ////    0x87,                  // X    XXX                                                                  
+        ////    0x80,                  // X                                                                         
+        ////    0x05,                  //      X X                                                                  
+        ////    0xE5,                  // XXX  X X                                                                 
+        ////    0xA7,                  // X X  XXX                                                                  
+        ////    0xE1,                  // XXX    X                                                                  
+        ////    0x87,                  // X    XXX                                                                  
+        ////    0xE0,                  // XXX                                                                       
+        ////    0x01,                  //        X                                                                  
+        ////    0xE0,                  // XXX                                                                       
+        ////    0xA0,                  // X X                                                                       
+        ////    0xF0,                  // XXXX                                                                      
+        ////    0x01,                  //        X                                                                  
+        ////    0x40,                  //  X                                                                        
+        ////    0xE0,                  // XXX                                                                       
+        ////    0x40,                  //  X                                                                       
+        ////    0x40,                  //  X                                                                        
+        ////    0x40,                  //  X                                                                        
+        ////    0x01,                  //        X                                                                  
+        ////    0xE0,                  // XXX                                                                       
+        ////    0xA0,                  // X X                                                                       
+        ////    0xE0,                  // XXX                                                                       
+        ////    0x80,                  // X                                                                         
+        ////    0xE0,                  // XXX                                                                       
+        ////    0x01,                  //        X                                                                  
+        ////    0x20,                  //   X                                                                       
+        ////    0x20,                  //   X                                                                       
+        ////    0xE0,                  // XXX                                                                       
+        ////    0xA0,                  // X X                                                                       
+        ////    0xE0,                  // XXX                                                                       
+        ////    0x01,                  //        X                                                                  
+        ////    0x01,                  //        X                                                                  
+        ////    0x01,                  //        X                                                                  
+        ////    0x88,                  //    X   X                                                                  
+        ////    0xA8,                  // X X X                                                                     
+        ////    0xA8,                  // X X X                                                                     
+        ////    0xA8,                  // X X X                                                                     
+        ////    0xF8,                  // XXXXX                                                                     
+        ////    0x01,                  //        X                                                                  
+        ////    0xE0,                  // XXX                                                                       
+        ////    0xA0,                  // X X                                                                       
+        ////    0xF0,                  // XXXX                                                                      
+        ////    0x01,                  //        X                                                                  
+        ////    0x80,                  // X                                                                         
+        ////    0xE0,                  // XXX                                                                       
+        ////    0x8F,                  // X   XXXX                                                                 
+        ////    0x89,                  // X   X  X                                                                  
+        ////    0x0F,                  //     XXXX                                                                  
+        ////    0x8A,                  // X   X X                                                                   
+        ////    0xE9,                  // XXX X  X                                                                  
+        ////    0x80,                  // X                                                                         
+        ////    0x8E,                  // X   XXX                                                                   
+        ////    0x0A,                  //     X X                                                                   
+        ////    0xEE,                  // XXX XXX                                                                   
+        ////    0xA0,                  // X X                                                                      
+        ////    0xE8,                  // XXX X                                                                     
+        ////    0x88,                  // X   X                                                                     
+        ////    0xEE,                  // XXX XXX                                                                   
+        ////    0x0A,                  //     X X                                                                   
+        ////    0x8E,                  // X   XXX                                                                   
+        ////    0xE0,                  // XXX                                                                       
+        ////    0xA4,                  // X X  X                                                                    
+        ////    0xA4,                  // X X  X                                                                    
+        ////    0x04,                  //      X                                                                    
+        ////    0x80,                  // X                                                                         
+        ////    0x08,                  //     X                                                                     
+        ////    0x0E,                  //     XXX                                                                   
+        ////    0x0A,                  //     X X                                                                   
+        ////    0x0A,                  //     X X                                                                   
+        ////    0x80,                  // X                                                                         
+        ////    0x0E,                  //     XXX                                                                   
+        ////    0x0A,                  //     X X                                                                   
+        ////    0x0E,                  //     XXX                                                                   
+        ////    0x08,                  //     X                                                                     
+        ////    0x0E,                  //     XXX                                                                   
+        ////    0x80,                  // X                                                                         
+        ////    0x04,                  //      X                                                                    
+        ////    0x0E,                  //     XXX                                                                   
+        ////    0x04,                  //      X                                                                    
+        ////    0x04,                  //      X                                                                    
+        ////    0x04,                  //      X                                                                    
+        ////    0x80,                  // X                                                                         
+        ////    0x04,                  //      X                                                                    
+        ////    0x0E,                  //     XXX                                                                   
+        ////    0x04,                  //      X                                                                    
+        ////    0x04,                  //      X                                                                    
+        ////    0x04                   //      X                                                                    
+        ////};
+
+        ////// Object #10 : State FF : Graphic                                                                                   
+        ////static const byte objectGfxChallise[] =
+        ////{
+        ////    9,
+        ////    0x81,                  // X      X                                                                  
+        ////    0x81,                  // X      X                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0x7E,                  //  XXXXXX                                                                   
+        ////    0x7E,                  //  XXXXXX                                                                  
+        ////    0x3C,                  //   XXXX                                                                    
+        ////    0x18,                  //    XX                                                                     
+        ////    0x18,                  //    XX                                                                     
+        ////    0x7E                   //  XXXXXX                                                                   
+        ////};
+
+        ////// Object #X : State FF : Graphic
+        ////static const byte objectGfxEasterEgg[] =
+        ////{
+        ////    23,
+        ////    0x18,                  //    XX
+        ////    0x3C,                  //   XXXX
+        ////    0x24,                  //   X  X
+        ////    0x66,                  //  XX  XX
+        ////    0x42,                  //  X    X
+        ////    0x42,                  //  X    X
+        ////    0x81,                  // X      X
+        ////    0xD5,                  // XX X X X
+        ////    0xD5,                  // XX X X X
+        ////    0xAB,                  // X X X XX
+        ////    0xAB,                  // X X X XX
+        ////    0x81,                  // X      X
+        ////    0x81,                  // X      X
+        ////    0xD5,                  // XX X X X
+        ////    0xD5,                  // XX X X X
+        ////    0xAB,                  // X X X XX
+        ////    0xAB,                  // X X X XX
+        ////    0x81,                  // X      X
+        ////    0x42,                  //  X    X
+        ////    0x42,                  //  X    X
+        ////    0x66,                  //  XX  XX
+        ////    0x3C,                  //   XXXX
+        ////    0x18,                  //    XX
+        ////};
+
+
+        ////// Object #11 : State FF : Graphic                                                                                   
+        ////static const byte objectGfxMagnet[] =
+        ////{
+        ////    8,
+        ////    0x3C,                  //   XXXX                                                                    
+        ////    0x7E,                  //  XXXXXX                                                                   
+        ////    0xE7,                  // XXX  XXX                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3,                  // XX    XX                                                                  
+        ////    0xC3                   // XX    XX                                                                  
+        ////};
+
+        // Indexed array of all objects and their properties
+        //
+        // Object locations (room and coordinate) for game 01
+        //        - object, room, x, y, state, movement(x/y)
+        private readonly byte[,] game1Objects = new byte[,]
+        {
+            ////{Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
+            ////{Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
+            ////{Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 5
+            ////{Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 2
+            ////{Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
+            ////{Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
+            ////{Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
+            ////{Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
+            ////{Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
+            ////{Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
+            ////{Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00}, // Bridge
+            {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
+            {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
+            {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
+            ////{Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
+            ////{Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
+        };
+
+        public const int GAME_MODE_SCRIPTING = -1;
+        public const int GAME_MODE_1 = 0;
+        public const int GAME_MODE_2 = 1;
+        public const int GAME_MODE_3 = 2;
+        public const int GAME_MODE_GAUNTLET = 3;
+
         private const int ADVENTURE_SCREEN_WIDTH = Adv.ADVENTURE_SCREEN_WIDTH;
         private const int ADVENTURE_SCREEN_HEIGHT = Adv.ADVENTURE_SCREEN_HEIGHT;
         private const int ADVENTURE_OVERSCAN = Adv.ADVENTURE_OVERSCAN;
         private const int ADVENTURE_TOTAL_SCREEN_HEIGHT = Adv.ADVENTURE_TOTAL_SCREEN_HEIGHT;
         private const double ADVENTURE_FRAME_PERIOD = Adv.ADVENTURE_FRAME_PERIOD;
         private const int ADVENTURE_MAX_NAME_LENGTH = Adv.ADVENTURE_MAX_NAME_LENGTH;
+        private const int MAX_OBJECTS = 16;                      // Should be plenty
+        private const int MAX_DISPLAYABLE_OBJECTS = 2;             // The 2600 only has 2 Player (sprite) objects. Accuracy will be compromised if this is changed!
+        private static bool SHOW_OBJECT_FLICKER = true;
 
         ////// finite state machine values
         private const int GAMESTATE_GAMESELECT = 0;
@@ -44,6 +375,7 @@ namespace GameEngine
         private int gameState = GAMESTATE_GAMESELECT;
         private int flashColorHue = 0;
         private int flashColorLum = 0;
+        private int displayListIndex = 0;
 
         /** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
          * a new fourth, gameMode 3, which I call The Gauntlet. The fifth is used for generating videos and plays a preplanned script. */
@@ -51,6 +383,7 @@ namespace GameEngine
 
         private ROOM[] roomDefs;
         private Map gameMap;
+        private Board gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT);
 
         public AdventureGame(AdventureView inView, int inNumPlayers,////int inThisPlayer, Transport* inTransport,
                              int inGameNum
@@ -94,11 +427,11 @@ namespace GameEngine
 ////            dragons[2] = new Dragon("rhindle", 2, COLOR_RED, 3, redDragonMatrix);
 ////            bat = new Bat(COLOR_BLACK);
 
-////            OBJECT* goldKey = new OBJECT("gold key", objectGfxKey, 0, 0, COLOR_YELLOW, OBJECT::OUT_IN_OPEN);
-////            OBJECT* copperKey = new OBJECT("coppey key", objectGfxKey, 0, 0, COLOR_COPPER, OBJECT::OUT_IN_OPEN);
-////            OBJECT* jadeKey = new OBJECT("jade key", objectGfxKey, 0, 0, COLOR_JADE, OBJECT::OUT_IN_OPEN);
-////            OBJECT* whiteKey = new OBJECT("white key", objectGfxKey, 0, 0, COLOR_WHITE);
-////            OBJECT* blackKey = new OBJECT("black key", objectGfxKey, 0, 0, COLOR_BLACK);
+            OBJECT goldKey = new OBJECT("gold key", objectGfxKey, new byte[0], 0, COLOR.YELLOW, OBJECT.RandomizedLocations.OUT_IN_OPEN);
+            ////OBJECT copperKey = new OBJECT("coppey key", objectGfxKey, new byte[0], 0, COLOR.COPPER, OBJECT.RandomizedLocations.OUT_IN_OPEN);
+            ////OBJECT jadeKey = new OBJECT("jade key", objectGfxKey, new byte[0], 0, COLOR.JADE, OBJECT.RandomizedLocations.OUT_IN_OPEN);
+            ////OBJECT whiteKey = new OBJECT("white key", objectGfxKey, new byte[0], 0, COLOR.WHITE);
+            ////OBJECT blackKey = new OBJECT("black key", objectGfxKey, new byte[0], 0, COLOR.BLACK);
 ////            OBJECT** crystalKeys = new OBJECT*[3];
 ////            for (int ctr = 0; ctr < 3; ++ctr)
 ////            {
@@ -140,11 +473,11 @@ namespace GameEngine
 ////            gameBoard.addObject(OBJECT_SWORD, new OBJECT("sword", objectGfxSword, 0, 0, COLOR_YELLOW));
 ////            gameBoard.addObject(OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, 0, 0, COLOR_PURPLE,
 ////                                                           OBJECT::OPEN_OR_IN_CASTLE, 0x07));
-////            gameBoard.addObject(OBJECT_YELLOWKEY, goldKey);
-////            gameBoard.addObject(OBJECT_COPPERKEY, copperKey);
-////            gameBoard.addObject(OBJECT_JADEKEY, jadeKey);
-////            gameBoard.addObject(OBJECT_WHITEKEY, whiteKey);
-////            gameBoard.addObject(OBJECT_BLACKKEY, blackKey);
+            gameBoard.addObject(Board.OBJECT_YELLOWKEY, goldKey);
+            ////gameBoard.addObject(Board.OBJECT_COPPERKEY, copperKey);
+            ////gameBoard.addObject(Board.OBJECT_JADEKEY, jadeKey);
+            ////gameBoard.addObject(Board.OBJECT_WHITEKEY, whiteKey);
+            ////gameBoard.addObject(Board.OBJECT_BLACKKEY, blackKey);
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY1, crystalKeys[0]);
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY2, crystalKeys[1]);
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY3, crystalKeys[2]);
@@ -174,7 +507,7 @@ namespace GameEngine
 
 ////            // Need to have the transport setup before we setup the objects,
 ////            // because we may be broadcasting randomized locations to other machines
-////            SetupRoomObjects();
+            SetupRoomObjects();
 
 ////            Logger::log() << "Player " << thisPlayer << " starting game at " << Sys::datetime() << "." << Logger::EOM;
 ////        }
@@ -196,7 +529,7 @@ namespace GameEngine
 
             //// get the playfield color
             COLOR color = ((gameState == GAMESTATE_WIN) && (winFlashTimer > 0)) ? GetFlashColor() : COLOR.table(currentRoom.color);
-            COLOR colorBackground = COLOR.table(_COLOR.LTGRAY);
+            COLOR colorBackground = COLOR.table(COLOR.LTGRAY);
 
             // Fill the entire backbuffer with the playfield background color before we draw anything else
             view.Platform_PaintPixel(colorBackground.r, colorBackground.g, colorBackground.b, 0, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
@@ -282,10 +615,10 @@ namespace GameEngine
             ////    }
             ////}
 
-            //////
-            ////// Draw any objects in the room
-            //////
-            ////DrawObjects(displayedRoom);
+            //
+            // Draw any objects in the room
+            //
+            DrawObjects(displayedRoom);
 
         }
 
@@ -715,16 +1048,17 @@ namespace GameEngine
 ////            AdvanceFlashColor();
 ////        }
 
-////        void SetupRoomObjects()
-////        {
-////            // Init all objects
-////            Board::ObjIter iter = gameBoard.getObjects();
-////            while (iter.hasNext())
-////            {
-////                OBJECT * object = iter.next();
-////                object.setMovementX(0);
-////                object.setMovementY(0);
-////            }
+        private void SetupRoomObjects()
+        {
+            // Init all objects
+            Board.ObjIter iter = gameBoard.getObjects();
+            while (iter.hasNext())
+            {
+                OBJECT objct = iter.next();
+                objct.setMovementX(0);
+                objct.setMovementY(0);
+            }
+
 
 ////            // Set to no carried objects
 ////            for (int ctr = 0; ctr < numDragons; ++ctr)
@@ -732,35 +1066,37 @@ namespace GameEngine
 ////                dragons[ctr].eaten = NULL;
 ////            }
 ////            bat.linkedObject = OBJECT_NONE;
+            /// 
+            OBJECT keyInit = gameBoard[Board.OBJECT_YELLOWKEY]; ////TEMP
+            keyInit.init(Map.GOLD_CASTLE,0x20, 0x41, 0x00, 0x00, 0x00); ////TEMP
+            ////// Read the object initialization table for the current game level
+            ////byte[,] p = new byte[0,0];
+            ////if (gameMode == GAME_MODE_1)
+            ////{
+            ////    p = game1Objects;
+            ////}
+            ////else if (gameMode == GAME_MODE_GAUNTLET)
+            ////{
+            ////    p = gameGauntletObjects;
+            ////}
+            ////else
+            ////{
+            ////    p = game2Objects;
+            ////}
 
-////            // Read the object initialization table for the current game level
-////            const byte* p;
-////            if (gameMode == GAME_MODE_1)
-////            {
-////                p = (byte*)game1Objects;
-////            }
-////            else if (gameMode == GAME_MODE_GAUNTLET)
-////            {
-////                p = (byte*)gameGauntletObjects;
-////            }
-////            else
-////            {
-////                p = (byte*)game2Objects;
-////            }
+            ////for (int ctr = 0; ctr < p.Length; ++ctr)
+            ////{
+            ////    byte objct = p[ctr, 0];
+            ////    byte room = p[ctr, 1];
+            ////    byte xpos = p[ctr, 2];
+            ////    byte ypos = p[ctr, 3];
+            ////    byte state = p[ctr, 4];
+            ////    int movementX = p[ctr, 5];
+            ////    int movementY = p[ctr, 6];
 
-////            while ((*p) != 0xff)
-////            {
-////                byte object = *(p++);
-////                byte room = *(p++);
-////                byte xpos = *(p++);
-////                byte ypos = *(p++);
-////                byte state = *(p++);
-////                signed char movementX = *(p++);
-////                signed char movementY = *(p++);
-
-////                OBJECT* toInit = board[object];
-////                toInit.init(room, xpos, ypos, state, movementX, movementY);
-////            };
+            ////    OBJECT toInit = gameBoard[objct];
+            ////    toInit.init(room, xpos, ypos, state, movementX, movementY);
+            ////};
 
 ////            // Hide the jade key if only 2 player
 ////            if (numPlayers <= 2)
@@ -784,7 +1120,7 @@ namespace GameEngine
 ////                Portcullis* goldPort = (Portcullis*)board[OBJECT_YELLOW_PORT];
 ////                goldPort.setState(Portcullis::OPEN_STATE, true);
 ////            }
-////        }
+        }
 
 ////        /**
 ////         * Puts all the objects in random locations.
@@ -1848,143 +2184,120 @@ namespace GameEngine
 ////            }
 ////        }
 
-////        void DrawObjects(int room)
-////        {
-////            // Clear out the display list
-////            int displayList[MAX_OBJECTS];
-////            for (int i = 0; i < MAX_OBJECTS; i++)
-////                displayList[i] = OBJECT_NONE;
+        void DrawObjects(int room)
+        {
+            // Clear out the display list
+            int[] displayList = new int[MAX_OBJECTS];
+            for (int ctr = 0; ctr < MAX_OBJECTS; ctr++)
+            {
+                displayList[ctr] = Board.OBJECT_NONE;
+            }
 
+            // Create a list of all the objects that want to be drawn
+            int numAdded = 0;
 
-////            // Create a list of all the objects that want to be drawn
-////            int numAdded = 0;
+            ////for (int ctr = 0; ctr < numPlayers; ++ctr)
+            ////{
+            ////    if (surrounds[ctr].room == room)
+            ////    {
+            ////        displayList[numAdded++] = OBJECT_SURROUND - ctr;
+            ////    }
+            ////}
 
-////            for (int ctr = 0; ctr < numPlayers; ++ctr)
-////            {
-////                if (surrounds[ctr].room == room)
-////                {
-////                    displayList[numAdded++] = OBJECT_SURROUND - ctr;
-////                }
-////            }
+            int colorFirst = -1;
+            int colorLast = -1;
 
-////            int colorFirst = -1;
-////            int colorLast = -1;
+            Board.ObjIter iter = gameBoard.getObjects();
+            while (iter.hasNext())
+            {
+                OBJECT toDisplay = iter.next();
+                // Init it to not displayed
+                toDisplay.displayed = false;
+                if (toDisplay.room == room)
+                {
+                    // This object is in the current room - add it to the list
+                    displayList[numAdded++] = toDisplay.getPKey();
 
-////            Board::ObjIter iter = board.getObjects();
-////            while (iter.hasNext())
-////            {
-////                OBJECT* toDisplay = iter.next();
-////                // Init it to not displayed
-////                toDisplay.displayed = false;
-////                if (toDisplay.room == room)
-////                {
-////                    // This object is in the current room - add it to the list
-////                    displayList[numAdded++] = toDisplay.getPKey();
+                    if (colorFirst < 0) colorFirst = toDisplay.color;
+                    colorLast = toDisplay.color;
+                }
+            }
 
-////                    if (colorFirst < 0) colorFirst = toDisplay.color;
-////                    colorLast = toDisplay.color;
-////                }
-////            }
+            // Now display the objects in the list, up to the max number of objects at a time
 
-////            // Now display the objects in the list, up to the max number of objects at a time
+            if (numAdded <= MAX_DISPLAYABLE_OBJECTS)
+                displayListIndex = 0;
+            else
+            {
+                if (displayListIndex > numAdded)
+                    displayListIndex = 0;
+                if (displayListIndex > MAX_OBJECTS)
+                    displayListIndex = 0;
+                if (displayList[displayListIndex] == Board.OBJECT_NONE)
+                    displayListIndex = 0;
+            }
 
-////            if (numAdded <= maxDisplayableObjects)
-////                displayListIndex = 0;
-////            else
-////            {
-////                if (displayListIndex > numAdded)
-////                    displayListIndex = 0;
-////                if (displayListIndex > MAX_OBJECTS)
-////                    displayListIndex = 0;
-////                if (displayList[displayListIndex] == OBJECT_NONE)
-////                    displayListIndex = 0;
-////            }
+            ////for (int ctr = 0; ctr < numPlayers; ++ctr)
+            ////{
+            ////    surrounds[ctr].displayed = false;
+            ////}
 
-////            for (int ctr = 0; ctr < numPlayers; ++ctr)
-////            {
-////                surrounds[ctr].displayed = false;
-////            }
+            int numDisplayed = 0;
+            int i = displayListIndex;
+            //
+            // If more than MAX_DISPLAYABLE_OBJECTS are needed to be drawn, we multiplex/cycle through them
+            // Note that this also (intentionally) effects collision checking, as per the original game!!
+            //
+            while ((numDisplayed++) < numAdded && (numDisplayed <= MAX_DISPLAYABLE_OBJECTS))
+            {
+                if (displayList[i] > Board.OBJECT_NONE)
+                {
+                    OBJECT toDraw = gameBoard[displayList[i]];
+                    if (SHOW_OBJECT_FLICKER)
+                    {
+                        DrawObject(toDraw);
+                    }
+                    toDraw.displayed = true;
+                    colorLast = toDraw.color;
+                }
+                ////else if (displayList[i] <= OBJECT_SURROUND)
+                ////{
+                ////    surrounds[OBJECT_SURROUND - displayList[i]].displayed = true;
+                ////}
 
-////            int numDisplayed = 0;
-////            int i = displayListIndex;
-////            if (showObjectFlicker)
-////            {
-////                //
-////                // If more than maxDisplayableObjects are needed to be drawn, we multiplex/cycle through them
-////                // Note that this also (intentionally) effects collision checking, as per the original game!!
-////                //
-////                while ((numDisplayed++) < numAdded && (numDisplayed <= maxDisplayableObjects))
-////                {
-////                    if (displayList[i] > OBJECT_NONE)
-////                    {
-////                        OBJECT* toDraw = board[displayList[i]];
-////                        DrawObject(toDraw);
-////                        toDraw.displayed = true;
-////                        colorLast = toDraw.color;
-////                    }
-////                    else if (displayList[i] <= OBJECT_SURROUND)
-////                    {
-////                        surrounds[OBJECT_SURROUND - displayList[i]].displayed = true;
-////                    }
+                // wrap to the beginning of the list if we've reached the end
+                ++i;
+                if (i > MAX_OBJECTS)
+                    i = 0;
+                else if (displayList[i] == Board.OBJECT_NONE)
+                    i = 0;
+            }
 
-////                    // wrap to the beginning of the list if we've reached the end
-////                    ++i;
-////                    if (i > MAX_OBJECTS)
-////                        i = 0;
-////                    else if (displayList[i] == OBJECT_NONE)
-////                        i = 0;
-////                }
-////            }
-////            else
-////            {
-////                //
-////                // We still need to keep the displayed flags up to date for proper collision checking
-////                //
-////                while ((numDisplayed++) < numAdded && (numDisplayed <= maxDisplayableObjects))
-////                {
-////                    if (displayList[i] > OBJECT_NONE)
-////                    {
-////                        OBJECT* toDraw = board[displayList[i]];
-////                        toDraw.displayed = true;
-////                        colorLast = toDraw.color;
-////                    }
-////                    else if (displayList[i] <= OBJECT_SURROUND)
-////                    {
-////                        surrounds[OBJECT_SURROUND - displayList[i]].displayed = true;
-////                    }
+            if (!SHOW_OBJECT_FLICKER)
+            {
+                // Just paint everything in this room so we bypass the flicker if desired
+                Board.ObjIter iter2 = gameBoard.getObjects();
+                while (iter2.hasNext())
+                {
+                    OBJECT next = iter2.next();
+                    if (next.room == room)
+                        DrawObject(next);
+                }
+            }
 
-////                    // wrap to the beginning of the list if we've reached the end
-////                    ++i;
-////                    if (i > MAX_OBJECTS)
-////                        i = 0;
-////                    else if (displayList[i] == OBJECT_NONE)
-////                        i = 0;
-////                }
-
-////                // Now just paint everything in this room so we bypass the flicker if desired
-////                Board::ObjIter iter = board.getObjects();
-////                while (iter.hasNext())
-////                {
-////                    OBJECT* next = iter.next();
-////                    if (next.room == room)
-////                        DrawObject(next);
-////                }
-////            }
-
-////            if (roomDefs[room].flags & ROOMFLAG_LEFTTHINWALL)
-////            {
-////                // Position missile 00 to 0D,00 - left thin wall
-////                COLOR color = colorTable[(colorFirst > 0) ? colorFirst : COLOR_BLACK];
-////                Platform_PaintPixel(color.r, color.g, color.b, 0x0D * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
-////            }
-////            if (roomDefs[room].flags & ROOMFLAG_RIGHTTHINWALL)
-////            {
-////                // Position missile 01 to 96,00 - right thin wall
-////                COLOR color = colorTable[(colorFirst > 0) ? colorLast : COLOR_BLACK];
-////                Platform_PaintPixel(color.r, color.g, color.b, 0x96 * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
-////            }
-
-////        }
+            ////if (roomDefs[room].flags & ROOMFLAG_LEFTTHINWALL)
+            ////{
+            ////    // Position missile 00 to 0D,00 - left thin wall
+            ////    COLOR color = colorTable[(colorFirst > 0) ? colorFirst : COLOR_BLACK];
+            ////    Platform_PaintPixel(color.r, color.g, color.b, 0x0D * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
+            ////}
+            ////if (roomDefs[room].flags & ROOMFLAG_RIGHTTHINWALL)
+            ////{
+            ////    // Position missile 01 to 96,00 - right thin wall
+            ////    COLOR color = colorTable[(colorFirst > 0) ? colorLast : COLOR_BLACK];
+            ////    Platform_PaintPixel(color.r, color.g, color.b, 0x96 * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
+            ////}
+        }
 
 ////        void DrawBall(const BALL* ball, COLOR color)
 ////{
@@ -2011,56 +2324,46 @@ namespace GameEngine
 ////    }
 ////}
 
-////void DrawObject(const OBJECT* object)
-////{
-////    // Get object color, size, and position
-////    COLOR color = object.color == COLOR_FLASH ? GetFlashColor() : colorTable[object.color];
-////    int cx = object.x * 2;
-////    int cy = object.y * 2;
-////    int size = (object.size / 2) + 1;
+        private void DrawObject(OBJECT objct)
+        {
+            // Get object color, size, and position
+            COLOR color = objct.color == COLOR.FLASH ? GetFlashColor() : COLOR.table(objct.color);
+            int cx = objct.x * 2;
+            int cy = objct.y * 2;
+            int size = (objct.size / 2) + 1;
 
-////    // Look up the index to the current state for this object
-////    int stateIndex = object.states ? object.states[object.state] : 0;
+            // Look up the index to the current state for this object
+            int stateIndex = objct.states.Length > objct.state ? objct.states[objct.state] : 0;
 
-////    // Get the height, then the data
-////    // (the first byte of the data is the height)
-////    const byte* dataP = object.gfxData;
-////    int objHeight = *dataP;
-////    ++dataP;
+            // Get the height, then the data
+            byte[] dataP = objct.gfxData[stateIndex];
+            int objHeight = dataP.Length;
 
-////    // Index into the proper state
-////    for (int x = 0; x < stateIndex; x++)
-////    {
-////        dataP += objHeight; // skip over the data
-////        objHeight = *dataP;
-////        ++dataP;
-////    }
+            // Adjust for proper position
+            cx -= Board.CLOCKS_HSYNC;
+            cy -= Board.CLOCKS_VSYNC;
 
-////    // Adjust for proper position
-////    cx -= CLOCKS_HSYNC;
-////    cy -= CLOCKS_VSYNC;
+            // scan the data
+            for (int i = 0; i < objHeight; i++)
+            {
+                byte rowByte = dataP[i];
+                // Parse the row - each bit is a 2 x 2 block
+                for (int bit = 0; bit < 8; bit++)
+                {
+                    if ((rowByte & (1 << (7 - bit))) > 0)
+                    {
+                        int x = cx + (bit * 2 * size);
+                        if (x >= ADVENTURE_SCREEN_WIDTH)
+                            x -= ADVENTURE_SCREEN_WIDTH;
+                        view.Platform_PaintPixel(color.r, color.g, color.b, x, cy, 2 * size, 2);
+                    }
+                }
 
-////    // scan the data
-////    const byte* rowByte = dataP;
-////    for (int i = 0; i < objHeight; i++)
-////    {
-////        // Parse the row - each bit is a 2 x 2 block
-////        for (int bit = 0; bit < 8; bit++)
-////        {
-////            if (*rowByte & (1 << (7 - bit)))
-////            {
-////                int x = cx + (bit * 2 * size);
-////                if (x >= ADVENTURE_SCREEN_WIDTH)
-////                    x -= ADVENTURE_SCREEN_WIDTH;
-////                Platform_PaintPixel(color.r, color.g, color.b, x, cy, 2 * size, 2);
-////            }
-////        }
-
-////        // next byte - next row
-////        ++rowByte;
-////        cy -= 2;
-////    }
-////}
+                // next byte - next row
+                ++rowByte;
+                cy -= 2;
+            }
+        }
 
 ////bool CollisionCheckBallWithWalls(int room, int x, int y)
 ////{
@@ -2380,10 +2683,6 @@ namespace GameEngine
 ////static bool joyLeft, joyUp, joyRight, joyDown, joyFire;
 ////static bool switchReset = false;
 
-////#define MAX_OBJECTS             16                      // Should be plenty
-////static bool showObjectFlicker = true;                   // True if accurate object flicker is desired
-////static const int maxDisplayableObjects = 2;             // The 2600 only has 2 Player (sprite) objects. Accuracy will be compromised if this is changed!
-////static int displayListIndex = 0;
 
 ////#define ISGAMEACTIVE() ((gameState==GAMESTATE_ACTIVE_1) || (gameState==GAMESTATE_ACTIVE_2) || (gameState==GAMESTATE_ACTIVE_3))
 
@@ -2397,339 +2696,11 @@ namespace GameEngine
 ////static int gameOptions = GAMEOPTION_NO_HIDE_KEY_IN_CASTLE;
 
 
-//////
-////// Object definitions - 1st byte is the height
-//////
-
-////static const byte objectGfxNum[] =
-////{
-////    // Object #5 State #1 Graphic :'1'
-////    7,
-////    0x04,                  //  X                                                                        
-////    0x0C,                  // XX                                                                        
-////    0x04,                  //  X                                                                        
-////    0x04,                  //  X                                                                        
-////    0x04,                  //  X                                                                        
-////    0x04,                  //  X                                                                        
-////    0x0E,                  // XXX                                                                       
-////    // Object #5 State #2 Grphic : '2'                                                                                   
-////    7,
-////    0x0E,                  //  XXX                                                                      
-////    0x11,                  // X   X                                                                     
-////    0x01,                  //     X                                                                     
-////    0x02,                  //    X                                                                      
-////    0x04,                  //   X                                                                       
-////    0x08,                  //  X                                                                        
-////    0x1F,                  // XXXXX                                                                     
-////    // Object #5 State #3 Graphic :'3'                                                                                   
-////    7,
-////    0x0E,                  //  XXX                                                                      
-////    0x11,                  // X   X                                                                     
-////    0x01,                  //     X                                                                     
-////    0x06,                  //   XX                                                                      
-////    0x01,                  //     X                                                                     
-////    0x11,                  // X   X                                                                     
-////    0x0E                   //  XXX                                                                      
-////};
-
-////// Number states
-////static const byte numberStates[] =
-////{
-////    0,1,2
-////};
-
-////// Object #0B : State FF : Graphic
-////static const byte objectGfxKey[] =
-////{
-////    3,
-////    0x07,                  //      XXX
-////    0xFD,                  // XXXXXX X
-////    0xA7                   // X X  XXX
-////};
-
-
-////// Object #1 : Graphic
-////static const byte objectGfxSurround[] =
-////{
-////    32,
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF,                  // XXXXXXXX                                                                  
-////    0xFF                   // XXXXXXXX                                                                  
-////};
-
-////// Object #0A : State FF : Graphic                                                                                   
-////static const byte objectGfxBridge[] =
-////{
-////    24,
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0x42,                  //  X    X                                                                   
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3                   // XX    XX                                                                  
-////};
-
-////// Object #9 : State FF : Graphics                                                                                   
-////static const byte objectGfxSword[] =
-////{
-////    5,
-////    0x20,                  //   X                                                                       
-////    0x40,                  //  X                                                                        
-////    0xFF,                  // XXXXXXXX     
-////    0x40,                  //  X                                                                        
-////    0x20                   //   X                                                                       
-////};
-
-////// Object #0F : State FF : Graphic                                                                                   
-////static const byte objectGfxDot[] =
-////{
-////    1,
-////    0x80                   // X                                                                         
-////};
-
-////// Object #4 : State FF : Graphic                                                                                    
-////static const byte objectGfxAuthor[] =
-////{
-////    95,
-////    0xF0,                  // XXXX                                                                      
-////    0x80,                  // X                                                                         
-////    0x80,                  // X                                                                         
-////    0x80,                  // X                                                                         
-////    0xF4,                  // XXXX X                                                                    
-////    0x04,                  //      X                                                                    
-////    0x87,                  // X    XXX                                                                  
-////    0xE5,                  // XXX  X X                                                                  
-////    0x87,                  // X    XXX                                                                  
-////    0x80,                  // X                                                                         
-////    0x05,                  //      X X                                                                  
-////    0xE5,                  // XXX  X X                                                                 
-////    0xA7,                  // X X  XXX                                                                  
-////    0xE1,                  // XXX    X                                                                  
-////    0x87,                  // X    XXX                                                                  
-////    0xE0,                  // XXX                                                                       
-////    0x01,                  //        X                                                                  
-////    0xE0,                  // XXX                                                                       
-////    0xA0,                  // X X                                                                       
-////    0xF0,                  // XXXX                                                                      
-////    0x01,                  //        X                                                                  
-////    0x40,                  //  X                                                                        
-////    0xE0,                  // XXX                                                                       
-////    0x40,                  //  X                                                                       
-////    0x40,                  //  X                                                                        
-////    0x40,                  //  X                                                                        
-////    0x01,                  //        X                                                                  
-////    0xE0,                  // XXX                                                                       
-////    0xA0,                  // X X                                                                       
-////    0xE0,                  // XXX                                                                       
-////    0x80,                  // X                                                                         
-////    0xE0,                  // XXX                                                                       
-////    0x01,                  //        X                                                                  
-////    0x20,                  //   X                                                                       
-////    0x20,                  //   X                                                                       
-////    0xE0,                  // XXX                                                                       
-////    0xA0,                  // X X                                                                       
-////    0xE0,                  // XXX                                                                       
-////    0x01,                  //        X                                                                  
-////    0x01,                  //        X                                                                  
-////    0x01,                  //        X                                                                  
-////    0x88,                  //    X   X                                                                  
-////    0xA8,                  // X X X                                                                     
-////    0xA8,                  // X X X                                                                     
-////    0xA8,                  // X X X                                                                     
-////    0xF8,                  // XXXXX                                                                     
-////    0x01,                  //        X                                                                  
-////    0xE0,                  // XXX                                                                       
-////    0xA0,                  // X X                                                                       
-////    0xF0,                  // XXXX                                                                      
-////    0x01,                  //        X                                                                  
-////    0x80,                  // X                                                                         
-////    0xE0,                  // XXX                                                                       
-////    0x8F,                  // X   XXXX                                                                 
-////    0x89,                  // X   X  X                                                                  
-////    0x0F,                  //     XXXX                                                                  
-////    0x8A,                  // X   X X                                                                   
-////    0xE9,                  // XXX X  X                                                                  
-////    0x80,                  // X                                                                         
-////    0x8E,                  // X   XXX                                                                   
-////    0x0A,                  //     X X                                                                   
-////    0xEE,                  // XXX XXX                                                                   
-////    0xA0,                  // X X                                                                      
-////    0xE8,                  // XXX X                                                                     
-////    0x88,                  // X   X                                                                     
-////    0xEE,                  // XXX XXX                                                                   
-////    0x0A,                  //     X X                                                                   
-////    0x8E,                  // X   XXX                                                                   
-////    0xE0,                  // XXX                                                                       
-////    0xA4,                  // X X  X                                                                    
-////    0xA4,                  // X X  X                                                                    
-////    0x04,                  //      X                                                                    
-////    0x80,                  // X                                                                         
-////    0x08,                  //     X                                                                     
-////    0x0E,                  //     XXX                                                                   
-////    0x0A,                  //     X X                                                                   
-////    0x0A,                  //     X X                                                                   
-////    0x80,                  // X                                                                         
-////    0x0E,                  //     XXX                                                                   
-////    0x0A,                  //     X X                                                                   
-////    0x0E,                  //     XXX                                                                   
-////    0x08,                  //     X                                                                     
-////    0x0E,                  //     XXX                                                                   
-////    0x80,                  // X                                                                         
-////    0x04,                  //      X                                                                    
-////    0x0E,                  //     XXX                                                                   
-////    0x04,                  //      X                                                                    
-////    0x04,                  //      X                                                                    
-////    0x04,                  //      X                                                                    
-////    0x80,                  // X                                                                         
-////    0x04,                  //      X                                                                    
-////    0x0E,                  //     XXX                                                                   
-////    0x04,                  //      X                                                                    
-////    0x04,                  //      X                                                                    
-////    0x04                   //      X                                                                    
-////};
-
-////// Object #10 : State FF : Graphic                                                                                   
-////static const byte objectGfxChallise[] =
-////{
-////    9,
-////    0x81,                  // X      X                                                                  
-////    0x81,                  // X      X                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0x7E,                  //  XXXXXX                                                                   
-////    0x7E,                  //  XXXXXX                                                                  
-////    0x3C,                  //   XXXX                                                                    
-////    0x18,                  //    XX                                                                     
-////    0x18,                  //    XX                                                                     
-////    0x7E                   //  XXXXXX                                                                   
-////};
-
-////// Object #X : State FF : Graphic
-////static const byte objectGfxEasterEgg[] =
-////{
-////    23,
-////    0x18,                  //    XX
-////    0x3C,                  //   XXXX
-////    0x24,                  //   X  X
-////    0x66,                  //  XX  XX
-////    0x42,                  //  X    X
-////    0x42,                  //  X    X
-////    0x81,                  // X      X
-////    0xD5,                  // XX X X X
-////    0xD5,                  // XX X X X
-////    0xAB,                  // X X X XX
-////    0xAB,                  // X X X XX
-////    0x81,                  // X      X
-////    0x81,                  // X      X
-////    0xD5,                  // XX X X X
-////    0xD5,                  // XX X X X
-////    0xAB,                  // X X X XX
-////    0xAB,                  // X X X XX
-////    0x81,                  // X      X
-////    0x42,                  //  X    X
-////    0x42,                  //  X    X
-////    0x66,                  //  XX  XX
-////    0x3C,                  //   XXXX
-////    0x18,                  //    XX
-////};
-
-
-////// Object #11 : State FF : Graphic                                                                                   
-////static const byte objectGfxMagnet[] =
-////{
-////    8,
-////    0x3C,                  //   XXXX                                                                    
-////    0x7E,                  //  XXXXXX                                                                   
-////    0xE7,                  // XXX  XXX                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3,                  // XX    XX                                                                  
-////    0xC3                   // XX    XX                                                                  
-////};
 
 ////static BALL* objectBall = 0x0;
 
 ////static OBJECT** surrounds;
 //////
-////// Indexed array of all objects and their properties
-//////
-////static Board board(ADVENTURE_SCREEN_WIDTH, ADVENTURE_SCREEN_HEIGHT);
-////static Board* gameBoard = &board;
-
-//////
-////// Indexed array of all rooms and their properties
-//////
-
-////// Object locations (room and coordinate) for game 01
-//////        - object, room, x, y, state, movement(x/y)
-////static const byte game1Objects[] =
-////{
-////    OBJECT_YELLOW_PORT, GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
-////    OBJECT_COPPER_PORT, COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
-////    OBJECT_JADE_PORT, JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 5
-////    OBJECT_WHITE_PORT, WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
-////    OBJECT_BLACK_PORT, BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
-////    OBJECT_NAME, ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00, // Robinett message
-////    OBJECT_NUMBER, NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00, // Starting number
-////    OBJECT_YELLOWDRAGON, MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00, // Yellow Dragon
-////    OBJECT_GREENDRAGON, SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00, // Green Dragon
-////    OBJECT_SWORD, GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
-////    OBJECT_BRIDGE, BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00, // Bridge
-////    OBJECT_YELLOWKEY, GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Yellow Key
-////    OBJECT_COPPERKEY, COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Copper Key
-////    OBJECT_JADEKEY, JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00, // Jade Key
-////    OBJECT_BLACKKEY, SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
-////    OBJECT_CHALISE, BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
-////    OBJECT_MAGNET, BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00, // Magnet
-////    0xff,0,0,0,0,0,0
-////};
 
 ////// Object locations (room and coordinate) for Games 02 and 03
 //////        - object, room, x, y, state, movement(x/y)

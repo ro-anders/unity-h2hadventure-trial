@@ -74,7 +74,7 @@ namespace GameEngine
         /**
          * Sets up the object in the room it will start off in.
          */
-        void init(int inRoom, int inX, int inY, int inState=0, int inMoveX=0, int inMoveY=0)
+        public void init(int inRoom, int inX, int inY, int inState=0, int inMoveX=0, int inMoveY=0)
         {
             room = inRoom;
             x = inX;

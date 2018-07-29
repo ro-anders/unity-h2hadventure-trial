@@ -1,34 +1,58 @@
 ﻿using System;
 namespace GameEngine
 {
-    public enum _COLOR
-    {
-        BLACK = 0,
-        LTGRAY,
-        WHITE,
-        YELLOW,
-        ORANGE,
-        RED,
-        PURPLE,
-        BLUE,
-        LTCYAN,
-        CYAN,
-        DKGREEN,
-        LIMEGREEN,
-        OLIVEGREEN,
-        TAN,
-        COPPER,
-        JADE,
-        CRYSTAL,
-        DARK_CRYSTAL1,
-        DARK_CRYSTAL2,
-        DARK_CRYSTAL3,
-        DARK_CRYSTAL4,
-        FLASH
-    }
 
     public class COLOR
     {
+        private enum _COLOR
+        {
+            BLACK = 0,
+            LTGRAY,
+            WHITE,
+            YELLOW,
+            ORANGE,
+            RED,
+            PURPLE,
+            BLUE,
+            LTCYAN,
+            CYAN,
+            DKGREEN,
+            LIMEGREEN,
+            OLIVEGREEN,
+            TAN,
+            COPPER,
+            JADE,
+            CRYSTAL,
+            DARK_CRYSTAL1,
+            DARK_CRYSTAL2,
+            DARK_CRYSTAL3,
+            DARK_CRYSTAL4,
+            FLASH
+        }
+
+        public const int BLACK = (int)_COLOR.BLACK;                                                                                                           
+        public const int LTGRAY = (int)_COLOR.LTGRAY;                                                                                                         
+        public const int WHITE = (int)_COLOR.WHITE;                                                                                                           
+        public const int YELLOW = (int)_COLOR.YELLOW;                                                                                                         
+        public const int ORANGE = (int)_COLOR.ORANGE;                                                                                                         
+        public const int RED = (int)_COLOR.RED;                                                                                                               
+        public const int PURPLE = (int)_COLOR.PURPLE;                                                                                                         
+        public const int BLUE = (int)_COLOR.BLUE;                                                                                                             
+        public const int LTCYAN = (int)_COLOR.LTCYAN;                                                                                                         
+        public const int CYAN = (int)_COLOR.CYAN;                                                                                                             
+        public const int DKGREEN = (int)_COLOR.DKGREEN;                                                                                                       
+        public const int LIMEGREEN = (int)_COLOR.LIMEGREEN;                                                                                                   
+        public const int OLIVEGREEN = (int)_COLOR.OLIVEGREEN;                                                                                                 
+        public const int TAN = (int)_COLOR.TAN;                                                                                                               
+        public const int COPPER = (int)_COLOR.COPPER;                                                                                                         
+        public const int JADE = (int)_COLOR.JADE;                                                                                                             
+        public const int CRYSTAL = (int)_COLOR.CRYSTAL;                                                                                                       
+        public const int DARK_CRYSTAL1 = (int)_COLOR.DARK_CRYSTAL1;                                                                                           
+        public const int DARK_CRYSTAL2 = (int)_COLOR.DARK_CRYSTAL2;                                                                                           
+        public const int DARK_CRYSTAL3 = (int)_COLOR.DARK_CRYSTAL3;                                                                                           
+        public const int DARK_CRYSTAL4 = (int)_COLOR.DARK_CRYSTAL4;                                                                                           
+        public const int FLASH = (int)_COLOR.FLASH;                                                                                                           
+
         public readonly int r;
         public readonly int g;
         public readonly int b;
@@ -36,11 +60,6 @@ namespace GameEngine
             this.r = r;
             this.g = g;
             this.b = b;
-        }
-
-        public static COLOR table(_COLOR color)
-        {
-            return colorTable[(int)color];
         }
 
         public static COLOR table(int color)

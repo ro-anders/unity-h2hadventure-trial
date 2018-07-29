@@ -28,7 +28,7 @@ namespace GameEngine
         public RandomVisibility visibility; // attribute indicating whether objects can be randomly placed in this room.
 
 
-        public ROOM(byte[] inGraphicsData, byte inFlags, _COLOR inColor,
+        public ROOM(byte[] inGraphicsData, byte inFlags, int inColor,
                     int inRoomUp, int inRoomRight, int inRoomDown, int inRoomLeft, String inLabel, RandomVisibility inVis = RandomVisibility.OPEN)
         {
             graphicsData = inGraphicsData;
