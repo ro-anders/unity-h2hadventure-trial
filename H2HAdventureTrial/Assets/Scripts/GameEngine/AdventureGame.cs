@@ -335,9 +335,9 @@ namespace GameEngine
             ////{Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
             ////{Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00}, // Bridge
             {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Yellow Key
-            {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
-            {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
-            {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
+            ////{Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
+            ////{Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
+            {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00} // Black Key
             ////{Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
             ////{Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
         };
@@ -431,7 +431,7 @@ namespace GameEngine
             ////OBJECT copperKey = new OBJECT("coppey key", objectGfxKey, new byte[0], 0, COLOR.COPPER, OBJECT.RandomizedLocations.OUT_IN_OPEN);
             ////OBJECT jadeKey = new OBJECT("jade key", objectGfxKey, new byte[0], 0, COLOR.JADE, OBJECT.RandomizedLocations.OUT_IN_OPEN);
             ////OBJECT whiteKey = new OBJECT("white key", objectGfxKey, new byte[0], 0, COLOR.WHITE);
-            ////OBJECT blackKey = new OBJECT("black key", objectGfxKey, new byte[0], 0, COLOR.BLACK);
+            OBJECT blackKey = new OBJECT("black key", objectGfxKey, new byte[0], 0, COLOR.BLACK);
 ////            OBJECT** crystalKeys = new OBJECT*[3];
 ////            for (int ctr = 0; ctr < 3; ++ctr)
 ////            {
@@ -477,7 +477,7 @@ namespace GameEngine
             ////gameBoard.addObject(Board.OBJECT_COPPERKEY, copperKey);
             ////gameBoard.addObject(Board.OBJECT_JADEKEY, jadeKey);
             ////gameBoard.addObject(Board.OBJECT_WHITEKEY, whiteKey);
-            ////gameBoard.addObject(Board.OBJECT_BLACKKEY, blackKey);
+            gameBoard.addObject(Board.OBJECT_BLACKKEY, blackKey);
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY1, crystalKeys[0]);
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY2, crystalKeys[1]);
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY3, crystalKeys[2]);
@@ -522,7 +522,7 @@ namespace GameEngine
         {
             ////// get the playfield data
             ////int displayedRoom = (displayWinningRoom ? winningRoom : objectBall.displayedRoom);
-            int displayedRoom = 0x11; //// TEMP
+            int displayedRoom = 0x1D; //// TEMP
 
             ROOM currentRoom = roomDefs[displayedRoom];
             byte[] roomData = currentRoom.graphicsData;
@@ -1066,15 +1066,16 @@ namespace GameEngine
 ////                dragons[ctr].eaten = NULL;
 ////            }
 ////            bat.linkedObject = OBJECT_NONE;
-            /// 
-            OBJECT keyInit = gameBoard[Board.OBJECT_YELLOWKEY]; ////TEMP
-            keyInit.init(Map.GOLD_CASTLE,0x20, 0x41, 0x00, 0x00, 0x00); ////TEMP
-            ////// Read the object initialization table for the current game level
-            ////byte[,] p = new byte[0,0];
-            ////if (gameMode == GAME_MODE_1)
-            ////{
-            ////    p = game1Objects;
-            ////}
+
+
+            ////OBJECT keyInit = gameBoard[Board.OBJECT_YELLOWKEY]; ////TEMP
+            ////keyInit.init(Map.GOLD_CASTLE,0x20, 0x41, 0x00, 0x00, 0x00); ////TEMP
+            // Read the object initialization table for the current game level
+            byte[,] p = new byte[0,0];
+            if (gameMode == GAME_MODE_1)
+            {
+                p = game1Objects;
+            }
             ////else if (gameMode == GAME_MODE_GAUNTLET)
             ////{
             ////    p = gameGauntletObjects;
@@ -1083,20 +1084,22 @@ namespace GameEngine
             ////{
             ////    p = game2Objects;
             ////}
+            UnityEngine.Debug.Log("There are " + p.GetLength(0) + " objects to initialize");
 
-            ////for (int ctr = 0; ctr < p.Length; ++ctr)
-            ////{
-            ////    byte objct = p[ctr, 0];
-            ////    byte room = p[ctr, 1];
-            ////    byte xpos = p[ctr, 2];
-            ////    byte ypos = p[ctr, 3];
-            ////    byte state = p[ctr, 4];
-            ////    int movementX = p[ctr, 5];
-            ////    int movementY = p[ctr, 6];
+            for (int ctr = 0; ctr < p.GetLength(0); ++ctr)
+            {
+                byte objct = p[ctr, 0];
+                byte room = p[ctr, 1];
+                byte xpos = p[ctr, 2];
+                byte ypos = p[ctr, 3];
+                byte state = p[ctr, 4];
+                int movementX = p[ctr, 5];
+                int movementY = p[ctr, 6];
 
-            ////    OBJECT toInit = gameBoard[objct];
-            ////    toInit.init(room, xpos, ypos, state, movementX, movementY);
-            ////};
+                OBJECT toInit = gameBoard[objct];
+                UnityEngine.Debug.Log("Initializing game object #" + (ctr + 1) + ": " + toInit.label + " in room " + room);
+                toInit.init(room, xpos, ypos, state, movementX, movementY);
+            };
 
 ////            // Hide the jade key if only 2 player
 ////            if (numPlayers <= 2)
@@ -1783,108 +1786,6 @@ namespace GameEngine
 ////                    linkedObj.room = object.room;
 ////                }
 ////            }
-////        }
-
-////        void PrintDisplay()
-////        {
-////            // get the playfield data
-////            int displayedRoom = (displayWinningRoom ? winningRoom : objectBall.displayedRoom);
-////            const ROOM* currentRoom = roomDefs[displayedRoom];
-////            const byte* roomData = currentRoom.graphicsData;
-
-////            // get the playfield color
-////            COLOR color = ((gameState == GAMESTATE_WIN) && (winFlashTimer > 0)) ? GetFlashColor() : colorTable[currentRoom.color];
-////            COLOR colorBackground = colorTable[COLOR_LTGRAY];
-
-////            // Fill the entire backbuffer with the playfield background color before we draw anything else
-////            Platform_PaintPixel(colorBackground.r, colorBackground.g, colorBackground.b, 0, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
-
-////            // paint the surround under the playfield layer
-////            for (int ctr = 0; ctr < numPlayers; ++ctr)
-////            {
-////                if ((surrounds[ctr].room == displayedRoom) && (surrounds[ctr].state == 0))
-////                {
-////                    DrawObject(surrounds[ctr]);
-////                }
-////            }
-////            // get the playfield mirror flag
-////            bool mirror = currentRoom.flags & ROOMFLAG_MIRROR;
-
-////            //
-////            // Extract the playfield register bits and paint the playfield
-////            // The playfied register is 20 bits wide encoded across 3 bytes
-////            // as follows:
-////            //    PF0   |  PF1   |  PF2
-////            //  xxxx4567|76543210|01234567
-////            // Each set bit indicates playfield color - else background color -
-////            // the size of each block is 8 x 32, and the drawing is shifted
-////            // upwards by 16 pixels
-////            //
-
-////            // mask values for playfield bits
-////            byte shiftreg[20] =
-////            {
-////        0x10,0x20,0x40,0x80,
-////        0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
-////        0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
-////    };
-
-////            // each cell is 8 x 32
-////            const int cell_width = 8;
-////            const int cell_height = 32;
-
-
-////            // draw the playfield
-////            for (int cy = 0; cy <= 6; cy++)
-////            {
-////                byte pf0 = roomData[(cy * 3) + 0];
-////                byte pf1 = roomData[(cy * 3) + 1];
-////                byte pf2 = roomData[(cy * 3) + 2];
-
-////                int ypos = 6 - cy;
-
-////                for (int cx = 0; cx < 20; cx++)
-////                {
-////                    byte bit = false;
-
-////                    if (cx < 4)
-////                        bit = pf0 & shiftreg[cx];
-////                    else if (cx < 12)
-////                        bit = pf1 & shiftreg[cx];
-////                    else
-////                        bit = pf2 & shiftreg[cx];
-
-////                    if (bit != 0)
-////                    {
-////                        Platform_PaintPixel(color.r, color.g, color.b, cx * cell_width, ypos * cell_height, cell_width, cell_height);
-////                        if (mirror)
-////                            Platform_PaintPixel(color.r, color.g, color.b, (cx + 20) * cell_width, ypos * cell_height, cell_width, cell_height);
-////                        else
-////                            Platform_PaintPixel(color.r, color.g, color.b, ((40 - (cx + 1)) * cell_width), ypos * cell_height, cell_width, cell_height);
-////                    }
-////                }
-////            }
-
-////            //
-////            // Draw the balls
-////            //
-////            COLOR defaultColor = colorTable[roomDefs[displayedRoom].color];
-
-////            for (int i = 0; i < numPlayers; ++i)
-////            {
-////                BALL* player = gameBoard.getPlayer(i);
-////                if (player.displayedRoom == displayedRoom)
-////                {
-////                    COLOR ballColor = (player.isGlowing() ? GetFlashColor() : defaultColor);
-////                    DrawBall(gameBoard.getPlayer(i), ballColor);
-////                }
-////            }
-
-////            //
-////            // Draw any objects in the room
-////            //
-////            DrawObjects(displayedRoom);
-
 ////        }
 
 ////        void OthersPickupPutdown()

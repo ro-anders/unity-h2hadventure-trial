@@ -63,7 +63,6 @@ public class UnityAdventureView: AdventureView
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)
     {
-        Debug.Log("Drawing R" + r + "G" + g + "B" + b + " to [" + x + "," + y + "," + (x + width - 1) + "," + (y + height - 1) + "]");
         Color color = new Color(r/256.0f, g/256.0f, b/256.0f);
         for (int i = 0; i < width; ++i)
             for (int j = 0; j < height; ++j) {
