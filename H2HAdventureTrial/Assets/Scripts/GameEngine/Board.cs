@@ -147,7 +147,7 @@ namespace GameEngine
         private OBJECT[] objects;
 
         private int numPlayers;
-        ////private BALL[] players;
+        private BALL[] players;
         private int currentPlayer;
 
         private int screenWidth;
@@ -168,7 +168,7 @@ namespace GameEngine
             objects[numObjects - 1] = new OBJECT("", new byte[0][], new byte[0], 0, 0);  // #12 Null
 
             int MAX_PLAYERS = 3;
-            ////players = new BALL[MAX_PLAYERS];
+            players = new BALL[MAX_PLAYERS];
             numPlayers = 0;
         }
 
@@ -223,25 +223,25 @@ namespace GameEngine
             objct.setBoard(this, pkey);
         }
 
-        ////void addPlayer(BALL newPlayer, bool isCurrent)
-        ////{
-        ////    players[numPlayers] = newPlayer;
-        ////    if (isCurrent)
-        ////    {
-        ////        currentPlayer = numPlayers;
-        ////    }
-        ////    ++numPlayers;
-        ////}
+        public void addPlayer(BALL newPlayer, bool isCurrent)
+        {
+            players[numPlayers] = newPlayer;
+            if (isCurrent)
+            {
+                currentPlayer = numPlayers;
+            }
+            ++numPlayers;
+        }
 
-        ////BALL getPlayer(int playerNum)
-        ////{
-        ////    return players[playerNum];
-        ////}
+        public BALL getPlayer(int playerNum)
+        {
+            return players[playerNum];
+        }
 
-        ////BALL getCurrentPlayer()
-        ////{
-        ////    return players[currentPlayer];
-        ////}
+        public BALL getCurrentPlayer()
+        {
+            return players[currentPlayer];
+        }
 
         static bool HitTestRects(int ax, int ay, int awidth, int aheight,
                       int bx, int by, int bwidth, int bheight)
