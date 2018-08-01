@@ -34,7 +34,7 @@ namespace GameEngine
             ////{Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 2
             ////{Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
             {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
-            ////{Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
+            {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
             ////{Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
             ////{Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
             {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
@@ -81,6 +81,7 @@ namespace GameEngine
         private int flashColorHue = 0;
         private int flashColorLum = 0;
         private int displayListIndex = 0;
+        private bool switchReset = false;
 
         ////static Sync* sync;
 ////static Transport* transport;
@@ -90,9 +91,9 @@ namespace GameEngine
 ////static OBJECT** surrounds;
 //////
 
-/////** We wait a few seconds between when the game comes up connected and when the game actually starts.
-//// This is the countdown timer. */
-////static int timeToStartGame;
+        /** We wait a few seconds between when the game comes up connected and when the game actually starts.
+         This is the countdown timer. */
+        private int timeToStartGame;
 
 ////static int numDragons = 3;
 ////static Dragon** dragons = NULL;
@@ -119,7 +120,7 @@ namespace GameEngine
             thisPlayer = inThisPlayer;
             gameMode = inGameNum;
 ////            joystickDisabled = (gameMode == GAME_MODE_SCRIPTING);
-////            timeToStartGame = 60 * 3;
+            timeToStartGame = 60 * 3;
 
 ////            // The map for game 3 is the same as 2 and the map for scripting is hard-coded here
 ////            // so it could be easily changed.
@@ -178,12 +179,12 @@ namespace GameEngine
 ////            gameMap.addCastles(numPorts, ports);
 
 
-////            // Setup the number.  Unlike other objects we need to position the number immediately.
-////            OBJECT* number = new OBJECT("number", objectGfxNum, numberStates, 0, COLOR_LIMEGREEN, OBJECT::FIXED_LOCATION);
-////            gameBoard.addObject(OBJECT_NUMBER, number);
-////            number.init(NUMBER_ROOM, 0x50, 0x40);
+            // Setup the number.  Unlike other objects we need to position the number immediately.
+            OBJECT number = new OBJECT("number", objectGfxNum, numberStates, 0, COLOR.LIMEGREEN, OBJECT.RandomizedLocations.FIXED_LOCATION);
+            gameBoard.addObject(Board.OBJECT_NUMBER, number);
+            number.init(Map.NUMBER_ROOM, 0x50, 0x40);
 
-////            // Setup the rest of the objects
+            // Setup the rest of the objects
 ////            gameBoard.addObject(OBJECT_YELLOW_PORT, ports[0]);
 ////            gameBoard.addObject(OBJECT_COPPER_PORT, ports[4]);
 ////            gameBoard.addObject(OBJECT_JADE_PORT, ports[5]);
@@ -241,16 +242,10 @@ namespace GameEngine
 ////        }
         }
 
-        public void Adventure_Run()
-        {
-            PrintDisplay();
-        }
-
         public void PrintDisplay()
         {
             ////// get the playfield data
-            ////int displayedRoom = (displayWinningRoom ? winningRoom : objectBall.displayedRoom);
-            int displayedRoom = Map.COPPER_CASTLE; //// TEMP
+            int displayedRoom = (displayWinningRoom ? winningRoom : objectBall.displayedRoom);
 
             ROOM currentRoom = roomDefs[displayedRoom];
             byte[] roomData = currentRoom.graphicsData;
@@ -382,7 +377,7 @@ namespace GameEngine
             return new COLOR(color_r, color_g, color_b);
         }
 
-        void AdvanceFlashColor()
+        private void AdvanceFlashColor()
         {
             flashColorHue += 2;
             if (flashColorHue >= 360)
@@ -560,14 +555,15 @@ namespace GameEngine
 ////        }
 
 
-////        void Adventure_Run()
-////        {
+        public void Adventure_Run()
+        {
+            PrintDisplay(); //// TEMP
 ////            sync.StartFrame();
 ////            SyncWithOthers();
 ////            checkPlayers();
 
 ////            // read the console switches every frame
-////            bool reset = false;
+            bool reset = false;
 ////            Platform_ReadConsoleSwitches(&reset);
 ////            if (Robot::isOn())
 ////            {
@@ -596,33 +592,33 @@ namespace GameEngine
 ////            }
 ////            else
 ////            {
-////                // Is the game active?
-////                if (gameState == GAMESTATE_GAMESELECT)
-////                {
-////                    --timeToStartGame;
-////                    if (timeToStartGame <= 0)
-////                    {
-////                        gameState = GAMESTATE_ACTIVE_1;
-////                        ResetPlayers();
-////                    }
-////                    else
-////                    {
-////                        int displayNum = timeToStartGame / 60;
-////                        board[OBJECT_NUMBER].state = displayNum;
+                // Is the game active?
+                if (gameState == GAMESTATE_GAMESELECT)
+                {
+                    --timeToStartGame;
+                    if (timeToStartGame <= 0)
+                    {
+                        gameState = GAMESTATE_ACTIVE_1;
+                        ResetPlayers();
+                    }
+                    else
+                    {
+                        int displayNum = timeToStartGame / 60;
+                        gameBoard[Board.OBJECT_NUMBER].state = displayNum;
 
-////                        // Display the room and objects
-////                        objectBall.room = 0;
-////                        objectBall.previousRoom = 0;
-////                        objectBall.displayedRoom = 0;
-////                        objectBall.x = 0;
-////                        objectBall.y = 0;
-////                        objectBall.previousX = 0;
-////                        objectBall.previousY = 0;
-////                        PrintDisplay();
-////                    }
-////                }
-////                else if (ISGAMEACTIVE())
-////                {
+                        // Display the room and objects
+                        objectBall.room = 0;
+                        objectBall.previousRoom = 0;
+                        objectBall.displayedRoom = 0;
+                        objectBall.x = 0;
+                        objectBall.y = 0;
+                        objectBall.previousX = 0;
+                        objectBall.previousY = 0;
+                        PrintDisplay();
+                    }
+                }
+            else if ((gameState == GAMESTATE_ACTIVE_1) || (gameState == GAMESTATE_ACTIVE_2) || (gameState == GAMESTATE_ACTIVE_3))
+                {
 ////                    // Has someone won the game.
 ////                    if (checkWonGame())
 ////                    {
@@ -653,8 +649,8 @@ namespace GameEngine
 ////                            gameMode = GAME_MODE_GAUNTLET;
 ////                        }
 
-////                        if (gameState == GAMESTATE_ACTIVE_1)
-////                        {
+                        if (gameState == GAMESTATE_ACTIVE_1)
+                        {
 ////                            // Move balls
 ////                            ThisBallMovement();
 ////                            for (int i = 0; i < numPlayers; ++i)
@@ -675,13 +671,13 @@ namespace GameEngine
 ////                                nextBall.hit = CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false, &nextBall.hitObject);
 ////                            }
 
-////                            // Setup the room and object
-////                            PrintDisplay();
+                            // Setup the room and object
+                            PrintDisplay();
 
-////                            ++gameState;
-////                        }
-////                        else if (gameState == GAMESTATE_ACTIVE_2)
-////                        {
+                            ++gameState;
+                        }
+                        else if (gameState == GAMESTATE_ACTIVE_2)
+                        {
 ////                            // Deal with object pickup and putdown
 ////                            PickupPutdown();
 
@@ -705,13 +701,13 @@ namespace GameEngine
 ////                            // Move and deal with portcullises
 ////                            Portals();
 
-////                            // Display the room and objects
-////                            PrintDisplay();
+                            // Display the room and objects
+                            PrintDisplay();
 
-////                            ++gameState;
-////                        }
-////                        else if (gameState == GAMESTATE_ACTIVE_3)
-////                        {
+                            ++gameState;
+                        }
+                        else if (gameState == GAMESTATE_ACTIVE_3)
+                        {
 ////                            // Move and deal with the dragons
 ////                            for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
 ////                            {
@@ -741,13 +737,13 @@ namespace GameEngine
 ////                            // Deal with the magnet
 ////                            Magnet();
 
-////                            // Display the room and objects
-////                            PrintDisplay();
+                            // Display the room and objects
+                            PrintDisplay();
 
-////                            gameState = GAMESTATE_ACTIVE_1;
-////                        }
+                            gameState = GAMESTATE_ACTIVE_1;
+                        }
 ////                    }
-////                }
+                }
 ////                else if (gameState == GAMESTATE_WIN)
 ////                {
 ////                    // We keep the display pointed at your current room while we make the
@@ -774,8 +770,8 @@ namespace GameEngine
 ////            }
 
 ////            switchReset = reset;
-////            AdvanceFlashColor();
-////        }
+            AdvanceFlashColor();
+        }
 
         private void SetupRoomObjects()
         {
@@ -2296,45 +2292,45 @@ namespace GameEngine
         ////// Object definitions - 1st byte is the height
         //////
 
-        ////static const byte objectGfxNum[] =
-        ////{
-        ////    // Object #5 State #1 Graphic :'1'
-        ////    7,
-        ////    0x04,                  //  X                                                                        
-        ////    0x0C,                  // XX                                                                        
-        ////    0x04,                  //  X                                                                        
-        ////    0x04,                  //  X                                                                        
-        ////    0x04,                  //  X                                                                        
-        ////    0x04,                  //  X                                                                        
-        ////    0x0E,                  // XXX                                                                       
-        ////    // Object #5 State #2 Grphic : '2'                                                                                   
-        ////    7,
-        ////    0x0E,                  //  XXX                                                                      
-        ////    0x11,                  // X   X                                                                     
-        ////    0x01,                  //     X                                                                     
-        ////    0x02,                  //    X                                                                      
-        ////    0x04,                  //   X                                                                       
-        ////    0x08,                  //  X                                                                        
-        ////    0x1F,                  // XXXXX                                                                     
-        ////    // Object #5 State #3 Graphic :'3'                                                                                   
-        ////    7,
-        ////    0x0E,                  //  XXX                                                                      
-        ////    0x11,                  // X   X                                                                     
-        ////    0x01,                  //     X                                                                     
-        ////    0x06,                  //   XX                                                                      
-        ////    0x01,                  //     X                                                                     
-        ////    0x11,                  // X   X                                                                     
-        ////    0x0E                   //  XXX                                                                      
-        ////};
+        private static byte[][] objectGfxNum = new byte[][]
+        {
+            new byte[] {
+                // Object #5 State #1 Graphic :'1'
+                0x04,                  //  X                                                                        
+                0x0C,                  // XX                                                                        
+                0x04,                  //  X                                                                        
+                0x04,                  //  X                                                                        
+                0x04,                  //  X                                                                        
+                0x04,                  //  X                                                                        
+                0x0E},                   // XXX
+            new byte[] {
+                // Object #5 State #2 Grphic : '2'                                                                                   
+                0x0E,                  //  XXX                                                                      
+                0x11,                  // X   X                                                                     
+                0x01,                  //     X                                                                     
+                0x02,                  //    X                                                                      
+                0x04,                  //   X                                                                       
+                0x08,                  //  X                                                                        
+                0x1F},                 // XXXXX
+            new byte[] {
+                // Object #5 State #3 Graphic :'3'                                                                                   
+                0x0E,                  //  XXX                                                                      
+                0x11,                  // X   X                                                                     
+                0x01,                  //     X                                                                     
+                0x06,                  //   XX                                                                      
+                0x01,                  //     X                                                                     
+                0x11,                  // X   X                                                                     
+                0x0E}                  //  XXX                                                                      
+        };
 
-        ////// Number states
-        ////static const byte numberStates[] =
-        ////{
-        ////    0,1,2
-        ////};
+        // Number states
+        private static byte[] numberStates = new byte[]
+        {
+            0,1,2
+        };
 
         // Object #0B : State FF : Graphic
-        byte[][] objectGfxKey = new byte[][]
+        private static byte[][] objectGfxKey = new byte[][]
         { new byte[] {
                 0x07,                  //      XXX
                 0xFD,                  // XXXXXX X
@@ -2381,7 +2377,7 @@ namespace GameEngine
         ////};
 
         // Object #0A : State FF : Graphic                                                                                   
-        byte[][] objectGfxBridge = new byte[][]
+        private static byte[][] objectGfxBridge = new byte[][]
         { new byte[] {
             0xC3,                  // XX    XX                                                                  
             0xC3,                  // XX    XX                                                                  
@@ -2410,7 +2406,7 @@ namespace GameEngine
         } };
 
         // Object #9 : State FF : Graphics                                                                                   
-        byte[][] objectGfxSword = new byte[][]
+        private static byte[][] objectGfxSword = new byte[][]
         { new byte[] {
             0x20,                  //   X                                                                       
             0x40,                  //  X                                                                        
@@ -2427,7 +2423,7 @@ namespace GameEngine
         ////};
 
         // Object #4 : State FF : Graphic                                                                                    
-        byte[][] objectGfxAuthor = new byte[][]
+        private static byte[][] objectGfxAuthor = new byte[][]
         { new byte[] {
             0xF0,                  // XXXX                                                                      
             0x80,                  // X                                                                         
@@ -2527,7 +2523,7 @@ namespace GameEngine
         } };
 
         // Object #10 : State FF : Graphic                                                                                   
-        byte[][] objectGfxChallise = new byte[][]
+        private static byte[][] objectGfxChallise = new byte[][]
         { new byte[] {
             0x81,                  // X      X                                                                  
             0x81,                  // X      X                                                                  
@@ -2571,7 +2567,7 @@ namespace GameEngine
 
 
         // Object #11 : State FF : Graphic                                                                                   
-        byte[][] objectGfxMagnet = new byte[][]
+        private static byte[][] objectGfxMagnet = new byte[][]
         { new byte[] {
             0x3C,                  //   XXXX                                                                    
             0x7E,                  //  XXXXXX                                                                   
@@ -2599,10 +2595,6 @@ namespace GameEngine
 //////
 
 ////static bool joyLeft, joyUp, joyRight, joyDown, joyFire;
-////static bool switchReset = false;
-
-
-////#define ISGAMEACTIVE() ((gameState==GAMESTATE_ACTIVE_1) || (gameState==GAMESTATE_ACTIVE_2) || (gameState==GAMESTATE_ACTIVE_3))
 
 ////static bool joystickDisabled = false;
 
