@@ -243,7 +243,7 @@ namespace GameEngine
             return players[currentPlayer];
         }
 
-        static bool HitTestRects(int ax, int ay, int awidth, int aheight,
+        public static bool HitTestRects(int ax, int ay, int awidth, int aheight,
                       int bx, int by, int bwidth, int bheight)
         {
             bool intersects = true;

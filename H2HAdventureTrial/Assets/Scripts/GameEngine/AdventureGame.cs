@@ -559,7 +559,6 @@ namespace GameEngine
 
         public void Adventure_Run()
         {
-            PrintDisplay(); //// TEMP
 ////            sync.StartFrame();
 ////            SyncWithOthers();
 ////            checkPlayers();
@@ -655,23 +654,23 @@ namespace GameEngine
                         {
                             // Move balls
                             ThisBallMovement();
-////                            for (int i = 0; i < numPlayers; ++i)
-////                            {
-////                                if (i != thisPlayer)
-////                                {
-////                                    BallMovement(gameBoard.getPlayer(i));
-////                                }
-////                            }
+                            for (int i = 0; i < numPlayers; ++i)
+                            {
+                                if (i != thisPlayer)
+                                {
+                                    BallMovement(gameBoard.getPlayer(i));
+                                }
+                            }
 
 ////                            // Move the carried object
 ////                            MoveCarriedObjects();
 
-////                            // Collision check the balls in their new coordinates against walls and objects
-////                            for (int i = 0; i < numPlayers; ++i)
-////                            {
-////                                BALL* nextBall = gameBoard.getPlayer(i);
-////                                nextBall.hit = CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false, &nextBall.hitObject);
-////                            }
+                            // Collision check the balls in their new coordinates against walls and objects
+                            for (int i = 0; i < numPlayers; ++i)
+                            {
+                                BALL nextBall = gameBoard.getPlayer(i);
+                                CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false);
+                            }
 
                             // Setup the room and object
                             PrintDisplay();
@@ -683,10 +682,10 @@ namespace GameEngine
 ////                            // Deal with object pickup and putdown
 ////                            PickupPutdown();
 
-////                            for (int i = 0; i < numPlayers; ++i)
-////                            {
-////                                ReactToCollisionX(gameBoard.getPlayer(i));
-////                            }
+                            for (int i = 0; i < numPlayers; ++i)
+                            {
+                                ReactToCollisionX(gameBoard.getPlayer(i));
+                            }
 
 ////                            // Increment the last object drawn
 ////                            ++displayListIndex;
@@ -730,10 +729,10 @@ namespace GameEngine
 ////                                }
 ////                            }
 
-////                            for (int i = 0; i < numPlayers; ++i)
-////                            {
-////                                ReactToCollisionY(gameBoard.getPlayer(i));
-////                            }
+                            for (int i = 0; i < numPlayers; ++i)
+                            {
+                                ReactToCollisionY(gameBoard.getPlayer(i));
+                            }
 
 
 ////                            // Deal with the magnet
@@ -1040,79 +1039,79 @@ namespace GameEngine
 ////            Platform_MakeSound(SOUND_WON, MAX_VOLUME);
 ////        }
 
-////        void ReactToCollisionX(BALL* ball)
-////        {
-////            if (ball.hit)
-////            {
-////                if (ball.velx != 0)
-////                {
-////                    if ((ball.hitObject > OBJECT_NONE) && (ball.hitObject == ball.linkedObject))
-////                    {
-////                        ball.linkedObjectX += ball.velx;
-////                        if (ball == objectBall)
-////                        {
-////                            // If this is adjusting how the current player holds an object,
-////                            // we broadcast to other players as a pickup action
-////                            PlayerPickupAction* action = new PlayerPickupAction(ball.hitObject,
-////                                objectBall.linkedObjectX, objectBall.linkedObjectY, OBJECT_NONE, 0, 0, 0);
-////                            sync.BroadcastAction(action);
-////                        }
-////                    }
+        void ReactToCollisionX(BALL ball)
+        {
+            if (ball.hit)
+            {
+                if (ball.velx != 0)
+                {
+                    if ((ball.hitObject > Board.OBJECT_NONE) && (ball.hitObject == ball.linkedObject))
+                    {
+                        ball.linkedObjectX += ball.velx;
+                        if (ball == objectBall)
+                        {
+                            ////// If this is adjusting how the current player holds an object,
+                            ////// we broadcast to other players as a pickup action
+                            ////PlayerPickupAction* action = new PlayerPickupAction(ball.hitObject,
+                            ////    objectBall.linkedObjectX, objectBall.linkedObjectY, OBJECT_NONE, 0, 0, 0);
+                            ////sync.BroadcastAction(action);
+                        }
+                    }
 
-////                    if ((ball.room != ball.previousRoom) && (ABS(ball.x - ball.previousX) > ABS(ball.velx)))
-////                    {
-////                        // We switched rooms, kick them back
-////                        ball.room = ball.previousRoom;
-////                    }
-////                    ball.x = ball.previousX;
-////                }
-////                // Try recompute hit allowing for the bridge.
-////                ball.hit = CollisionCheckBallWithEverything(ball, ball.room, ball.x, ball.y, true, &ball.hitObject);
-////            }
-////        }
+                    if ((ball.room != ball.previousRoom) && (Math.Abs(ball.x - ball.previousX) > Math.Abs(ball.velx)))
+                    {
+                        // We switched rooms, kick them back
+                        ball.room = ball.previousRoom;
+                    }
+                    ball.x = ball.previousX;
+                }
+                // Try recompute hit allowing for the bridge.
+                CollisionCheckBallWithEverything(ball, ball.room, ball.x, ball.y, true);
+            }
+        }
 
-////        void ReactToCollisionY(BALL* ball)
-////        {
-////            if ((ball.hit) && (ball.vely != 0))
-////            {
-////                if ((ball.hitObject > OBJECT_NONE) && (ball.hitObject == ball.linkedObject))
-////                {
-////                    ball.linkedObjectY += ball.vely;
-////                    if (ball == objectBall)
-////                    {
-////                        // If this is adjusting how the current player holds an object,
-////                        // we broadcast to other players as a pickup action
-////                        PlayerPickupAction* action = new PlayerPickupAction(ball.hitObject,
-////                            objectBall.linkedObjectX, objectBall.linkedObjectY, OBJECT_NONE, 0, 0, 0);
-////                        sync.BroadcastAction(action);
-////                    }
-////                }
+        void ReactToCollisionY(BALL ball)
+        {
+            if ((ball.hit) && (ball.vely != 0))
+            {
+                if ((ball.hitObject > Board.OBJECT_NONE) && (ball.hitObject == ball.linkedObject))
+                {
+                    ball.linkedObjectY += ball.vely;
+                    if (ball == objectBall)
+                    {
+                        ////// If this is adjusting how the current player holds an object,
+                        ////// we broadcast to other players as a pickup action
+                        ////PlayerPickupAction* action = new PlayerPickupAction(ball.hitObject,
+                        ////    objectBall.linkedObjectX, objectBall.linkedObjectY, OBJECT_NONE, 0, 0, 0);
+                        ////sync.BroadcastAction(action);
+                    }
+                }
 
-////                // We put y back to the last y, but if we are moving diagonally, we
-////                // put x back to the new x value which we had reverted last phase and try again.
-////                // if new x and old y is still a collision we revert at the beginning of the next phase
-////                if ((ball.room != ball.previousRoom) && (ABS(ball.y - ball.previousY) > ABS(ball.vely)))
-////                {
-////                    // We switched rooms, kick them back
-////                    ball.room = ball.previousRoom;
-////                }
-////                ball.y = ball.previousY;
-////                ball.x += ball.velx;
-////                // Need to check if new X takes us to new room (again)
-////                if (ball.x >= RIGHT_EDGE)
-////                {
-////                    ball.x = ENTER_AT_LEFT;
-////                    ball.room = ball.displayedRoom; // The displayed room hasn't changed
-////                }
-////                else if (ball.x < LEFT_EDGE)
-////                {
-////                    ball.x = ENTER_AT_RIGHT;
-////                    ball.room = ball.displayedRoom;
-////                }
+                // We put y back to the last y, but if we are moving diagonally, we
+                // put x back to the new x value which we had reverted last phase and try again.
+                // if new x and old y is still a collision we revert at the beginning of the next phase
+                if ((ball.room != ball.previousRoom) && (Math.Abs(ball.y - ball.previousY) > Math.Abs(ball.vely)))
+                {
+                    // We switched rooms, kick them back
+                    ball.room = ball.previousRoom;
+                }
+                ball.y = ball.previousY;
+                ball.x += ball.velx;
+                // Need to check if new X takes us to new room (again)
+                if (ball.x >= Board.RIGHT_EDGE)
+                {
+                    ball.x = Board.ENTER_AT_LEFT;
+                    ball.room = ball.displayedRoom; // The displayed room hasn't changed
+                }
+                else if (ball.x < Board.LEFT_EDGE)
+                {
+                    ball.x = Board.ENTER_AT_RIGHT;
+                    ball.room = ball.displayedRoom;
+                }
 
-////                ball.hit = CollisionCheckBallWithEverything(ball, ball.displayedRoom, ball.x, ball.y, false, &ball.hitObject);
-////            }
-////        }
+                CollisionCheckBallWithEverything(ball, ball.displayedRoom, ball.x, ball.y, false);
+            }
+        }
 
         void ThisBallMovement()
         {
@@ -1286,29 +1285,26 @@ namespace GameEngine
 
         }
 
-////        // Check if the ball would be hitting anything (wall, object, ...)
-////        // ball - the ball to check
-////        // room - the room in which to check
-////        // x - the x position to check
-////        // y - the y position to check
-////        // allowBridge - if moving vertically, the bridge can allow you to not collide into a wall
-////        // hitObject - if we hit an object, will set this reference to the object we hit.  If NULL, will not try to set it.
-////        //
-////        static bool CollisionCheckBallWithEverything(BALL* ball, int checkRoom, int checkX, int checkY, bool allowBridge, int* hitObjectOut)
-////        {
-////            int hitObject = CollisionCheckBallWithAllObjects(ball);
-////            bool hitWall = false;
-////            if (hitObject == OBJECT_NONE)
-////            {
-////                bool crossingBridge = allowBridge && CrossingBridge(checkRoom, checkX, checkY, ball);
-////                hitWall = !crossingBridge && CollisionCheckBallWithWalls(checkRoom, checkX, checkY);
-////            }
-////            if (hitObjectOut != NULL)
-////            {
-////                *hitObjectOut = hitObject;
-////            }
-////            return hitWall || (hitObject > OBJECT_NONE);
-////        }
+        // Check if the ball would be hitting anything (wall, object, ...)
+        // ball - the ball to check
+        // room - the room in which to check
+        // x - the x position to check
+        // y - the y position to check
+        // allowBridge - if moving vertically, the bridge can allow you to not collide into a wall
+        // hitObject - if we hit an object, will set this reference to the object we hit.  If NULL, will not try to set it.
+        //
+        private void CollisionCheckBallWithEverything(BALL ball, int checkRoom, int checkX, int checkY, bool allowBridge)
+        {
+            int hitObject = CollisionCheckBallWithAllObjects(ball);
+            bool hitWall = false;
+            if (hitObject == Board.OBJECT_NONE)
+            {
+                bool crossingBridge = allowBridge && CrossingBridge(checkRoom, checkX, checkY, ball);
+                hitWall = !crossingBridge && CollisionCheckBallWithWalls(checkRoom, checkX, checkY);
+            }
+            ball.hitObject = hitObject;
+            ball.hit = hitWall || (hitObject > Board.OBJECT_NONE);
+        }
 
 
 ////        void OtherBallMovement()
@@ -1990,133 +1986,133 @@ namespace GameEngine
             }
         }
 
-////bool CollisionCheckBallWithWalls(int room, int x, int y)
-////{
-////    bool hitWall = false;
+bool CollisionCheckBallWithWalls(int room, int x, int y)
+{
+    bool hitWall = false;
 
-////    // The playfield is drawn partially in the overscan area, so shift that out here
-////    y -= 30;
+    // The playfield is drawn partially in the overscan area, so shift that out here
+    y -= 30;
 
-////    // get the playfield data
-////    const ROOM* currentRoom = roomDefs[room];
-////    const byte* roomData = currentRoom.graphicsData;
+    // get the playfield data
+    ROOM currentRoom = roomDefs[room];
+    byte[] roomData = currentRoom.graphicsData;
 
-////    // get the playfield mirror flag
-////    bool mirror = currentRoom.flags & ROOMFLAG_MIRROR;
+    // get the playfield mirror flag
+            bool mirror = (currentRoom.flags & ROOM.FLAG_MIRROR) > 0;
 
-////    // mask values for playfield bits
-////    byte shiftreg[20] =
-////    {
-////        0x10,0x20,0x40,0x80,
-////        0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
-////        0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
-////    };
+    // mask values for playfield bits
+    byte[] shiftreg = new byte[20]
+    {
+        0x10,0x20,0x40,0x80,
+        0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
+        0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
+    };
 
-////    // each cell is 8 x 32
-////    const int cell_width = 8;
-////    const int cell_height = 32;
+    // each cell is 8 x 32
+    int cell_width = 8;
+    int cell_height = 32;
 
-////    if ((currentRoom.flags & ROOMFLAG_LEFTTHINWALL) && ((x - (4 + 4)) < 0x0D * 2) && ((x + 4) > 0x0D * 2))
-////    {
-////        hitWall = true;
-////    }
-////    if ((currentRoom.flags & ROOMFLAG_RIGHTTHINWALL) && ((x + 4) > 0x96 * 2) && ((x - (4 + 4) < 0x96 * 2)))
-////    {
-////        // If the dot is in this room, allow passage through the wall into the Easter Egg room
-////        if (board[OBJECT_DOT].room != room)
-////            hitWall = true;
-////    }
+    if (((currentRoom.flags & ROOM.FLAG_LEFTTHINWALL) > 0) && ((x - (4 + 4)) < 0x0D * 2) && ((x + 4) > 0x0D * 2))
+    {
+        hitWall = true;
+    }
+    if (((currentRoom.flags & ROOM.FLAG_RIGHTTHINWALL) > 0) && ((x + 4) > 0x96 * 2) && ((x - (4 + 4) < 0x96 * 2)))
+    {
+        // If the dot is in this room, allow passage through the wall into the Easter Egg room
+        if (gameBoard[Board.OBJECT_DOT].room != room)
+            hitWall = true;
+    }
 
-////    // Check each bit of the playfield data to see if they intersect the ball
-////    for (int cy = 0; (cy <= 6) & !hitWall; cy++)
-////    {
-////        byte pf0 = roomData[(cy * 3) + 0];
-////        byte pf1 = roomData[(cy * 3) + 1];
-////        byte pf2 = roomData[(cy * 3) + 2];
+    // Check each bit of the playfield data to see if they intersect the ball
+    for (int cy = 0; (cy <= 6) & !hitWall; cy++)
+    {
+        byte pf0 = roomData[(cy * 3) + 0];
+        byte pf1 = roomData[(cy * 3) + 1];
+        byte pf2 = roomData[(cy * 3) + 2];
 
-////        int ypos = 6 - cy;
+        int ypos = 6 - cy;
 
-////        for (int cx = 0; cx < 20; cx++)
-////        {
-////            byte bit = false;
+        for (int cx = 0; cx < 20; cx++)
+        {
+            byte bit = 0;
 
-////            if (cx < 4)
-////                bit = pf0 & shiftreg[cx];
-////            else if (cx < 12)
-////                bit = pf1 & shiftreg[cx];
-////            else
-////                bit = pf2 & shiftreg[cx];
+            if (cx < 4)
+                bit = (byte)(pf0 & shiftreg[cx]);
+            else if (cx < 12)
+                bit = (byte)(pf1 & shiftreg[cx]);
+            else
+                bit = (byte)(pf2 & shiftreg[cx]);
 
-////            if (bit != 0)
-////            {
-////                if (Board::HitTestRects(x - 4, (y - 4), 8, 8, cx * cell_width, (ypos * cell_height), cell_width, cell_height))
-////                {
-////                    hitWall = true;
-////                    break;
-////                }
+            if (bit != 0)
+            {
+                if (Board.HitTestRects(x - 4, (y - 4), 8, 8, cx * cell_width, (ypos * cell_height), cell_width, cell_height))
+                {
+                    hitWall = true;
+                    break;
+                }
 
-////                if (mirror)
-////                {
-////                    if (Board::HitTestRects(x - 4, (y - 4), 8, 8, (cx + 20) * cell_width, (ypos * cell_height), cell_width, cell_height))
-////                    {
-////                        hitWall = true;
-////                        break;
-////                    }
-////                }
-////                else
-////                {
-////                    if (Board::HitTestRects(x - 4, (y - 4), 8, 8, ((40 - (cx + 1)) * cell_width), (ypos * cell_height), cell_width, cell_height))
-////                    {
-////                        hitWall = true;
-////                        break;
-////                    }
-////                }
+                if (mirror)
+                {
+                    if (Board.HitTestRects(x - 4, (y - 4), 8, 8, (cx + 20) * cell_width, (ypos * cell_height), cell_width, cell_height))
+                    {
+                        hitWall = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    if (Board.HitTestRects(x - 4, (y - 4), 8, 8, ((40 - (cx + 1)) * cell_width), (ypos * cell_height), cell_width, cell_height))
+                    {
+                        hitWall = true;
+                        break;
+                    }
+                }
 
-////            }
+            }
 
-////        }
-////    }
+        }
+    }
 
-////    return hitWall;
-////}
+    return hitWall;
+}
 
-////static bool CrossingBridge(int room, int x, int y, BALL* ball)
-////{
-////    // Check going through the bridge
-////    const OBJECT* bridge = board[OBJECT_BRIDGE];
-////    if ((bridge.room == room)
-////        && (ball.linkedObject != OBJECT_BRIDGE))
-////    {
-////        int xDiff = (x / 2) - bridge.x;
-////        if ((xDiff >= 0x0A) && (xDiff <= 0x17))
-////        {
-////            int yDiff = bridge.y - (y / 2);
+private bool CrossingBridge(int room, int x, int y, BALL ball)
+{
+    // Check going through the bridge
+    OBJECT bridge = gameBoard[Board.OBJECT_BRIDGE];
+    if ((bridge.room == room)
+        && (ball.linkedObject != Board.OBJECT_BRIDGE))
+    {
+        int xDiff = (x / 2) - bridge.x;
+        if ((xDiff >= 0x0A) && (xDiff <= 0x17))
+        {
+            int yDiff = bridge.y - (y / 2);
 
-////            if ((yDiff >= -5) && (yDiff <= 0x15))
-////            {
-////                return true;
-////            }
-////        }
-////    }
-////    return false;
-////}
+            if ((yDiff >= -5) && (yDiff <= 0x15))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
-/////**
-//// * Checks if ball is colliding with any other object.  Returns first object it finds or OBJECT_NONE
-//// * if no collisions.
-//// */
-////static int CollisionCheckBallWithAllObjects(BALL* ball)
-////{
-////    Board::ObjIter iter = gameBoard.getObjects();
-////    return CollisionCheckBallWithObjects(ball, iter);
-////}
+/**
+ * Checks if ball is colliding with any other object.  Returns first object it finds or OBJECT_NONE
+ * if no collisions.
+ */
+private int CollisionCheckBallWithAllObjects(BALL ball)
+{
+    Board.ObjIter iter = gameBoard.getObjects();
+    return CollisionCheckBallWithObjects(ball, iter);
+}
 
-/////**
-//// * Checks if ball is colliding with any of the objects in the iterable collection.
-//// * Returns first object it finds or OBJECT_NONE if no collisions.
-//// */
-////static int CollisionCheckBallWithObjects(BALL* ball, Board::ObjIter& iter)
-////{
+/**
+ * Checks if ball is colliding with any of the objects in the iterable collection.
+ * Returns first object it finds or OBJECT_NONE if no collisions.
+ */
+private int CollisionCheckBallWithObjects(BALL ball, Board.ObjIter iter)
+{
 ////    // Go through all the objects
 ////    while (iter.hasNext())
 ////    {
@@ -2128,8 +2124,8 @@ namespace GameEngine
 ////        }
 ////    }
 
-////    return OBJECT_NONE;
-////}
+    return Board.OBJECT_NONE;
+}
 
 /////**
 //// * Checks if ball is colliding with object.
