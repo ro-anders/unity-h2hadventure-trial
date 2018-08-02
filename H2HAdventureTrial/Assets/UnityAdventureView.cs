@@ -75,11 +75,11 @@ public class UnityAdventureView: AdventureView
     }
 
     public void Platform_ReadJoystick(ref bool joyLeft, ref bool joyUp, ref bool joyRight, ref bool joyDown, ref bool joyFire) {
-        joyLeft = false;
-        joyUp = false;
-        joyRight = true;
-        joyDown = true;
-        joyFire = false;
+        joyLeft = Input.GetKey(KeyCode.LeftArrow);
+        joyUp = Input.GetKey(KeyCode.UpArrow);
+        joyRight = Input.GetKey(KeyCode.RightArrow);
+        joyDown = Input.GetKey(KeyCode.DownArrow);
+        joyFire = Input.GetKey(KeyCode.Space);
     }
 
 
