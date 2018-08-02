@@ -1907,18 +1907,18 @@ namespace GameEngine
                 }
             }
 
-            ////if (roomDefs[room].flags & ROOMFLAG_LEFTTHINWALL)
-            ////{
-            ////    // Position missile 00 to 0D,00 - left thin wall
-            ////    COLOR color = colorTable[(colorFirst > 0) ? colorFirst : COLOR_BLACK];
-            ////    Platform_PaintPixel(color.r, color.g, color.b, 0x0D * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
-            ////}
-            ////if (roomDefs[room].flags & ROOMFLAG_RIGHTTHINWALL)
-            ////{
-            ////    // Position missile 01 to 96,00 - right thin wall
-            ////    COLOR color = colorTable[(colorFirst > 0) ? colorLast : COLOR_BLACK];
-            ////    Platform_PaintPixel(color.r, color.g, color.b, 0x96 * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
-            ////}
+            if ((roomDefs[room].flags & ROOM.FLAG_LEFTTHINWALL) > 0)
+            {
+                // Position missile 00 to 0D,00 - left thin wall
+                COLOR color = COLOR.table((colorFirst > 0) ? colorFirst : COLOR.BLACK);
+                view.Platform_PaintPixel(color.r, color.g, color.b, 0x0D * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
+            }
+            if ((roomDefs[room].flags & ROOM.FLAG_RIGHTTHINWALL) > 0)
+            {
+                // Position missile 01 to 96,00 - right thin wall
+                COLOR color = COLOR.table((colorFirst > 0) ? colorLast : COLOR.BLACK);
+                view.Platform_PaintPixel(color.r, color.g, color.b, 0x96 * 2, 0x00 * 2, 4, ADVENTURE_TOTAL_SCREEN_HEIGHT);
+            }
         }
 
         private void DrawBall(BALL ball, COLOR color)
