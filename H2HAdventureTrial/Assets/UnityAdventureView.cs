@@ -74,5 +74,13 @@ public class UnityAdventureView: AdventureView
             }
     }
 
+    public void Platform_ReadJoystick(ref bool joyLeft, ref bool joyUp, ref bool joyRight, ref bool joyDown, ref bool joyFire) {
+        joyLeft = false;
+        joyUp = false;
+        joyRight = true;
+        joyDown = true;
+        joyFire = false;
+    }
+
 
 }

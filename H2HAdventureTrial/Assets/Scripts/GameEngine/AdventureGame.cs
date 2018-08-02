@@ -81,6 +81,8 @@ namespace GameEngine
         private int flashColorHue = 0;
         private int flashColorLum = 0;
         private int displayListIndex = 0;
+        private bool joyLeft, joyUp, joyRight, joyDown, joyFire;
+        private bool joystickDisabled = false;
         private bool switchReset = false;
 
         ////static Sync* sync;
@@ -119,7 +121,7 @@ namespace GameEngine
             numPlayers = inNumPlayers;
             thisPlayer = inThisPlayer;
             gameMode = inGameNum;
-////            joystickDisabled = (gameMode == GAME_MODE_SCRIPTING);
+            joystickDisabled = (gameMode == GAME_MODE_SCRIPTING);
             timeToStartGame = 60 * 3;
 
 ////            // The map for game 3 is the same as 2 and the map for scripting is hard-coded here
@@ -207,7 +209,7 @@ namespace GameEngine
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY2, crystalKeys[1]);
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY3, crystalKeys[2]);
 ////            gameBoard.addObject(OBJECT_BAT, bat);
-////            gameBoard.addObject(OBJECT_DOT, new OBJECT("dot", objectGfxDot, 0, 0, COLOR_LTGRAY, OBJECT::FIXED_LOCATION));
+            gameBoard.addObject(Board.OBJECT_DOT, new OBJECT("dot", objectGfxDot, new byte[0], 0, COLOR.LTGRAY, OBJECT.RandomizedLocations.FIXED_LOCATION));
             gameBoard.addObject(Board.OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, new byte[0], 0, COLOR.FLASH));
 ////            gameBoard.addObject(OBJECT_EASTEREGG, new OBJECT("easteregg", objectGfxEasterEgg, 0, 0, COLOR_FLASH,
 ////                                                           OBJECT::OPEN_OR_IN_CASTLE, 0x03));
@@ -636,8 +638,8 @@ namespace GameEngine
 ////                    }
 ////                    else
 ////                    {
-////                        // Read joystick
-////                        Platform_ReadJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
+                        // Read joystick
+                        view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
 ////                        if (Robot::isOn())
 ////                        {
 ////                            Robot::ControlJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
@@ -651,8 +653,8 @@ namespace GameEngine
 
                         if (gameState == GAMESTATE_ACTIVE_1)
                         {
-////                            // Move balls
-////                            ThisBallMovement();
+                            // Move balls
+                            ThisBallMovement();
 ////                            for (int i = 0; i < numPlayers; ++i)
 ////                            {
 ////                                if (i != thisPlayer)
@@ -1112,44 +1114,44 @@ namespace GameEngine
 ////            }
 ////        }
 
-////        void ThisBallMovement()
-////        {
-////            // Read the joystick and translate into a velocity
-////            int prevVelX = objectBall.velx;
-////            int prevVelY = objectBall.vely;
-////            // If we are scripting, we don't ever look at the joystick or change the velocity here.
-////            if (!joystickDisabled)
-////            {
-////                int newVelY = 0;
-////                if (joyUp)
-////                {
-////                    if (!joyDown)
-////                    {
-////                        newVelY = 6;
-////                    }
-////                }
-////                else if (joyDown)
-////                {
-////                    newVelY = -6;
-////                }
-////                objectBall.vely = newVelY;
+        void ThisBallMovement()
+        {
+            // Read the joystick and translate into a velocity
+            int prevVelX = objectBall.velx;
+            int prevVelY = objectBall.vely;
+            // If we are scripting, we don't ever look at the joystick or change the velocity here.
+            if (!joystickDisabled)
+            {
+                int newVelY = 0;
+                if (joyUp)
+                {
+                    if (!joyDown)
+                    {
+                        newVelY = 6;
+                    }
+                }
+                else if (joyDown)
+                {
+                    newVelY = -6;
+                }
+                objectBall.vely = newVelY;
 
-////                int newVelX = 0;
-////                if (joyRight)
-////                {
-////                    if (!joyLeft)
-////                    {
-////                        newVelX = 6;
-////                    }
-////                }
-////                else if (joyLeft)
-////                {
-////                    newVelX = -6;
-////                }
-////                objectBall.velx = newVelX;
-////            }
+                int newVelX = 0;
+                if (joyRight)
+                {
+                    if (!joyLeft)
+                    {
+                        newVelX = 6;
+                    }
+                }
+                else if (joyLeft)
+                {
+                    newVelX = -6;
+                }
+                objectBall.velx = newVelX;
+            }
 
-////            BallMovement(objectBall);
+            BallMovement(objectBall);
 
 ////            if (!joystickDisabled && ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY)))
 ////            {
@@ -1157,50 +1159,50 @@ namespace GameEngine
 ////                PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
 ////                sync.BroadcastAction(moveAction);
 ////            }
-////        }
+        }
 
-////        void BallMovement(BALL* ball)
-////        {
+        void BallMovement(BALL ball)
+        {
 
-////            bool eaten = false;
+            bool eaten = false;
 ////            for (int ctr = 0; ctr < numDragons && !eaten; ++ctr)
 ////            {
 ////                eaten = (dragons[ctr].eaten == ball);
 ////            }
 
-////            // Save the last, non-colliding position
-////            if (ball.hit)
-////            {
-////                ball.x = ball.previousX;
-////                ball.y = ball.previousY;
-////                ball.room = ball.previousRoom;
-////            }
-////            else
-////            {
-////                ball.previousX = ball.x;
-////                ball.previousY = ball.y;
-////                ball.previousRoom = ball.room;
-////            }
+            // Save the last, non-colliding position
+            if (ball.hit)
+            {
+                ball.x = ball.previousX;
+                ball.y = ball.previousY;
+                ball.room = ball.previousRoom;
+            }
+            else
+            {
+                ball.previousX = ball.x;
+                ball.previousY = ball.y;
+                ball.previousRoom = ball.room;
+            }
 
-////            ball.hit = eaten;
-////            ball.hitObject = OBJECT_NONE;
+            ball.hit = eaten;
+            ball.hitObject = Board.OBJECT_NONE;
 
-////            // Move the ball
-////            ball.x += ball.velx;
-////            ball.y += ball.vely;
+            // Move the ball
+            ball.x += ball.velx;
+            ball.y += ball.vely;
 
 
-////            // Wrap rooms in Y if necessary
-////            if (ball.y > TOP_EDGE)
-////            {
-////                ball.y = ENTER_AT_BOTTOM;
-////                ball.room = roomDefs[ball.room].roomUp;
-////            }
-////            else if (ball.y < BOTTOM_EDGE)
-////            {
+            // Wrap rooms in Y if necessary
+            if (ball.y > Board.TOP_EDGE)
+            {
+                ball.y = Board.ENTER_AT_BOTTOM;
+                ball.room = roomDefs[ball.room].roomUp;
+            }
+            else if (ball.y < Board.BOTTOM_EDGE)
+            {
 ////                // Handle the ball leaving a castle.
 ////                bool canUnlockFromInside = ((gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE) != 0);
-////                bool leftCastle = false;
+                bool leftCastle = false;
 ////                for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr)
 ////                {
 ////                    Portcullis* port = ports[portalCtr];
@@ -1227,46 +1229,46 @@ namespace GameEngine
 ////                    }
 ////                }
 
-////                if (!leftCastle)
-////                {
-////                    // Wrap the ball to the top of the next screen
-////                    ball.y = ENTER_AT_TOP;
-////                    ball.room = roomDefs[ball.room].roomDown;
-////                }
-////            }
+                if (!leftCastle)
+                {
+                    // Wrap the ball to the top of the next screen
+                    ball.y = Board.ENTER_AT_TOP;
+                    ball.room = roomDefs[ball.room].roomDown;
+                }
+            }
 
-////            if (ball.x >= RIGHT_EDGE)
-////            {
-////                // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
-////                if (ball.room != ball.previousRoom)
-////                {
-////                    ball.x = ball.previousX;
-////                    ball.velx = 0;
-////                }
-////                else
-////                {
-////                    // Wrap the ball to the left side of the next screen
-////                    ball.x = ENTER_AT_LEFT;
+            if (ball.x >= Board.RIGHT_EDGE)
+            {
+                // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
+                if (ball.room != ball.previousRoom)
+                {
+                    ball.x = ball.previousX;
+                    ball.velx = 0;
+                }
+                else
+                {
+                    // Wrap the ball to the left side of the next screen
+                    ball.x = Board.ENTER_AT_LEFT;
 
-////                    // Figure out the room to the right (which might be the secret room)
-////                    ball.room = (ball.room == MAIN_HALL_RIGHT ? ROBINETT_ROOM :
-////                                     roomDefs[ball.room].roomRight);
-////                }
-////            }
-////            else if (ball.x < LEFT_EDGE)
-////            {
-////                // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
-////                if (ball.room != ball.previousRoom)
-////                {
-////                    ball.x = ball.previousX;
-////                    ball.velx = 0;
-////                }
-////                else
-////                {
-////                    ball.x = ENTER_AT_RIGHT;
-////                    ball.room = roomDefs[ball.room].roomLeft;
-////                }
-////            }
+                    // Figure out the room to the right (which might be the secret room)
+                    ball.room = (ball.room == Map.MAIN_HALL_RIGHT && gameBoard[Board.OBJECT_DOT].room == Map.MAIN_HALL_RIGHT ?
+                                  Map.ROBINETT_ROOM : roomDefs[ball.room].roomRight);
+                }
+            }
+            else if (ball.x < Board.LEFT_EDGE)
+            {
+                // Can't diagonally switch rooms.  If trying, only allow changing rooms vertically
+                if (ball.room != ball.previousRoom)
+                {
+                    ball.x = ball.previousX;
+                    ball.velx = 0;
+                }
+                else
+                {
+                    ball.x = Board.ENTER_AT_RIGHT;
+                    ball.room = roomDefs[ball.room].roomLeft;
+                }
+            }
 
 ////            if (ball == objectBall)
 ////            {
@@ -1280,9 +1282,9 @@ namespace GameEngine
 ////                }
 ////            }
 
-////            ball.displayedRoom = ball.room;
+            ball.displayedRoom = ball.room;
 
-////        }
+        }
 
 ////        // Check if the ball would be hitting anything (wall, object, ...)
 ////        // ball - the ball to check
@@ -2415,12 +2417,11 @@ namespace GameEngine
             0x20                   //   X                                                                       
         } };
 
-        ////// Object #0F : State FF : Graphic                                                                                   
-        ////static const byte objectGfxDot[] =
-        ////{
-        ////    1,
-        ////    0x80                   // X                                                                         
-        ////};
+        // Object #0F : State FF : Graphic                                                                                   
+        private static byte[][] objectGfxDot = new byte[][]
+        { new byte[] {
+            0x80                   // X                                                                         
+        } };
 
         // Object #4 : State FF : Graphic                                                                                    
         private static byte[][] objectGfxAuthor = new byte[][]
@@ -2594,9 +2595,6 @@ namespace GameEngine
 ////// local game state vars
 //////
 
-////static bool joyLeft, joyUp, joyRight, joyDown, joyFire;
-
-////static bool joystickDisabled = false;
 
 ////#define GAMEOPTION_PRIVATE_MAGNETS  1
 ////#define GAMEOPTION_UNLOCK_GATES_FROM_INSIDE 2
