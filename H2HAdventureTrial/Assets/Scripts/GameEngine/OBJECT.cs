@@ -98,7 +98,7 @@ namespace GameEngine
          * Returns true if this object is solid or grabbable by the player.  If object is private (e.g. private magnet)
          * will return false and player will pass right through it without picking it up.
          */
-        bool isTangibleTo(int player) {
+        public bool isTangibleTo(int player) {
             return (privateToPlayer< 0) || (privateToPlayer == player);
         }
 

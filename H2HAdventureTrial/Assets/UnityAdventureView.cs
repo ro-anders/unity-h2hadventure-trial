@@ -15,7 +15,7 @@ public class UnityAdventureView: AdventureView
     private int at = 0;
 
     public void AdventureSetup(RenderTexture inRenderTexture, Texture2D inTexture) {
-        gameEngine = new AdventureGame(this, 2, 1, 1);
+        gameEngine = new AdventureGame(this, 2, 0, 0);
         renderTexture = inRenderTexture;
         texture = inTexture;
 
@@ -82,5 +82,8 @@ public class UnityAdventureView: AdventureView
         joyFire = Input.GetKey(KeyCode.Space);
     }
 
+    public void Platform_MakeSound(SOUND sound, float volume) {
+        //// TBD
+    }
 
 }

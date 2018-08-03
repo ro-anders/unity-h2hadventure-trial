@@ -70,6 +70,12 @@ namespace GameEngine
         private const int GAMESTATE_ACTIVE_3 = 3;
         private const int GAMESTATE_WIN = 4;
 
+        // local game state vars
+        private const int GAMEOPTION_PRIVATE_MAGNETS = 1;
+        private const int GAMEOPTION_UNLOCK_GATES_FROM_INSIDE = 2;
+        private const int GAMEOPTION_NO_HIDE_KEY_IN_CASTLE = 4;
+
+
         private AdventureView view;
 
         private int winFlashTimer = 0;
@@ -110,6 +116,10 @@ namespace GameEngine
         private ROOM[] roomDefs;
         private Map gameMap;
         private Board gameBoard;
+
+        // This holds all the switches for whether to turn on or off different game options
+        // It is a bitwise or of each game option
+        private int gameOptions = GAMEOPTION_NO_HIDE_KEY_IN_CASTLE;
 
         public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer,//// Transport* inTransport,
                              int inGameNum
@@ -658,8 +668,8 @@ namespace GameEngine
                                 }
                             }
 
-////                            // Move the carried object
-////                            MoveCarriedObjects();
+                            // Move the carried object
+                            MoveCarriedObjects();
 
                             // Collision check the balls in their new coordinates against walls and objects
                             for (int i = 0; i < numPlayers; ++i)
@@ -675,8 +685,8 @@ namespace GameEngine
                         }
                         else if (gameState == GAMESTATE_ACTIVE_2)
                         {
-////                            // Deal with object pickup and putdown
-////                            PickupPutdown();
+                            // Deal with object pickup and putdown
+                            PickupPutdown();
 
                             for (int i = 0; i < numPlayers; ++i)
                             {
@@ -1363,28 +1373,28 @@ namespace GameEngine
 ////            }
 ////        }
 
-////        void MoveCarriedObjects()
-////        {
-////            // RCA: moveBallIntoCastle originally was called after we moved the carried objects, but
-////            // this created too many problems with the ball being in the castle and the key being
-////            // still outside the castle.  So I moved it to before.
-////            moveBallIntoCastle();
+        void MoveCarriedObjects()
+        {
+            // RCA: moveBallIntoCastle originally was called after we moved the carried objects, but
+            // this created too many problems with the ball being in the castle and the key being
+            // still outside the castle.  So I moved it to before.
+            ////moveBallIntoCastle();
 
-////            for (int ctr = 0; ctr < numPlayers; ++ctr)
-////            {
-////                BALL* nextBall = gameBoard.getPlayer(ctr);
-////                if (nextBall.linkedObject != OBJECT_NONE)
-////                {
-////                    OBJECT * object = board[nextBall.linkedObject];
-////                    object.x = (nextBall.x / 2) + nextBall.linkedObjectX;
-////                    object.y = (nextBall.y / 2) + nextBall.linkedObjectY;
-////                    object.room = nextBall.room;
-////                }
-////            }
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                BALL nextBall = gameBoard.getPlayer(ctr);
+                if (nextBall.linkedObject != Board.OBJECT_NONE)
+                {
+                    OBJECT objct = gameBoard[nextBall.linkedObject];
+                    objct.x = (nextBall.x / 2) + nextBall.linkedObjectX;
+                    objct.y = (nextBall.y / 2) + nextBall.linkedObjectY;
+                    objct.room = nextBall.room;
+                }
+            }
 
-////            // Seems like a weird place to call this but this matches the original game
-////            MoveGroundObject();
-////        }
+            // Seems like a weird place to call this but this matches the original game
+            MoveGroundObject();
+        }
 
 ////        void moveBallIntoCastle()
 ////        {
@@ -1434,76 +1444,76 @@ namespace GameEngine
 ////            }
 ////        }
 
-////        void MoveGroundObject()
-////        {
-////            // Move any objects that need moving, and wrap objects from room to room
-////            Board::ObjIter iter = board.getMovableObjects();
-////            while (iter.hasNext())
-////            {
+        void MoveGroundObject()
+        {
+            // Move any objects that need moving, and wrap objects from room to room
+            Board.ObjIter iter = gameBoard.getMovableObjects();
+            while (iter.hasNext())
+            {
 
-////                OBJECT * object = iter.next();
+                OBJECT objct = iter.next();
 
-////                // Apply movement
-////                if ((object.gfxData != Dragon::gfxData) || (object.state == 0))
-////                {
-////                    object.x += object.getMovementX();
-////                    object.y += object.getMovementY();
-////                }
+                // Apply movement
+                if (objct.state <= 1) // Any state above 2 is non-moving
+                {
+                    objct.x += objct.getMovementX();
+                    objct.y += objct.getMovementY();
+                }
 
-////                // Check and Deal with Up
-////                if (object.y > 0x6A)
-////                {
-////                    object.y = 0x0D;
-////                    object.room = roomDefs[object.room].roomUp;
-////                }
+                // Check and Deal with Up
+                if (objct.y > 0x6A)
+                {
+                    objct.y = 0x0D;
+                    objct.room = roomDefs[objct.room].roomUp;
+                }
 
-////                // Check and Deal with Left
-////                if (object.x < 0x03)
-////                {
-////                    object.x = 0x9A;
-////                    object.room = roomDefs[object.room].roomLeft;
-////                }
+                // Check and Deal with Left
+                if (objct.x < 0x03)
+                {
+                    objct.x = 0x9A;
+                    objct.room = roomDefs[objct.room].roomLeft;
+                }
 
-////                // Check and Deal with Down
-////                if (object.y < 0x0D)
-////                {
-////                    // Handle object leaving the castles
-////                    bool leftCastle = false;
-////                    for (int ctr = 0; (ctr < numPorts) && (!leftCastle); ++ctr)
-////                    {
-////                        if ((object.room == ports[ctr].insideRoom) && (ports[ctr].allowsEntry))
-////                        {
-////                            object.x = Portcullis::EXIT_X / 2;
-////                            object.y = Portcullis::EXIT_Y / 2;
-////                            object.room = ports[ctr].room;
-////                            // TODO: Do we need to broadcast leaving the castle?  Seems there might be quite a jump.
-////                            leftCastle = true;
-////                        }
-////                    }
-////                    if (!leftCastle)
-////                    {
-////                        object.y = 0x69;
-////                        object.room = roomDefs[object.room].roomDown;
-////                    }
-////                }
+                // Check and Deal with Down
+                if (objct.y < 0x0D)
+                {
+                    // Handle object leaving the castles
+                    bool leftCastle = false;
+                    ////for (int ctr = 0; (ctr < numPorts) && (!leftCastle); ++ctr)
+                    ////{
+                    ////    if ((objct.room == ports[ctr].insideRoom) && (ports[ctr].allowsEntry))
+                    ////    {
+                    ////        objct.x = Portcullis::EXIT_X / 2;
+                    ////        objct.y = Portcullis::EXIT_Y / 2;
+                    ////        objct.room = ports[ctr].room;
+                    ////        // TODO: Do we need to broadcast leaving the castle?  Seems there might be quite a jump.
+                    ////        leftCastle = true;
+                    ////    }
+                    ////}
+                    if (!leftCastle)
+                    {
+                        objct.y = 0x69;
+                        objct.room = roomDefs[objct.room].roomDown;
+                    }
+                }
 
-////                // Check and Deal with Right
-////                if (object.x > 0x9B)
-////                {
-////                    object.x = 0x03;
-////                    object.room = roomDefs[object.room].roomRight;
-////                }
+                // Check and Deal with Right
+                if (objct.x > 0x9B)
+                {
+                    objct.x = 0x03;
+                    objct.room = roomDefs[objct.room].roomRight;
+                }
 
-////                // If the object has a linked object
-////                if ((object == bat) && (bat.linkedObject != OBJECT_NONE))
-////                {
-////                    OBJECT* linkedObj = board[bat.linkedObject];
-////                    linkedObj.x = object.x + bat.linkedObjectX;
-////                    linkedObj.y = object.y + bat.linkedObjectY;
-////                    linkedObj.room = object.room;
-////                }
-////            }
-////        }
+                ////// If the objct has a linked object
+                ////if ((objct == bat) && (bat.linkedObject != Board.OBJECT_NONE))
+                ////{
+                ////    OBJECT linkedObj = gameBoard[bat.linkedObject];
+                ////    linkedObj.x = objct.x + bat.linkedObjectX;
+                ////    linkedObj.y = objct.y + bat.linkedObjectY;
+                ////    linkedObj.room = objct.room;
+                ////}
+            }
+        }
 
 ////        void OthersPickupPutdown()
 ////        {
@@ -1556,135 +1566,135 @@ namespace GameEngine
 ////            }
 ////        }
 
-////        /**
-////         * To make game play more fun, you can't shove your key inside the walls of your own castle.  If you try, it will
-////         * stick out the other side.
-////         */
-////        void unhideKey(OBJECT* droppedObject)
-////        {
+        /**
+         * To make game play more fun, you can't shove your key inside the walls of your own castle.  If you try, it will
+         * stick out the other side.
+         */
+        void unhideKey(OBJECT droppedObject)
+        {
 
-////            int objectPkey = droppedObject.getPKey();
-////            if ((objectPkey == OBJECT_YELLOWKEY) || (objectPkey == OBJECT_COPPERKEY) || (objectPkey == OBJECT_JADEKEY))
-////            {
-////                int roomNum = droppedObject.room;
-////                if ((roomNum == GOLD_FOYER) || (roomNum == COPPER_FOYER) || (roomNum == JADE_FOYER))
-////                {
-////                    if (droppedObject.y < 15)
-////                    {
-////                        droppedObject.y = 15;
-////                    }
-////                    else if (droppedObject.y > 99)
-////                    {
-////                        droppedObject.y = 99;
-////                    }
-////                }
-////            }
-////        }
+            int objectPkey = droppedObject.getPKey();
+            if ((objectPkey == Board.OBJECT_YELLOWKEY) || (objectPkey == Board.OBJECT_COPPERKEY) || (objectPkey == Board.OBJECT_JADEKEY))
+            {
+                int roomNum = droppedObject.room;
+                if ((roomNum == Map.GOLD_FOYER) || (roomNum == Map.COPPER_FOYER) || (roomNum == Map.JADE_FOYER))
+                {
+                    if (droppedObject.y < 15)
+                    {
+                        droppedObject.y = 15;
+                    }
+                    else if (droppedObject.y > 99)
+                    {
+                        droppedObject.y = 99;
+                    }
+                }
+            }
+        }
 
-////        void PickupPutdown()
-////        {
-////            if (!joystickDisabled && joyFire && (objectBall.linkedObject >= 0))
-////            {
-////                int dropped = objectBall.linkedObject;
-////                OBJECT* droppedObject = board[dropped];
+        void PickupPutdown()
+        {
+            if (!joystickDisabled && joyFire && (objectBall.linkedObject >= 0))
+            {
+                int dropped = objectBall.linkedObject;
+                OBJECT droppedObject = gameBoard[dropped];
 
-////                // Put down the current object!
-////                objectBall.linkedObject = OBJECT_NONE;
+                // Put down the current object!
+                objectBall.linkedObject = Board.OBJECT_NONE;
 
-////                if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0)
-////                {
-////                    unhideKey(droppedObject);
-////                }
+                if ((gameOptions & GAMEOPTION_NO_HIDE_KEY_IN_CASTLE) != 0)
+                {
+                    unhideKey(droppedObject);
+                }
 
-////                // Tell other clients about the drop
-////                PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, dropped, droppedObject.room,
-////                                                                   droppedObject.x, droppedObject.y);
-////                sync.BroadcastAction(action);
+                ////// Tell other clients about the drop
+                ////PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, dropped, droppedObject.room,
+                ////                                                   droppedObject.x, droppedObject.y);
+                ////sync.BroadcastAction(action);
 
-////                // Play the sound
-////                Platform_MakeSound(SOUND_PUTDOWN, MAX_VOLUME);
-////            }
-////            else
-////            {
-////                // See if we are touching any carryable objects
-////                Board::ObjIter iter = gameBoard.getCarryableObjects();
-////                int hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
-////                if (hitIndex > OBJECT_NONE)
-////                {
-////                    // Ignore the object we are already carrying
-////                    if (hitIndex == objectBall.linkedObject)
-////                    {
-////                        // Check the remainder of the objects
-////                        hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
-////                    }
+                // Play the sound
+                view.Platform_MakeSound(SOUND.PUTDOWN, MAX.VOLUME);
+            }
+            else
+            {
+                // See if we are touching any carryable objects
+                Board.ObjIter iter = gameBoard.getCarryableObjects();
+                int hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
+                if (hitIndex > Board.OBJECT_NONE)
+                {
+                    // Ignore the object we are already carrying
+                    if (hitIndex == objectBall.linkedObject)
+                    {
+                        // Check the remainder of the objects
+                        hitIndex = CollisionCheckBallWithObjects(objectBall, iter);
+                    }
 
-////                    if (hitIndex > OBJECT_NONE)
-////                    {
-////                        // Collect info about whether we are also dropping an object (for when we broadcast the action)
-////                        PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
-////                        int dropIndex = objectBall.linkedObject;
-////                        if (dropIndex > OBJECT_NONE)
-////                        {
-////                            OBJECT* dropped = board[dropIndex];
-////                            action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
-////                        }
+                    if (hitIndex > Board.OBJECT_NONE)
+                    {
+                        // Collect info about whether we are also dropping an object (for when we broadcast the action)
+                        ////PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
+                        int dropIndex = objectBall.linkedObject;
+                        ////if (dropIndex > Board.OBJECT_NONE)
+                        ////{
+                        ////    OBJECT dropped = gameBoard[dropIndex];
+                        ////    action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
+                        ////}
 
-////                        // If the bat is holding the object we do some of the pickup things but not all.
-////                        // We drop our current object and play the pickup sound, but we don't actually
-////                        // pick up the object.
-////                        // NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
-////                        // not totally sure what should be done.  As a guess, we just set linkedObject to none and
-////                        // play the sound.
-////                        if (bat.exists() && (bat.linkedObject == hitIndex))
-////                        {
-////                            if (dropIndex > OBJECT_NONE)
-////                            {
-////                                // Drop our current object and broadcast it
-////                                objectBall.linkedObject = OBJECT_NONE;
-////                                sync.BroadcastAction(action);
-////                            }
-////                            else
-////                            {
-////                                // Don't need the action.
-////                                delete action;
-////                            }
-////                        }
-////                        else
-////                        {
+                        ////// If the bat is holding the object we do some of the pickup things but not all.
+                        ////// We drop our current object and play the pickup sound, but we don't actually
+                        ////// pick up the object.
+                        ////// NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
+                        ////// not totally sure what should be done.  As a guess, we just set linkedObject to none and
+                        ////// play the sound.
+                        ////if (bat.exists() && (bat.linkedObject == hitIndex))
+                        ////{
+                        ////    if (dropIndex > OBJECT_NONE)
+                        ////    {
+                        ////        // Drop our current object and broadcast it
+                        ////        objectBall.linkedObject = OBJECT_NONE;
+                        ////        sync.BroadcastAction(action);
+                        ////    }
+                        ////    else
+                        ////    {
+                        ////        // Don't need the action.
+                        ////        delete action;
+                        ////    }
+                        ////}
+                        ////else
+                        ////{
 
-////                            // Pick up this object!
-////                            objectBall.linkedObject = hitIndex;
+                            // Pick up this object!
+                            objectBall.linkedObject = hitIndex;
 
-////                            // calculate the XY offsets from the ball's position
-////                            objectBall.linkedObjectX = board[hitIndex].x - (objectBall.x / 2);
-////                            objectBall.linkedObjectY = board[hitIndex].y - (objectBall.y / 2);
+                            // calculate the XY offsets from the ball's position
+                            objectBall.linkedObjectX = gameBoard[hitIndex].x - (objectBall.x / 2);
+                            objectBall.linkedObjectY = gameBoard[hitIndex].y - (objectBall.y / 2);
 
-////                            // Take it away from anyone else if they were holding it.
-////                            for (int ctr = 0; ctr < numPlayers; ++ctr)
-////                            {
-////                                if ((ctr != thisPlayer) && (gameBoard.getPlayer(ctr).linkedObject == hitIndex))
-////                                {
-////                                    gameBoard.getPlayer(ctr).linkedObject = OBJECT_NONE;
-////                                }
-////                            }
+                            // Take it away from anyone else if they were holding it.
+                            for (int ctr = 0; ctr < numPlayers; ++ctr)
+                            {
+                                if ((ctr != thisPlayer) && (gameBoard.getPlayer(ctr).linkedObject == hitIndex))
+                                {
+                                    gameBoard.getPlayer(ctr).linkedObject = Board.OBJECT_NONE;
+                                }
+                            }
 
-////                            if ((hitIndex >= OBJECT_CRYSTALKEY1) && (hitIndex <= OBJECT_CRYSTALKEY3))
-////                            {
-////                                EasterEgg::foundKey();
-////                            }
+                            ////if ((hitIndex >= OBJECT_CRYSTALKEY1) && (hitIndex <= OBJECT_CRYSTALKEY3))
+                            ////{
+                            ////    EasterEgg::foundKey();
+                            ////}
+                            
+                            ////// Broadcast that we picked up an object
+                            ////action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
+                            ////sync.BroadcastAction(action);
 
-////                            // Broadcast that we picked up an object
-////                            action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
-////                            sync.BroadcastAction(action);
+                        ////}
 
-////                        }
-
-////                        // Play the sound
-////                        Platform_MakeSound(SOUND_PICKUP, MAX_VOLUME);
-////                    }
-////                }
-////            }
-////        }
+                        // Play the sound
+                        view.Platform_MakeSound(SOUND.PICKUP, MAX.VOLUME);
+                    }
+                }
+            }
+        }
 
         void Surround()
         {
@@ -2109,38 +2119,38 @@ private int CollisionCheckBallWithAllObjects(BALL ball)
  */
 private int CollisionCheckBallWithObjects(BALL ball, Board.ObjIter iter)
 {
-////    // Go through all the objects
-////    while (iter.hasNext())
-////    {
-////        // If this object is in the current room and can be picked up, check it against the ball
-////        const OBJECT* object = iter.next();
-////        if (CollisionCheckBallWithObject(ball, object))
-////        {
-////            return object.getPKey();
-////        }
-////    }
+    // Go through all the objects
+    while (iter.hasNext())
+    {
+        // If this object is in the current room and can be picked up, check it against the ball
+        OBJECT objct = iter.next();
+        if (CollisionCheckBallWithObject(ball, objct))
+        {
+            return objct.getPKey();
+        }
+    }
 
     return Board.OBJECT_NONE;
 }
 
-/////**
-//// * Checks if ball is colliding with object.
-//// */
-////static bool CollisionCheckBallWithObject(BALL* ball, const OBJECT* object)
-////{
-////    bool collision = (object.displayed &&
-////                      object.isTangibleTo(thisPlayer) &&
-////                      (ball.room == object.room) &&
-////                      (CollisionCheckObject(object, ball.x - 4, (ball.y - 1), 8, 8)) ? true : false);
-////    return collision;
-////}
+/**
+ * Checks if ball is colliding with object.
+ */
+private bool CollisionCheckBallWithObject(BALL ball, OBJECT objct)
+{
+    bool collision = (objct.displayed &&
+                      objct.isTangibleTo(thisPlayer) &&
+                      (ball.room == objct.room) &&
+                      (CollisionCheckObject(objct, ball.x - 4, (ball.y - 1), 8, 8)) ? true : false);
+    return collision;
+}
 
-////// Checks an object for collision against the specified rectangle
-////// On the 2600 this is done in hardware by the Player/Missile collision registers
-////bool CollisionCheckObject(const OBJECT* object, int x, int y, int width, int height)
-////{
-////    return gameBoard.CollisionCheckObject(object, x, y, width, height);
-////}
+// Checks an object for collision against the specified rectangle
+// On the 2600 this is done in hardware by the Player/Missile collision registers
+private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int height)
+{
+    return gameBoard.CollisionCheckObject(objct, x, y, width, height);
+}
 
 
 /////**
@@ -2574,21 +2584,6 @@ private int CollisionCheckBallWithObjects(BALL ball, Board.ObjIter iter)
     }
 }
 
-
-
-
-
-//////
-////// local game state vars
-//////
-
-
-////#define GAMEOPTION_PRIVATE_MAGNETS  1
-////#define GAMEOPTION_UNLOCK_GATES_FROM_INSIDE 2
-////#define GAMEOPTION_NO_HIDE_KEY_IN_CASTLE 3
-////// This holds all the switches for whether to turn on or off different game options
-////// It is a bitwise or of each game option
-////static int gameOptions = GAMEOPTION_NO_HIDE_KEY_IN_CASTLE;
 
 
 
