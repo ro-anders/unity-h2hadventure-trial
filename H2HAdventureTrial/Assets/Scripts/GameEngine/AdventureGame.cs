@@ -90,8 +90,7 @@ namespace GameEngine
         private int thisPlayer;
         private BALL objectBall;
 
-////static OBJECT** surrounds;
-//////
+        private OBJECT[] surrounds;
 
         /** We wait a few seconds between when the game comes up connected and when the game actually starts.
          This is the countdown timer. */
@@ -110,7 +109,7 @@ namespace GameEngine
 
         private ROOM[] roomDefs;
         private Map gameMap;
-        private Board gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT);
+        private Board gameBoard;
 
         public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer,//// Transport* inTransport,
                              int inGameNum
@@ -124,22 +123,20 @@ namespace GameEngine
             joystickDisabled = (gameMode == GAME_MODE_SCRIPTING);
             timeToStartGame = 60 * 3;
 
-////            // The map for game 3 is the same as 2 and the map for scripting is hard-coded here
-////            // so it could be easily changed.
+            // The map for game 3 is the same as 2 and the map for scripting is hard-coded here
+            // so it could be easily changed.
             gameMapLayout = (gameMode == Adv.GAME_MODE_SCRIPTING ? Adv.GAME_MODE_2 :
                              (gameMode == Adv.GAME_MODE_3 ? Adv.GAME_MODE_2 : gameMode));
             gameMap = new Map(numPlayers, gameMapLayout);
             roomDefs = gameMap.roomDefs;
-////            gameBoard.map = gameMap;
+            gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap);
 ////            EasterEgg::setup(gameBoard);
 
-////            surrounds = new OBJECT*[numPlayers];
-////            char surroundName[16];
-////            for (int ctr = 0; ctr < numPlayers; ++ctr)
-////            {
-////                sprintf(surroundName, "surround%d", ctr);
-////                surrounds[ctr] = new OBJECT(surroundName, objectGfxSurround, 0, 0, COLOR_ORANGE, OBJECT::FIXED_LOCATION, 0x07);
-////            }
+            surrounds = new OBJECT[numPlayers];
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                surrounds[ctr] = new OBJECT("surround" + ctr, objectGfxSurround, new byte[0], 0, COLOR.ORANGE, OBJECT.RandomizedLocations.FIXED_LOCATION, 0x07);
+            }
 
 ////            Dragon::Difficulty difficulty = (gameMode == GAME_MODE_1 ?
 ////                                             (initialLeftDiff == DIFFICULTY_B ? Dragon::TRIVIAL : Dragon::EASY) :
@@ -259,17 +256,16 @@ namespace GameEngine
             // Fill the entire backbuffer with the playfield background color before we draw anything else
             view.Platform_PaintPixel(colorBackground.r, colorBackground.g, colorBackground.b, 0, 0, ADVENTURE_SCREEN_WIDTH, ADVENTURE_TOTAL_SCREEN_HEIGHT);
 
-            ////// paint the surround under the playfield layer
-            ////for (int ctr = 0; ctr < numPlayers; ++ctr)
-            ////{
-            ////    if ((surrounds[ctr].room == displayedRoom) && (surrounds[ctr].state == 0))
-            ////    {
-            ////        DrawObject(surrounds[ctr]);
-            ////    }
-            ////}
-            ////// get the playfield mirror flag
-            ////bool mirror = currentRoom.flags & ROOMFLAG_MIRROR;
-            bool mirror = false;
+            // paint the surround under the playfield layer
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                if ((surrounds[ctr].room == displayedRoom) && (surrounds[ctr].state == 0))
+                {
+                    DrawObject(surrounds[ctr]);
+                }
+            }
+            // get the playfield mirror flag
+            bool mirror = (currentRoom.flags & ROOM.FLAG_MIRROR) > 0;
                 
             //
             // Extract the playfield register bits and paint the playfield
@@ -687,11 +683,11 @@ namespace GameEngine
                                 ReactToCollisionX(gameBoard.getPlayer(i));
                             }
 
-////                            // Increment the last object drawn
-////                            ++displayListIndex;
+                            // Increment the last object drawn
+                            ++displayListIndex;
 
-////                            // deal with invisible surround moving
-////                            Surround();
+                            // deal with invisible surround moving
+                            Surround();
 
 ////                            // Move and deal with bat
 ////                            if (bat.exists())
@@ -1690,37 +1686,37 @@ namespace GameEngine
 ////            }
 ////        }
 
-////        void Surround()
-////        {
-////            // get the playfield data
-////            int roomNum = objectBall.room;
-////            const ROOM* currentRoom = roomDefs[roomNum];
-////            if (currentRoom.color == COLOR_LTGRAY)
-////            {
-////                for (int ctr = 0; ctr < numPlayers; ++ctr)
-////                {
-////                    BALL* nextBall = gameBoard.getPlayer(ctr);
-////                    if (nextBall.room == roomNum)
-////                    {
-////                        // Put it in the same room as the ball (player) and center it under the ball
-////                        surrounds[ctr].room = roomNum;
-////                        surrounds[ctr].x = (nextBall.x - 0x1E) / 2;
-////                        surrounds[ctr].y = (nextBall.y + 0x18) / 2;
-////                    }
-////                    else
-////                    {
-////                        surrounds[ctr].room = -1;
-////                    }
-////                }
-////            }
-////            else
-////            {
-////                for (int ctr = 0; ctr < numPlayers; ++ctr)
-////                {
-////                    surrounds[ctr].room = -1;
-////                }
-////            }
-////        }
+        void Surround()
+        {
+            // get the playfield data
+            int roomNum = objectBall.room;
+            ROOM currentRoom = roomDefs[roomNum];
+            if (currentRoom.color == COLOR.LTGRAY)
+            {
+                for (int ctr = 0; ctr < numPlayers; ++ctr)
+                {
+                    BALL nextBall = gameBoard.getPlayer(ctr);
+                    if (nextBall.room == roomNum)
+                    {
+                        // Put it in the same room as the ball (player) and center it under the ball
+                        surrounds[ctr].room = roomNum;
+                        surrounds[ctr].x = (nextBall.x - 0x1E) / 2;
+                        surrounds[ctr].y = (nextBall.y + 0x18) / 2;
+                    }
+                    else
+                    {
+                        surrounds[ctr].room = -1;
+                    }
+                }
+            }
+            else
+            {
+                for (int ctr = 0; ctr < numPlayers; ++ctr)
+                {
+                    surrounds[ctr].room = -1;
+                }
+            }
+        }
 
 ////        void Portals()
 ////        {
@@ -1818,13 +1814,13 @@ namespace GameEngine
             // Create a list of all the objects that want to be drawn
             int numAdded = 0;
 
-            ////for (int ctr = 0; ctr < numPlayers; ++ctr)
-            ////{
-            ////    if (surrounds[ctr].room == room)
-            ////    {
-            ////        displayList[numAdded++] = OBJECT_SURROUND - ctr;
-            ////    }
-            ////}
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                if (surrounds[ctr].room == room)
+                {
+                    displayList[numAdded++] = Board.OBJECT_SURROUND - ctr;
+                }
+            }
 
             int colorFirst = -1;
             int colorLast = -1;
@@ -1859,10 +1855,10 @@ namespace GameEngine
                     displayListIndex = 0;
             }
 
-            ////for (int ctr = 0; ctr < numPlayers; ++ctr)
-            ////{
-            ////    surrounds[ctr].displayed = false;
-            ////}
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                surrounds[ctr].displayed = false;
+            }
 
             int numDisplayed = 0;
             int i = displayListIndex;
@@ -1882,10 +1878,10 @@ namespace GameEngine
                     toDraw.displayed = true;
                     colorLast = toDraw.color;
                 }
-                ////else if (displayList[i] <= OBJECT_SURROUND)
-                ////{
-                ////    surrounds[OBJECT_SURROUND - displayList[i]].displayed = true;
-                ////}
+                else if (displayList[i] <= Board.OBJECT_SURROUND)
+                {
+                    surrounds[Board.OBJECT_SURROUND - displayList[i]].displayed = true;
+                }
 
                 // wrap to the beginning of the list if we've reached the end
                 ++i;
@@ -2336,43 +2332,42 @@ private int CollisionCheckBallWithObjects(BALL ball, Board.ObjIter iter)
         } };
 
 
-        ////// Object #1 : Graphic
-        ////static const byte objectGfxSurround[] =
-        ////{
-        ////    32,
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF,                  // XXXXXXXX                                                                  
-        ////    0xFF                   // XXXXXXXX                                                                  
-        ////};
+        // Object #1 : Graphic
+        private static byte[][] objectGfxSurround = new byte[][]
+        { new byte[] {
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF,                  // XXXXXXXX                                                                  
+            0xFF                   // XXXXXXXX                                                                  
+        } };
 
         // Object #0A : State FF : Graphic                                                                                   
         private static byte[][] objectGfxBridge = new byte[][]
@@ -2581,10 +2576,6 @@ private int CollisionCheckBallWithObjects(BALL ball, Board.ObjIter iter)
 
 
 
-////// Types
-////#define OBJECT_LEFTWALL     (-3)
-////#define OBJECT_RIGHTWALL    (-4)
-////#define OBJECT_SURROUND     (-5) // Actually, up to 3 surrounds with values -5 to -7
 
 
 //////

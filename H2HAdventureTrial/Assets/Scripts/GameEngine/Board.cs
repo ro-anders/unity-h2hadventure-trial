@@ -22,6 +22,7 @@ namespace GameEngine
         public const int LEFT_EDGE = 4;
 
         public const int OBJECT_BALL = -2;
+        public const int OBJECT_SURROUND = -5; // Actually, up to 3 surrounds with values -5 to -7
 
         public enum OBJLIST
         {
@@ -154,10 +155,11 @@ namespace GameEngine
         private int screenHeight;
         private Map map;
 
-        public Board(int inScreenWidth, int inScreenHeight)
+        public Board(int inScreenWidth, int inScreenHeight, Map inMap)
         {
             screenWidth = inScreenWidth;
             screenHeight = inScreenHeight;
+            map = inMap;
 
             numObjects = OBJECT_MAGNET + 2;
             objects = new OBJECT[numObjects];
