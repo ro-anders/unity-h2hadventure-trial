@@ -17,4 +17,22 @@ namespace GameEngine
         public const int GAME_MODE_3 = 2;
         public const int GAME_MODE_GAUNTLET = 3;
     }
+
+    public enum SOUND
+    {
+        WON = 0,
+        ROAR,
+        EATEN,
+        DRAGONDIE,
+        PUTDOWN,
+        PICKUP,
+        SOUND_GLOW
+    }
+
+    public static class MAX
+    {
+        public const float VOLUME = 11.0f;
+    }
+
+
 }

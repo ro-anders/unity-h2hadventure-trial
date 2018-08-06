@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using GameEngine;
 
-public class UnityAdventureView: AdventureView
+public class UnityAdventureView: MonoBehaviour, AdventureView
 {
+    public AdventureAudio adv_audio;
+
     private const int DRAW_AREA_WIDTH = 320;
     private const int DRAW_AREA_HEIGHT = 256;
 
@@ -83,7 +85,7 @@ public class UnityAdventureView: AdventureView
     }
 
     public void Platform_MakeSound(SOUND sound, float volume) {
-        //// TBD
+        adv_audio.play(sound, volume);
     }
 
 }

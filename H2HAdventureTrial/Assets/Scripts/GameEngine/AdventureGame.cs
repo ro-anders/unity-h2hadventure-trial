@@ -20,33 +20,6 @@ namespace GameEngine
 
     public class AdventureGame
     {
-
-
-        // Indexed array of all objects and their properties
-        //
-        // Object locations (room and coordinate) for game 01
-        //        - object, room, x, y, state, movement(x/y)
-        private readonly byte[,] game1Objects = new byte[,]
-        {
-            ////{Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
-            ////{Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
-            ////{Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 5
-            ////{Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 2
-            ////{Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
-            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
-            {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
-            ////{Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
-            ////{Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
-            {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
-            {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00}, // Bridge
-            {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Yellow Key
-            {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
-            {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
-            {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
-            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
-            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
-        };
-
         public const int GAME_MODE_SCRIPTING = -1;
         public const int GAME_MODE_1 = 0;
         public const int GAME_MODE_2 = 1;
@@ -2538,34 +2511,33 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
             0x7E                   //  XXXXXX                                                                   
         } };
 
-        ////// Object #X : State FF : Graphic
-        ////static const byte objectGfxEasterEgg[] =
-        ////{
-        ////    23,
-        ////    0x18,                  //    XX
-        ////    0x3C,                  //   XXXX
-        ////    0x24,                  //   X  X
-        ////    0x66,                  //  XX  XX
-        ////    0x42,                  //  X    X
-        ////    0x42,                  //  X    X
-        ////    0x81,                  // X      X
-        ////    0xD5,                  // XX X X X
-        ////    0xD5,                  // XX X X X
-        ////    0xAB,                  // X X X XX
-        ////    0xAB,                  // X X X XX
-        ////    0x81,                  // X      X
-        ////    0x81,                  // X      X
-        ////    0xD5,                  // XX X X X
-        ////    0xD5,                  // XX X X X
-        ////    0xAB,                  // X X X XX
-        ////    0xAB,                  // X X X XX
-        ////    0x81,                  // X      X
-        ////    0x42,                  //  X    X
-        ////    0x42,                  //  X    X
-        ////    0x66,                  //  XX  XX
-        ////    0x3C,                  //   XXXX
-        ////    0x18,                  //    XX
-        ////};
+        // Object #X : State FF : Graphic
+        private static byte[][] objectGfxEasterEgg = new byte[][]
+        { new byte[] {
+            0x18,                  //    XX
+            0x3C,                  //   XXXX
+            0x24,                  //   X  X
+            0x66,                  //  XX  XX
+            0x42,                  //  X    X
+            0x42,                  //  X    X
+            0x81,                  // X      X
+            0xD5,                  // XX X X X
+            0xD5,                  // XX X X X
+            0xAB,                  // X X X XX
+            0xAB,                  // X X X XX
+            0x81,                  // X      X
+            0x81,                  // X      X
+            0xD5,                  // XX X X X
+            0xD5,                  // XX X X X
+            0xAB,                  // X X X XX
+            0xAB,                  // X X X XX
+            0x81,                  // X      X
+            0x42,                  //  X    X
+            0x42,                  //  X    X
+            0x66,                  //  XX  XX
+            0x3C,                  //   XXXX
+            0x18,                  //    XX
+        } };
 
 
         // Object #11 : State FF : Graphic                                                                                   
@@ -2580,6 +2552,32 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
             0xC3,                  // XX    XX                                                                  
             0xC3                   // XX    XX                                                                  
         } };
+
+        // Indexed array of all objects and their properties
+        //
+        // Object locations (room and coordinate) for game 01
+        //        - object, room, x, y, state, movement(x/y)
+        private readonly byte[,] game1Objects = new byte[,]
+        {
+            ////{Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
+            ////{Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
+            ////{Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 5
+            ////{Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 2
+            ////{Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
+            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
+            {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
+            ////{Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
+            ////{Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
+            {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
+            {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00}, // Bridge
+            {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
+            {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
+            {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
+            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
+            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
+        };
+
 
     }
 }
