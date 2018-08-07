@@ -19,15 +19,13 @@ namespace GameEngine
         public bool hit;                  // the ball hit something
         public int hitObject;              // the object that the ball hit
         public readonly byte[] gfxData;        // graphics data for ball
-        ////public Portcullis* homeGate;       // The gate of the castle you start at
-        public int homeGate; //// TEMP
+        public Portcullis homeGate;       // The gate of the castle you start at
 
         /** During the gauntlet, once you reach the black castle you flash like the chalise until you reset or you reach the
             * gold castle where you win. */
         private bool glowing;
 
-        ////public BALL(int inPlayerNum, Portcullis* inHomeGate) :
-        public BALL(int inPlayerNum, int inHomeGate) //// TEMP
+        public BALL(int inPlayerNum, Portcullis inHomeGate)
         {
             playerNum = inPlayerNum;
             room = 0;

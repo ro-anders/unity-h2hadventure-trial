@@ -78,8 +78,7 @@ namespace GameEngine
 ////static int numDragons = 3;
 ////static Dragon** dragons = NULL;
 ////static Bat* bat = NULL;
-////static int numPorts = 4;
-////static Portcullis** ports = NULL;
+        private Portcullis[] ports;
 
 
         /** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
@@ -146,19 +145,19 @@ namespace GameEngine
 ////                crystalKeys[ctr].setPrivateToPlayer(ctr);
 ////            }
 
-////            numPorts = numPlayers + 3;
-////            ports = new Portcullis*[6]; // We always create 6 even though we might only use 5.
-////            ports[0] = new Portcullis("gold gate", GOLD_CASTLE, gameMap.getRoom(GOLD_FOYER), goldKey); // Gold
-////            ports[1] = new Portcullis("white gate", WHITE_CASTLE, gameMap.getRoom(RED_MAZE_1), whiteKey); // White
-////            addAllRoomsToPort(ports[1], RED_MAZE_3, RED_MAZE_1);
-////            ports[2] = new Portcullis("black gate", BLACK_CASTLE, gameMap.getRoom(BLACK_FOYER), blackKey); // Black
-////            addAllRoomsToPort(ports[2], BLACK_MAZE_1, BLACK_MAZE_ENTRY);
-////            ports[2].addRoom(gameMap.getRoom(BLACK_FOYER));
-////            ports[2].addRoom(gameMap.getRoom(BLACK_INNERMOST_ROOM));
-////            ports[3] = new CrystalPortcullis(gameMap.getRoom(CRYSTAL_FOYER), crystalKeys);
-////            ports[4] = new Portcullis("copper gate", COPPER_CASTLE, gameMap.getRoom(COPPER_FOYER), copperKey);
-////            ports[5] = new Portcullis("jade gate", JADE_CASTLE, gameMap.getRoom(JADE_FOYER), jadeKey);
-////            gameMap.addCastles(numPorts, ports);
+            ports = new Portcullis[6];
+            ports[0] = new Portcullis("gold gate", Map.GOLD_CASTLE, gameMap.getRoom(Map.GOLD_FOYER), goldKey); // Gold
+            ports[1] = new Portcullis("white gate", Map.WHITE_CASTLE, gameMap.getRoom(Map.RED_MAZE_1), whiteKey); // White
+            addAllRoomsToPort(ports[1], Map.RED_MAZE_3, Map.RED_MAZE_1);
+            ports[2] = new Portcullis("black gate", Map.BLACK_CASTLE, gameMap.getRoom(Map.BLACK_FOYER), blackKey); // Black
+            addAllRoomsToPort(ports[2], Map.BLACK_MAZE_1, Map.BLACK_MAZE_ENTRY);
+            ports[2].addRoom(gameMap.getRoom(Map.BLACK_FOYER));
+            ports[2].addRoom(gameMap.getRoom(Map.BLACK_INNERMOST_ROOM));
+            ports[3] = new Portcullis("crystal gate", Map.CRYSTAL_CASTLE, gameMap.getRoom(Map.CRYSTAL_FOYER), goldKey); //// TEMP
+            ////ports[3] = new CrystalPortcullis(gameMap.getRoom(Map.CRYSTAL_FOYER), crystalKeys);
+            ports[4] = new Portcullis("copper gate", Map.COPPER_CASTLE, gameMap.getRoom(Map.COPPER_FOYER), copperKey);
+            ports[5] = new Portcullis("jade gate", Map.JADE_CASTLE, gameMap.getRoom(Map.JADE_FOYER), jadeKey);
+            gameMap.addCastles(ports);
 
 
             // Setup the number.  Unlike other objects we need to position the number immediately.
@@ -167,12 +166,12 @@ namespace GameEngine
             number.init(Map.NUMBER_ROOM, 0x50, 0x40);
 
             // Setup the rest of the objects
-////            gameBoard.addObject(OBJECT_YELLOW_PORT, ports[0]);
-////            gameBoard.addObject(OBJECT_COPPER_PORT, ports[4]);
-////            gameBoard.addObject(OBJECT_JADE_PORT, ports[5]);
-////            gameBoard.addObject(OBJECT_WHITE_PORT, ports[1]);
-////            gameBoard.addObject(OBJECT_BLACK_PORT, ports[2]);
-////            gameBoard.addObject(OBJECT_CRYSTAL_PORT, ports[3]);
+            gameBoard.addObject(Board.OBJECT_YELLOW_PORT, ports[0]);
+            gameBoard.addObject(Board.OBJECT_COPPER_PORT, ports[4]);
+            gameBoard.addObject(Board.OBJECT_JADE_PORT, ports[5]);
+            gameBoard.addObject(Board.OBJECT_WHITE_PORT, ports[1]);
+            gameBoard.addObject(Board.OBJECT_BLACK_PORT, ports[2]);
+            gameBoard.addObject(Board.OBJECT_CRYSTAL_PORT, ports[3]);
             gameBoard.addObject(Board.OBJECT_NAME, new OBJECT("easter egg message", objectGfxAuthor, new byte[0], 0, COLOR.FLASH, OBJECT.RandomizedLocations.FIXED_LOCATION));
 ////            gameBoard.addObject(OBJECT_REDDRAGON, dragons[2]);
 ////            gameBoard.addObject(OBJECT_YELLOWDRAGON, dragons[1]);
@@ -197,16 +196,13 @@ namespace GameEngine
 
             // Setup the players
 
-            ////gameBoard.addPlayer(new BALL(0, ports[0]), thisPlayer == 0);
-            gameBoard.addPlayer(new BALL(0, Map.GOLD_CASTLE), thisPlayer == 0); //// TEMP
-            ////Portcullis* p2Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[4]);
-            ////gameBoard.addPlayer(new BALL(1, p2Home), thisPlayer == 1);
-            gameBoard.addPlayer(new BALL(1, Map.COPPER_CASTLE), thisPlayer == 1); //// TEMP
+            gameBoard.addPlayer(new BALL(0, ports[0]), thisPlayer == 0);
+            Portcullis p2Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[4]);
+            gameBoard.addPlayer(new BALL(1, p2Home), thisPlayer == 1);
             if (numPlayers > 2)
             {
-                ////Portcullis* p3Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[5]);
-                ////gameBoard.addPlayer(new BALL(2, p3Home), thisPlayer == 2);
-                gameBoard.addPlayer(new BALL(2, Map.JADE_CASTLE), thisPlayer == 2); //// TEMP
+                Portcullis p3Home = (gameMode == GAME_MODE_GAUNTLET ? ports[0] : ports[5]);
+                gameBoard.addPlayer(new BALL(2, p3Home), thisPlayer == 2);
             }
             objectBall = gameBoard.getPlayer(thisPlayer);
 
@@ -380,14 +376,14 @@ namespace GameEngine
 
 
 
-////        void addAllRoomsToPort(Portcullis* port, int firstRoom, int lastRoom)
-////        {
-////            for (int nextKey = firstRoom; nextKey <= lastRoom; ++nextKey)
-////            {
-////                ROOM* nextRoom = gameMap.getRoom(nextKey);
-////                port.addRoom(nextRoom);
-////            }
-////        }
+        void addAllRoomsToPort(Portcullis port, int firstRoom, int lastRoom)
+        {
+            for (int nextKey = firstRoom; nextKey <= lastRoom; ++nextKey)
+            {
+                ROOM nextRoom = gameMap.getRoom(nextKey);
+                port.addRoom(nextRoom);
+            }
+        }
 
             private void ResetPlayers()
             {
@@ -399,8 +395,7 @@ namespace GameEngine
 
             void ResetPlayer(BALL ball)
             {
-                ////ball.room = ball.homeGate.room;               // Put us at our home castle
-                ball.room = ball.homeGate;  //// TEMP               // Put us at our home castle
+                ball.room = ball.homeGate.room;               // Put us at our home castle
                 ball.previousRoom = ball.room;
                 ball.displayedRoom = ball.room;
                 ball.x = 0x50 * 2;                  //
@@ -2559,11 +2554,11 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         //        - object, room, x, y, state, movement(x/y)
         private readonly byte[,] game1Objects = new byte[,]
         {
-            ////{Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
-            ////{Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
-            ////{Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 5
-            ////{Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 2
-            ////{Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
+            {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
+            {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
+            {Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 5
+            {Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 2
+            {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
             {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
             {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
             ////{Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon

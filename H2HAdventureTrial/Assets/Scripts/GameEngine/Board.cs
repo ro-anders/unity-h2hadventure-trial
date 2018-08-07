@@ -394,25 +394,25 @@ namespace GameEngine
             return false;
         }
 
-        ////// Returns the player number of whoever is holding an object (holding the bat holding the
-        ////// object counts).  Returns -1 if no one is holding the object.
-        ////public int getPlayerHoldingObject(OBJECT objct)
-        ////{
-        ////    int heldBy = -1;
-        ////    int objectPkey = objct.getPKey();
-        ////    for (int ctr = 0; (ctr < numPlayers) && (heldBy < 0); ++ctr)
-        ////    {
-        ////        BALL nextPlayer = players[ctr];
-        ////        // Have to check if player is holding key or player is holding bat holding key
-        ////        if ((nextPlayer.linkedObject == objectPkey) ||
-        ////            ((nextPlayer.linkedObject == OBJECT_BAT) && (((Bat*)objects[OBJECT_BAT]).linkedObject == objectPkey)))
-        ////        {
+        // Returns the player number of whoever is holding an object (holding the bat holding the
+        // object counts).  Returns -1 if no one is holding the object.
+        public int getPlayerHoldingObject(OBJECT objct)
+        {
+            int heldBy = -1;
+            int objectPkey = objct.getPKey();
+            for (int ctr = 0; (ctr < numPlayers) && (heldBy < 0); ++ctr)
+            {
+                BALL nextPlayer = players[ctr];
+                // Have to check if player is holding key or player is holding bat holding key
+                if ((nextPlayer.linkedObject == objectPkey) ||
+                    ((nextPlayer.linkedObject == OBJECT_BAT) && (((Bat)objects[OBJECT_BAT]).linkedObject == objectPkey)))
+                {
 
-        ////            heldBy = ctr;
-        ////        }
-        ////    }
-        ////    return heldBy;
-        ////}
+                    heldBy = ctr;
+                }
+            }
+            return heldBy;
+        }
 
 
     }
