@@ -18,40 +18,41 @@ namespace GameEngine
     }
 
 
-    ////    class MoveAction : public RemoteAction {
-    ////public:
-    ////    int room;               // The room the player was in
-    ////    int posx;               // The x-coordinate of the player in the room
-    ////    int posy;               // The y-coordinate of the player in the room
-    ////    int velx;               // -1 for moving left, 1 for right, and 0 for still or just up/down
-    ////    int vely;               // -1 for down, 1 for up, and 0 for still or just left/right
+    public class MoveAction : RemoteAction
+    {
+        public int room;               // The room the player was in
+        public int posx;               // The x-coordinate of the player in the room
+        public int posy;               // The y-coordinate of the player in the room
+        public int velx;               // -1 for moving left, 1 for right, and 0 for still or just up/down
+        public int vely;               // -1 for down, 1 for up, and 0 for still or just left/right
 
-    ////    MoveAction(const char* inCode);
+        public MoveAction(String inCode) :
+        base(inCode)
+        { }
 
-    ////    MoveAction(const char* inCode, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
+        public MoveAction(String inCode, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
+        base(inCode)
+        {
+            room = inRoom;
+            posx = inPosx;
+            posy = inPosy;
+            velx = inVelx;
+            vely = inVely;
+        }
+    }
 
-    ////    virtual ~MoveAction();
+    public class PlayerMoveAction : MoveAction
+    {
+        public static String CODE = "PM";
 
-    ////    virtual int serialize(char* buffer, int bufferLength) = 0;
+        public PlayerMoveAction() :
+    base(CODE)
+        { }
 
-    ////    virtual void deserialize(const char* message) = 0;
-    ////};
+        public PlayerMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
+        base(CODE, inRoom, inPosx, inPosy, inVelx, inVely) {}
 
-    ////class PlayerMoveAction : public MoveAction {
-    ////public:
-
-    ////    static const char* CODE;
-
-    ////PlayerMoveAction();
-
-    ////PlayerMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
-
-    ////~PlayerMoveAction();
-
-    ////int serialize(char* buffer, int bufferLength);
-
-    ////void deserialize(const char* message);
-    ////};
+    }
 
     ////class PlayerPickupAction : public RemoteAction {
     ////public:

@@ -64,7 +64,7 @@ namespace GameEngine
         private bool joystickDisabled = false;
         private bool switchReset = false;
 
-        ////static Sync* sync;
+        private Sync sync;
 ////static Transport* transport;
         private int thisPlayer;
         private BALL objectBall;
@@ -206,10 +206,11 @@ namespace GameEngine
             }
             objectBall = gameBoard.getPlayer(thisPlayer);
 
-////            // Setup the transport
-////            transport = inTransport;
-////            sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
-////                                                      new Sync(numPlayers, thisPlayer, transport));
+            ////            // Setup the transport
+            ////            transport = inTransport;
+            ////            sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
+            ////                                                      new Sync(numPlayers, thisPlayer, transport));
+            sync = new NoopSync(); //// TEMP
 
 ////            // Need to have the transport setup before we setup the objects,
 ////            // because we may be broadcasting randomized locations to other machines
@@ -673,8 +674,8 @@ namespace GameEngine
 ////                                bat.moveOneTurn(sync, objectBall);
 ////                            }
 
-////                            // Move and deal with portcullises
-////                            Portals();
+                            // Move and deal with portcullises
+                            Portals();
 
                             // Display the room and objects
                             PrintDisplay();
@@ -1173,34 +1174,36 @@ namespace GameEngine
             }
             else if (ball.y < Board.BOTTOM_EDGE)
             {
-////                // Handle the ball leaving a castle.
-////                bool canUnlockFromInside = ((gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE) != 0);
+                // Handle the ball leaving a castle.
+                bool canUnlockFromInside = ((gameOptions & GAMEOPTION_UNLOCK_GATES_FROM_INSIDE) != 0);
                 bool leftCastle = false;
-////                for (int portalCtr = 0; !leftCastle && (portalCtr < numPorts); ++portalCtr)
-////                {
-////                    Portcullis* port = ports[portalCtr];
-////                    if ((ball.room == port.insideRoom) &&
-////                        ((port.state != Portcullis::CLOSED_STATE) || canUnlockFromInside))
-////                    {
-////                        ball.x = Portcullis::EXIT_X;
-////                        ball.y = Portcullis::EXIT_Y;
+                for (int portalCtr = 0; !leftCastle && (portalCtr < ports.Length); ++portalCtr)
+                {
+                    Portcullis port = ports[portalCtr];
+                    if (port.exists()) {
+                        if ((ball.room == port.insideRoom) &&
+                            ((port.state != Portcullis.CLOSED_STATE) || canUnlockFromInside))
+                        {
+                            ball.x = Portcullis.EXIT_X;
+                            ball.y = Portcullis.EXIT_Y;
 
-////                        ball.previousX = ball.x;
-////                        ball.previousY = ball.y;
+                            ball.previousX = ball.x;
+                            ball.previousY = ball.y;
 
-////                        ball.room = port.room;
-////                        ball.previousRoom = ball.room;
-////                        // If we were locked in the castle, open the portcullis.
-////                        if (port.state == Portcullis::CLOSED_STATE && canUnlockFromInside)
-////                        {
-////                            port.openFromInside();
-////                            PortcullisStateAction* gateAction = new PortcullisStateAction(port.getPKey(), port.state, port.allowsEntry);
-////                            sync.BroadcastAction(gateAction);
+                            ball.room = port.room;
+                            ball.previousRoom = ball.room;
+                            // If we were locked in the castle, open the portcullis.
+                            if (port.state == Portcullis.CLOSED_STATE && canUnlockFromInside)
+                            {
+                                port.openFromInside();
+                                PortcullisStateAction gateAction = new PortcullisStateAction(port.getPKey(), port.state, port.allowsEntry);
+                                sync.BroadcastAction(gateAction);
 
-////                        }
-////                        leftCastle = true;
-////                    }
-////                }
+                            }
+                            leftCastle = true;
+                        }
+                    }
+                }
 
                 if (!leftCastle)
                 {
@@ -1346,7 +1349,7 @@ namespace GameEngine
             // RCA: moveBallIntoCastle originally was called after we moved the carried objects, but
             // this created too many problems with the ball being in the castle and the key being
             // still outside the castle.  So I moved it to before.
-            ////moveBallIntoCastle();
+            moveBallIntoCastle();
 
             for (int ctr = 0; ctr < numPlayers; ++ctr)
             {
@@ -1364,53 +1367,53 @@ namespace GameEngine
             MoveGroundObject();
         }
 
-////        void moveBallIntoCastle()
-////        {
-////            for (int ctr = 0; ctr < numPlayers; ++ctr)
-////            {
-////                BALL* nextBall = gameBoard.getPlayer(ctr);
-////                // Handle balls going into the castles
-////                for (int portalCtr = 0; portalCtr < numPorts; ++portalCtr)
-////                {
-////                    Portcullis* nextPort = ports[portalCtr];
-////                    if (nextBall.room == nextPort.room && nextPort.allowsEntry && CollisionCheckObject(nextPort, (nextBall.x - 4), (nextBall.y - 1), 8, 8))
-////                    {
-////                        nextBall.room = nextPort.insideRoom;
-////                        nextBall.previousRoom = nextBall.room;
-////                        nextBall.displayedRoom = nextBall.room;
-////                        nextBall.y = ENTER_AT_BOTTOM;
-////                        nextBall.previousY = nextBall.y;
-////                        nextBall.vely = 0;
-////                        nextBall.velx = 0;
-////                        // make sure it stays unlocked in case we are walking in with the key
-////                        nextPort.forceOpen();
-////                        // Report to all the other players only if its the current player entering
-////                        if (ctr == thisPlayer)
-////                        {
-////                            PortcullisStateAction* gateAction =
-////                            new PortcullisStateAction(nextPort.getPKey(), nextPort.state, nextPort.allowsEntry);
-////                            sync.BroadcastAction(gateAction);
+        void moveBallIntoCastle()
+        {
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                BALL nextBall = gameBoard.getPlayer(ctr);
+                // Handle balls going into the castles
+                for (int portalCtr = 0; portalCtr < ports.Length; ++portalCtr)
+                {
+                    Portcullis nextPort = ports[portalCtr];
+                    if (nextPort.exists() && nextBall.room == nextPort.room && nextPort.allowsEntry && CollisionCheckObject(nextPort, (nextBall.x - 4), (nextBall.y - 1), 8, 8))
+                    {
+                        nextBall.room = nextPort.insideRoom;
+                        nextBall.previousRoom = nextBall.room;
+                        nextBall.displayedRoom = nextBall.room;
+                        nextBall.y = Board.ENTER_AT_BOTTOM;
+                        nextBall.previousY = nextBall.y;
+                        nextBall.vely = 0;
+                        nextBall.velx = 0;
+                        // make sure it stays unlocked in case we are walking in with the key
+                        nextPort.forceOpen();
+                        // Report to all the other players only if its the current player entering
+                        if (ctr == thisPlayer)
+                        {
+                            PortcullisStateAction gateAction =
+                            new PortcullisStateAction(nextPort.getPKey(), nextPort.state, nextPort.allowsEntry);
+                            sync.BroadcastAction(gateAction);
 
-////                            // Report the ball entering the castle
-////                            PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
-////                            sync.BroadcastAction(moveAction);
-////                        }
-////                        // If entering the black castle in the gauntlet, glow.
-////                        if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == board[OBJECT_BLACK_PORT]) && !nextBall.isGlowing())
-////                        {
-////                            nextBall.setGlowing(true);
-////                            Platform_MakeSound(SOUND_GLOW, volumeAtDistance(nextBall.room));
-////                        }
-////                        // If entering the crystal castle, trigger the easter egg
-////                        if ((nextBall.room == CRYSTAL_FOYER) && (EasterEgg::shouldStartChallenge()))
-////                        {
-////                            EasterEgg::showChallengeMessage();
-////                        }
-////                        break;
-////                    }
-////                }
-////            }
-////        }
+                            // Report the ball entering the castle
+                            PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+                            sync.BroadcastAction(moveAction);
+                        }
+                        ////// If entering the black castle in the gauntlet, glow.
+                        ////if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == gameBoard[OBJECT_BLACK_PORT]) && !nextBall.isGlowing())
+                        ////{
+                        ////    nextBall.setGlowing(true);
+                        ////    view.Platform_MakeSound(SOUND_GLOW, volumeAtDistance(nextBall.room));
+                        ////}
+                        ////// If entering the crystal castle, trigger the easter egg
+                        ////if ((nextBall.room == CRYSTAL_FOYER) && (EasterEgg::shouldStartChallenge()))
+                        ////{
+                        ////    EasterEgg::showChallengeMessage();
+                        ////}
+                        ////break;
+                    }
+                }
+            }
+        }
 
         void MoveGroundObject()
         {
@@ -1447,17 +1450,17 @@ namespace GameEngine
                 {
                     // Handle object leaving the castles
                     bool leftCastle = false;
-                    ////for (int ctr = 0; (ctr < numPorts) && (!leftCastle); ++ctr)
-                    ////{
-                    ////    if ((objct.room == ports[ctr].insideRoom) && (ports[ctr].allowsEntry))
-                    ////    {
-                    ////        objct.x = Portcullis::EXIT_X / 2;
-                    ////        objct.y = Portcullis::EXIT_Y / 2;
-                    ////        objct.room = ports[ctr].room;
-                    ////        // TODO: Do we need to broadcast leaving the castle?  Seems there might be quite a jump.
-                    ////        leftCastle = true;
-                    ////    }
-                    ////}
+                    for (int ctr = 0; (ctr < ports.Length) && (!leftCastle); ++ctr)
+                    {
+                        if (ports[ctr].exists() && (objct.room == ports[ctr].insideRoom) && (ports[ctr].allowsEntry))
+                        {
+                            objct.x = Portcullis.EXIT_X / 2;
+                            objct.y = Portcullis.EXIT_Y / 2;
+                            objct.room = ports[ctr].room;
+                            // TODO: Do we need to broadcast leaving the castle?  Seems there might be quite a jump.
+                            leftCastle = true;
+                        }
+                    }
                     if (!leftCastle)
                     {
                         objct.y = 0x69;
@@ -1696,57 +1699,59 @@ namespace GameEngine
             }
         }
 
-////        void Portals()
-////        {
-////            // Handle all the local actions of portals
-////            for (int portalCtr = 0; portalCtr < numPorts; ++portalCtr)
-////            {
-////                Portcullis* port = ports[portalCtr];
+        void Portals()
+        {
+            // Handle all the local actions of portals
+            for (int portalCtr = 0; portalCtr < ports.Length; ++portalCtr)
+            {
+                Portcullis port = ports[portalCtr];
+                if (port.exists())
+                {
 
-////                // Someone has to be in the room for the key to trigger the gate
-////                bool seen = false;
-////                for (int ctr = 0; !seen && ctr < numPlayers; ++ctr)
-////                {
-////                    seen = (gameBoard.getPlayer(ctr).room == port.room);
-////                }
-////                if (seen)
-////                {
-////                    // Check if a key unlocks the gate
-////                    PortcullisStateAction* gateAction = port.checkKeyInteraction();
-////                    if (gateAction != NULL)
-////                    {
-////                        sync.BroadcastAction(gateAction);
-////                    }
+                    // Someone has to be in the room for the key to trigger the gate
+                    bool seen = false;
+                    for (int ctr = 0; !seen && ctr < numPlayers; ++ctr)
+                    {
+                        seen = (gameBoard.getPlayer(ctr).room == port.room);
+                    }
+                    if (seen)
+                    {
+                        // Check if a key unlocks the gate
+                        PortcullisStateAction gateAction = port.checkKeyInteraction();
+                        if (gateAction != null)
+                        {
+                            sync.BroadcastAction(gateAction);
+                        }
 
-////                    // Check if anything runs into the gate
-////                    Board::ObjIter iter = board.getMovableObjects();
-////                    while (iter.hasNext())
-////                    {
-////                        OBJECT* next = iter.next();
-////                        ObjectMoveAction* reaction = port.checkObjectEnters(next);
-////                        if (reaction != NULL)
-////                        {
-////                            sync.BroadcastAction(reaction);
-////                        }
-////                    }
-////                }
+                        // Check if anything runs into the gate
+                        Board.ObjIter iter = gameBoard.getMovableObjects();
+                        while (iter.hasNext())
+                        {
+                            OBJECT next = iter.next();
+                            ObjectMoveAction reaction = port.checkObjectEnters(next);
+                            if (reaction != null)
+                            {
+                                sync.BroadcastAction(reaction);
+                            }
+                        }
+                    }
 
-////                // Raise/lower the port
-////                port.moveOneTurn();
-////                if (port.allowsEntry)
-////                {
-////                    // Port is unlocked
-////                    roomDefs[port.insideRoom].roomDown = port.room;
-////                }
-////                else
-////                {
-////                    // Port is locked
-////                    roomDefs[port.insideRoom].roomDown = port.insideRoom;
-////                }
+                    // Raise/lower the port
+                    port.moveOneTurn();
+                    if (port.allowsEntry)
+                    {
+                        // Port is unlocked
+                        roomDefs[port.insideRoom].roomDown = port.room;
+                    }
+                    else
+                    {
+                        // Port is locked
+                        roomDefs[port.insideRoom].roomDown = port.insideRoom;
+                    }
+                }
+            }
 
-////            }
-
-////        }
+        }
 
 
 
