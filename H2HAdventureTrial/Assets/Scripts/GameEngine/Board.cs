@@ -154,12 +154,14 @@ namespace GameEngine
         private int screenWidth;
         private int screenHeight;
         private Map map;
+        private AdventureView view;
 
-        public Board(int inScreenWidth, int inScreenHeight, Map inMap)
+        public Board(int inScreenWidth, int inScreenHeight, Map inMap, AdventureView inView)
         {
             screenWidth = inScreenWidth;
             screenHeight = inScreenHeight;
             map = inMap;
+            view = inView;
 
             numObjects = OBJECT_MAGNET + 2;
             objects = new OBJECT[numObjects];
@@ -412,6 +414,10 @@ namespace GameEngine
                 }
             }
             return heldBy;
+        }
+
+        public void makeSound(SOUND sound, float volume) {
+            view.Platform_MakeSound(sound, volume);
         }
 
 

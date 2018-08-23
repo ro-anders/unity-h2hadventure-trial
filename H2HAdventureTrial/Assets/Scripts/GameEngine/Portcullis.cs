@@ -234,10 +234,10 @@ namespace GameEngine
         private static byte[][] objectGfxPort = new byte[][]
         { new byte[] {
             // state 1
-            0xFE,                  // XXXXXXX
+                0xFE,                  // XXXXXXX
                 0xAA,                  // X X X X
                 0xFE,                  // XXXXXXX
-                0xAA},                  // X X X X
+                0xAA},                 // X X X X
             new byte[] {
                 // state 2
                 0xFE,                  // XXXXXXX
@@ -245,7 +245,7 @@ namespace GameEngine
                 0xFE,                  // XXXXXXX
                 0xAA,                  // X X X X
                 0xFE,                  // XXXXXXX
-                0xAA},                  // X X X X
+                0xAA},                 // X X X X
             new byte[] {
                 // state 3
                 0xFE,                  // XXXXXXX
@@ -255,7 +255,7 @@ namespace GameEngine
                 0xFE,                  // XXXXXXX
                 0xAA,                  // X X X X
                 0xFE,                  // XXXXXXX
-                0xAA},                  // X X X X
+                0xAA},                 // X X X X
             new byte[] {
                 // state 4
                 0xFE,                  // XXXXXXX
@@ -267,7 +267,7 @@ namespace GameEngine
                 0xFE,                  // XXXXXXX
                 0xAA,                  // X X X X
                 0xFE,                  // XXXXXXX
-                0xAA},                  // X X X X
+                0xAA},                 // X X X X
             new byte[] {
                 // state 5
                 0xFE,                  // XXXXXXX
@@ -281,7 +281,7 @@ namespace GameEngine
                 0xFE,                  // XXXXXXX
                 0xAA,                  // X X X X
                 0xFE,                  // XXXXXXX
-                0xAA},                  // X X X X
+                0xAA},                 // X X X X
             new byte[] {
                 // state 6
                 0xFE,                  // XXXXXXX
@@ -297,7 +297,7 @@ namespace GameEngine
                 0xFE,                  // XXXXXXX
                 0xAA,                  // X X X X
                 0xFE,                  // XXXXXXX
-                0xAA},                  // X X X X
+                0xAA},                 // X X X X
             new byte[] {
                 // state 7
                 0xFE,                  // XXXXXXX
@@ -315,7 +315,7 @@ namespace GameEngine
                 0xFE,                  // XXXXXXX
                 0xAA,                  // X X X X
                 0xFE,                  // XXXXXXX
-                0xAA}                   // X X X X
+                0xAA}                  // X X X X
         };
 
         private static byte[] portStates = new byte[]

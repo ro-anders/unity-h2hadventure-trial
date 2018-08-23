@@ -81,19 +81,15 @@ namespace GameEngine
     ////void deserialize(const char* message);
     ////};
 
-    ////class PlayerResetAction : public RemoteAction {
-    ////public:
+    class PlayerResetAction : RemoteAction {
 
-    ////    static const char* CODE;
+        public static String CODE = "PR";
 
-    ////PlayerResetAction();
+        public PlayerResetAction() :
+        base(CODE)
+        { }
 
-    ////~PlayerResetAction();
-
-    ////int serialize(char* buffer, int bufferLength);
-
-    ////void deserialize(const char* message);
-    ////};
+    };
 
     ////class PlayerWinAction : public RemoteAction {
     ////public:
@@ -113,49 +109,49 @@ namespace GameEngine
     ////};
 
 
-    ////class DragonMoveAction : public MoveAction {
-    ////public:
-    ////    int dragonNum;          // 0=Rhindle, 1=Yorgle, 2=Grindle
-    ////int distance;           // Distance from player reporting position
+    public class DragonMoveAction : MoveAction {
+        public int dragonNum;          // 0=Rhindle, 1=Yorgle, 2=Grindle
+        public int distance;           // Distance from player reporting position
 
-    ////static const char* CODE;
+        public const String CODE = "DM";
 
-    ////DragonMoveAction();
+        public DragonMoveAction() :
+        base(CODE){}
 
-    ////DragonMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely,
-    ////                 int inDragonNum, int inDistance);
+        public DragonMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely,
+                                int inDragonNum, int inDistance):
+            base(CODE, inRoom, inPosx, inPosy, inVelx, inVely) {
+                dragonNum = inDragonNum;
+                distance = inDistance;
+            }
 
-    ////~DragonMoveAction();
+    };
 
-    ////int serialize(char* buffer, int bufferLength);
+    public class DragonStateAction : RemoteAction {
+        public int dragonNum;          // 0=Rhindle, 1=Yorgle, 2=Grindle
+        public int newState;
+        public int room;
+        public int posx;
+        public int posy;
+        public int velx;
+        public int vely;
 
-    ////void deserialize(const char* message);
+        public const String CODE = "DS";
 
-    ////};
+        public DragonStateAction() :
+        base(CODE) {}
 
-    ////class DragonStateAction : public RemoteAction {
-    ////public:
-    ////    int dragonNum;          // 0=Rhindle, 1=Yorgle, 2=Grindle
-    ////int newState;
-    ////int room;
-    ////int posx;
-    ////int posy;
-    ////int velx;
-    ////int vely;
-
-    ////static const char* CODE;
-
-    ////DragonStateAction();
-
-    ////DragonStateAction(int inDragonNum, int inState, int inRoom, int inPosx, int inPosy, int inVelx, int inVely);
-
-    ////~DragonStateAction();
-
-    ////int serialize(char* buffer, int bufferLength);
-
-    ////void deserialize(const char* message);
-
-    ////};
+        public DragonStateAction(int inDragonNum, int inState, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
+        base(CODE) {
+            dragonNum = inDragonNum;
+            newState = inState;
+            room = inRoom;
+            posx = inPosx;
+            posy = inPosy;
+            velx = inVelx;
+            vely = inVely;
+        }
+    };
 
     public class PortcullisStateAction : RemoteAction
     {

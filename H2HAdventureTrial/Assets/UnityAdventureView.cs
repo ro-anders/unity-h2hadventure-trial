@@ -7,6 +7,7 @@ using GameEngine;
 public class UnityAdventureView: MonoBehaviour, AdventureView
 {
     public AdventureAudio adv_audio;
+    public AdventureDirectional adv_input;
 
     private const int DRAW_AREA_WIDTH = 320;
     private const int DRAW_AREA_HEIGHT = 256;
@@ -17,7 +18,7 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
     private int at = 0;
 
     public void AdventureSetup(RenderTexture inRenderTexture, Texture2D inTexture) {
-        gameEngine = new AdventureGame(this, 2, 0, 0);
+        gameEngine = new AdventureGame(this, 2, 0, 0, false, false);
         renderTexture = inRenderTexture;
         texture = inTexture;
 
@@ -77,11 +78,8 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
     }
 
     public void Platform_ReadJoystick(ref bool joyLeft, ref bool joyUp, ref bool joyRight, ref bool joyDown, ref bool joyFire) {
-        joyLeft = Input.GetKey(KeyCode.LeftArrow);
-        joyUp = Input.GetKey(KeyCode.UpArrow);
-        joyRight = Input.GetKey(KeyCode.RightArrow);
-        joyDown = Input.GetKey(KeyCode.DownArrow);
-        joyFire = Input.GetKey(KeyCode.Space);
+        adv_input.getDirection(ref joyLeft, ref joyUp, ref joyRight, ref joyDown);
+        joyFire = adv_input.getDropButton();
     }
 
     public void Platform_MakeSound(SOUND sound, float volume) {

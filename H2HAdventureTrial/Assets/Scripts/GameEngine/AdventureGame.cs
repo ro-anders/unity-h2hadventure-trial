@@ -75,8 +75,8 @@ namespace GameEngine
          This is the countdown timer. */
         private int timeToStartGame;
 
-////static int numDragons = 3;
-////static Dragon** dragons = NULL;
+        static int numDragons = 3;
+        static Dragon[] dragons = new Dragon[0];
 ////static Bat* bat = NULL;
         private Portcullis[] ports;
 
@@ -95,7 +95,7 @@ namespace GameEngine
 
         public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer,//// Transport* inTransport,
                              int inGameNum
-////                             ,int initialLeftDiff, int initialRightDiff
+                             ,bool leftDifficultyOn, bool rightDifficultyOn
                              ) {
             view = inView;
 
@@ -111,7 +111,7 @@ namespace GameEngine
                              (gameMode == Adv.GAME_MODE_3 ? Adv.GAME_MODE_2 : gameMode));
             gameMap = new Map(numPlayers, gameMapLayout);
             roomDefs = gameMap.roomDefs;
-            gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap);
+            gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap, view);
 ////            EasterEgg::setup(gameBoard);
 
             surrounds = new OBJECT[numPlayers];
@@ -120,17 +120,17 @@ namespace GameEngine
                 surrounds[ctr] = new OBJECT("surround" + ctr, objectGfxSurround, new byte[0], 0, COLOR.ORANGE, OBJECT.RandomizedLocations.FIXED_LOCATION, 0x07);
             }
 
-////            Dragon::Difficulty difficulty = (gameMode == GAME_MODE_1 ?
-////                                             (initialLeftDiff == DIFFICULTY_B ? Dragon::TRIVIAL : Dragon::EASY) :
-////                                             (initialLeftDiff == DIFFICULTY_B ? Dragon::MODERATE : Dragon::HARD));
-////            Dragon::setRunFromSword(initialRightDiff == DIFFICULTY_A);
+            Dragon.Difficulty difficulty = (gameMode == GAME_MODE_1 ?
+                                             (leftDifficultyOn ? Dragon.Difficulty.EASY: Dragon.Difficulty.TRIVIAL) :
+                                             (leftDifficultyOn ? Dragon.Difficulty.HARD : Dragon.Difficulty.MODERATE));
+            Dragon.setRunFromSword(rightDifficultyOn);
 
-////            if (gameMode == GAME_MODE_SCRIPTING) difficulty = Dragon::EASY;
-////            Dragon::setDifficulty(difficulty);
-////            dragons = new Dragon*[numDragons];
-////            dragons[0] = new Dragon("grindle", 0, COLOR_LIMEGREEN, 2, greenDragonMatrix);
-////            dragons[1] = new Dragon("yorgle", 1, COLOR_YELLOW, 2, yellowDragonMatrix);
-////            dragons[2] = new Dragon("rhindle", 2, COLOR_RED, 3, redDragonMatrix);
+            if (gameMode == GAME_MODE_SCRIPTING) difficulty = Dragon.Difficulty.EASY;
+            Dragon.setDifficulty(difficulty);
+            dragons = new Dragon[numDragons];
+            dragons[0] = new Dragon("grindle", 0, COLOR.LIMEGREEN, 2, greenDragonMatrix);
+            dragons[1] = new Dragon("yorgle", 1, COLOR.YELLOW, 2, yellowDragonMatrix);
+            dragons[2] = new Dragon("rhindle", 2, COLOR.RED, 3, redDragonMatrix);
 ////            bat = new Bat(COLOR_BLACK);
 
             OBJECT goldKey = new OBJECT("gold key", objectGfxKey, new byte[0], 0, COLOR.YELLOW, OBJECT.RandomizedLocations.OUT_IN_OPEN);
@@ -173,9 +173,9 @@ namespace GameEngine
             gameBoard.addObject(Board.OBJECT_BLACK_PORT, ports[2]);
             gameBoard.addObject(Board.OBJECT_CRYSTAL_PORT, ports[3]);
             gameBoard.addObject(Board.OBJECT_NAME, new OBJECT("easter egg message", objectGfxAuthor, new byte[0], 0, COLOR.FLASH, OBJECT.RandomizedLocations.FIXED_LOCATION));
-////            gameBoard.addObject(OBJECT_REDDRAGON, dragons[2]);
-////            gameBoard.addObject(OBJECT_YELLOWDRAGON, dragons[1]);
-////            gameBoard.addObject(OBJECT_GREENDRAGON, dragons[0]);
+            gameBoard.addObject(Board.OBJECT_REDDRAGON, dragons[2]);
+            gameBoard.addObject(Board.OBJECT_YELLOWDRAGON, dragons[1]);
+            gameBoard.addObject(Board.OBJECT_GREENDRAGON, dragons[0]);
             gameBoard.addObject(Board.OBJECT_SWORD, new OBJECT("sword", objectGfxSword, new byte[0], 0, COLOR.YELLOW));
             gameBoard.addObject(Board.OBJECT_BRIDGE, new OBJECT("bridge", objectGfxBridge, new byte[0], 0, COLOR.PURPLE,
                                                                 OBJECT.RandomizedLocations.OPEN_OR_IN_CASTLE, 0x07));
@@ -413,20 +413,20 @@ namespace GameEngine
 ////                bat.lookForNewObject();
 ////            }
 
-////            // Bring the dragons back to life
-////            for (int ctr = 0; ctr < numDragons; ++ctr)
-////            {
-////                Dragon* dragon = dragons[ctr];
-////                if (dragon.state == Dragon::DEAD)
-////                {
-////                    dragon.state = Dragon::STALKING;
-////                }
-////                else if (dragon.eaten == ball)
-////                {
-////                    dragon.state = Dragon::STALKING;
-////                    dragon.eaten = NULL;
-////                }
-////            }
+            // Bring the dragons back to life
+            for (int ctr = 0; ctr < numDragons; ++ctr)
+            {
+                Dragon dragon = dragons[ctr];
+                if (dragon.state == Dragon.DEAD)
+                {
+                    dragon.state = Dragon.STALKING;
+                }
+                else if (dragon.eaten == ball)
+                {
+                    dragon.state = Dragon.STALKING;
+                    dragon.eaten = null;
+                }
+            }
             }
 
 ////        void SyncWithOthers()
@@ -684,25 +684,25 @@ namespace GameEngine
                         }
                         else if (gameState == GAMESTATE_ACTIVE_3)
                         {
-////                            // Move and deal with the dragons
-////                            for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
-////                            {
-////                                Dragon* dragon = dragons[dragonCtr];
-////                                RemoteAction* dragonAction = dragon.move();
-////                                if (dragonAction != NULL)
-////                                {
-////                                    sync.BroadcastAction(dragonAction);
-////                                }
-////                                // In gauntlet mode, getting eaten immediately triggers a reset.
-////                                if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon::EATEN) && (dragon.eaten == objectBall))
-////                                {
-////                                    ResetPlayer(objectBall);
-////                                    // Broadcast to everyone else
-////                                    PlayerResetAction* action = new PlayerResetAction();
-////                                    sync.BroadcastAction(action);
+                            // Move and deal with the dragons
+                            for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
+                            {
+                                Dragon dragon = dragons[dragonCtr];
+                                RemoteAction dragonAction = dragon.move();
+                                if (dragonAction != null)
+                                {
+                                    sync.BroadcastAction(dragonAction);
+                                }
+                                // In gauntlet mode, getting eaten immediately triggers a reset.
+                                if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
+                                {
+                                    ResetPlayer(objectBall);
+                                    // Broadcast to everyone else
+                                    PlayerResetAction action = new PlayerResetAction();
+                                    sync.BroadcastAction(action);
 
-////                                }
-////                            }
+                                }
+                            }
 
                             for (int i = 0; i < numPlayers; ++i)
                             {
@@ -761,11 +761,11 @@ namespace GameEngine
             }
 
 
-////            // Set to no carried objects
-////            for (int ctr = 0; ctr < numDragons; ++ctr)
-////            {
-////                dragons[ctr].eaten = NULL;
-////            }
+            // Set to no carried objects
+            for (int ctr = 0; ctr < numDragons; ++ctr)
+            {
+                dragons[ctr].eaten = null;
+            }
 ////            bat.linkedObject = OBJECT_NONE;
 
 
@@ -1139,10 +1139,10 @@ namespace GameEngine
         {
 
             bool eaten = false;
-////            for (int ctr = 0; ctr < numDragons && !eaten; ++ctr)
-////            {
-////                eaten = (dragons[ctr].eaten == ball);
-////            }
+            for (int ctr = 0; ctr < numDragons && !eaten; ++ctr)
+            {
+                eaten = (dragons[ctr].eaten == ball);
+            }
 
             // Save the last, non-colliding position
             if (ball.hit)
@@ -2566,8 +2566,8 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
             {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
             {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
             {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
-            ////{Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
-            ////{Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
+            {Board.OBJECT_GREENDRAGON, Map.SOUTHEAST_ROOM, 0x50, 0x20, 0x00, 0x00, 0x00}, // Green Dragon
             {Board.OBJECT_SWORD, Map.GOLD_FOYER, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
             {Board.OBJECT_BRIDGE, Map.BLUE_MAZE_5, 0x2A, 0x37, 0x00, 0x00, 0x00}, // Bridge
             {Board.OBJECT_YELLOWKEY, Map.GOLD_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Yellow Key
@@ -2577,11 +2577,6 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
             {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
             {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
         };
-
-
-    }
-}
-
 
 
 
@@ -2667,37 +2662,38 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
 ////       0x00
 ////};
 
-////// Green Dragon's Object Matrix                                                                                      
-////static const int greenDragonMatrix[] =
-////{
-////    OBJECT_SWORD, OBJECT_GREENDRAGON,       // runs from sword
-////    OBJECT_JADEKEY, OBJECT_GREENDRAGON,     // runs from Jade key
-////    OBJECT_GREENDRAGON, OBJECT_BALL,        // goes after any Ball
-////    OBJECT_GREENDRAGON, OBJECT_CHALISE,     // guards Chalise
-////    OBJECT_GREENDRAGON, OBJECT_BRIDGE,      // guards Bridge
-////    OBJECT_GREENDRAGON, OBJECT_MAGNET,      // guards Magnet
-////    OBJECT_GREENDRAGON, OBJECT_BLACKKEY,    // guards Black Key
-////    0x00, 0x00
-////};
+        // Green Dragon's Object Matrix                                                                                      
+        private int[] greenDragonMatrix =
+        {
+            Board.OBJECT_SWORD, Board.OBJECT_GREENDRAGON,       // runs from sword
+            Board.OBJECT_JADEKEY, Board.OBJECT_GREENDRAGON,     // runs from Jade key
+            Board.OBJECT_GREENDRAGON, Board.OBJECT_BALL,        // goes after any Ball
+            Board.OBJECT_GREENDRAGON, Board.OBJECT_CHALISE,     // guards Chalise
+            Board.OBJECT_GREENDRAGON, Board.OBJECT_BRIDGE,      // guards Bridge
+            Board.OBJECT_GREENDRAGON, Board.OBJECT_MAGNET,      // guards Magnet
+            Board.OBJECT_GREENDRAGON, Board.OBJECT_BLACKKEY    // guards Black Key
+        };
 
-////// Yellow Dragon's Object Matrix                                                                                      
-////static const int yellowDragonMatrix[] =
-////{
-////    OBJECT_SWORD, OBJECT_YELLOWDRAGON,      // runs from sword
-////    OBJECT_YELLOWKEY, OBJECT_YELLOWDRAGON,  // runs from Yellow Key
-////    OBJECT_YELLOWDRAGON, OBJECT_BALL,       // goes after any Ball
-////    OBJECT_YELLOWDRAGON, OBJECT_CHALISE,    // guards Challise
-////    0x00, 0x00
-////};
+        // Yellow Dragon's Object Matrix                                                                                      
+        private int[] yellowDragonMatrix =
+        {
+            Board.OBJECT_SWORD, Board.OBJECT_YELLOWDRAGON,      // runs from sword
+            Board.OBJECT_YELLOWKEY, Board.OBJECT_YELLOWDRAGON,  // runs from Yellow Key
+            Board.OBJECT_YELLOWDRAGON, Board.OBJECT_BALL,       // goes after any Ball
+            Board.OBJECT_YELLOWDRAGON, Board.OBJECT_CHALISE    // guards Challise
+        };
 
-////// Red Dragon's Object Matrix                                                                                      
-////static const int redDragonMatrix[] =
-////{
-////    OBJECT_SWORD, OBJECT_REDDRAGON,         // runs from sword
-////    OBJECT_COPPERKEY, OBJECT_REDDRAGON,     // runs from Copper key
-////    OBJECT_REDDRAGON, OBJECT_BALL,          // goes after any Ball
-////    OBJECT_REDDRAGON, OBJECT_CHALISE,       // guards Chalise
-////    OBJECT_REDDRAGON, OBJECT_WHITEKEY,      // guards White Key
-////    0x00, 0x00
-////};
+        // Red Dragon's Object Matrix                                                                                      
+        private int[] redDragonMatrix =
+        {
+            Board.OBJECT_SWORD, Board.OBJECT_REDDRAGON,         // runs from sword
+            Board.OBJECT_COPPERKEY, Board.OBJECT_REDDRAGON,     // runs from Copper key
+            Board.OBJECT_REDDRAGON, Board.OBJECT_BALL,          // goes after any Ball
+            Board.OBJECT_REDDRAGON, Board.OBJECT_CHALISE,       // guards Chalise
+            Board.OBJECT_REDDRAGON, Board.OBJECT_WHITEKEY       // guards White Key
+        };
+
+
+    }
+}
 
