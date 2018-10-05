@@ -77,7 +77,7 @@ namespace GameEngine
 
         static int numDragons = 3;
         static Dragon[] dragons = new Dragon[0];
-////static Bat* bat = NULL;
+        static Bat bat = null;
         private Portcullis[] ports;
 
 
@@ -131,7 +131,7 @@ namespace GameEngine
             dragons[0] = new Dragon("grindle", 0, COLOR.LIMEGREEN, 2, greenDragonMatrix);
             dragons[1] = new Dragon("yorgle", 1, COLOR.YELLOW, 2, yellowDragonMatrix);
             dragons[2] = new Dragon("rhindle", 2, COLOR.RED, 3, redDragonMatrix);
-////            bat = new Bat(COLOR_BLACK);
+            bat = new Bat(COLOR.BLACK);
 
             OBJECT goldKey = new OBJECT("gold key", objectGfxKey, new byte[0], 0, COLOR.YELLOW, OBJECT.RandomizedLocations.OUT_IN_OPEN);
             OBJECT copperKey = new OBJECT("coppey key", objectGfxKey, new byte[0], 0, COLOR.COPPER, OBJECT.RandomizedLocations.OUT_IN_OPEN);
@@ -187,7 +187,7 @@ namespace GameEngine
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY1, crystalKeys[0]);
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY2, crystalKeys[1]);
 ////            gameBoard.addObject(OBJECT_CRYSTALKEY3, crystalKeys[2]);
-////            gameBoard.addObject(OBJECT_BAT, bat);
+            gameBoard.addObject(Board.OBJECT_BAT, bat);
             gameBoard.addObject(Board.OBJECT_DOT, new OBJECT("dot", objectGfxDot, new byte[0], 0, COLOR.LTGRAY, OBJECT.RandomizedLocations.FIXED_LOCATION));
             gameBoard.addObject(Board.OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, new byte[0], 0, COLOR.FLASH));
 ////            gameBoard.addObject(OBJECT_EASTEREGG, new OBJECT("easteregg", objectGfxEasterEgg, 0, 0, COLOR_FLASH,
@@ -210,7 +210,7 @@ namespace GameEngine
             ////            transport = inTransport;
             ////            sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
             ////                                                      new Sync(numPlayers, thisPlayer, transport));
-            sync = new NoopSync(); //// TEMP
+            sync = new Sync(numPlayers, thisPlayer, null); //// TEMP
 
 ////            // Need to have the transport setup before we setup the objects,
 ////            // because we may be broadcasting randomized locations to other machines
@@ -406,12 +406,12 @@ namespace GameEngine
                 ball.linkedObject = Board.OBJECT_NONE;  // Not carrying anything
                 ball.setGlowing(false);
 
-////            // Make the bat want something right away
-////            // I guess the bat is reset just like the dragons are reset.
-////            if (bat.exists())
-////            {
-////                bat.lookForNewObject();
-////            }
+            // Make the bat want something right away
+            // I guess the bat is reset just like the dragons are reset.
+            if (bat.exists())
+            {
+                bat.lookForNewObject();
+            }
 
             // Bring the dragons back to life
             for (int ctr = 0; ctr < numDragons; ++ctr)
@@ -668,11 +668,11 @@ namespace GameEngine
                             // deal with invisible surround moving
                             Surround();
 
-////                            // Move and deal with bat
-////                            if (bat.exists())
-////                            {
-////                                bat.moveOneTurn(sync, objectBall);
-////                            }
+                            // Move and deal with bat
+                            if (bat.exists())
+                            {
+                                bat.moveOneTurn(sync, objectBall);
+                            }
 
                             // Move and deal with portcullises
                             Portals();
@@ -766,11 +766,11 @@ namespace GameEngine
             {
                 dragons[ctr].eaten = null;
             }
-////            bat.linkedObject = OBJECT_NONE;
+            bat.linkedObject = Board.OBJECT_NONE;
 
 
             // Read the object initialization table for the current game level
-            byte[,] p = new byte[0,0];
+            int[,] p = new int[0,0];
             if (gameMode == GAME_MODE_1)
             {
                 p = game1Objects;
@@ -779,24 +779,23 @@ namespace GameEngine
             ////{
             ////    p = gameGauntletObjects;
             ////}
-            ////else
-            ////{
-            ////    p = game2Objects;
-            ////}
+            else
+            {
+                p = game2Objects;
+            }
             UnityEngine.Debug.Log("There are " + p.GetLength(0) + " objects to initialize");
 
             for (int ctr = 0; ctr < p.GetLength(0); ++ctr)
             {
-                byte objct = p[ctr, 0];
-                byte room = p[ctr, 1];
-                byte xpos = p[ctr, 2];
-                byte ypos = p[ctr, 3];
-                byte state = p[ctr, 4];
+                int objct = p[ctr, 0];
+                int room = p[ctr, 1];
+                int xpos = p[ctr, 2];
+                int ypos = p[ctr, 3];
+                int state = p[ctr, 4];
                 int movementX = p[ctr, 5];
                 int movementY = p[ctr, 6];
 
                 OBJECT toInit = gameBoard[objct];
-                UnityEngine.Debug.Log("Initializing game object #" + (ctr + 1) + ": " + toInit.label + " in room " + room);
                 toInit.init(room, xpos, ypos, state, movementX, movementY);
             };
 
@@ -1127,12 +1126,12 @@ namespace GameEngine
 
             BallMovement(objectBall);
 
-////            if (!joystickDisabled && ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY)))
-////            {
-////                // TODO: Do we want to be constantly allocating space?
-////                PlayerMoveAction* moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
-////                sync.BroadcastAction(moveAction);
-////            }
+            if (!joystickDisabled && ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY)))
+            {
+                // TODO: Do we want to be constantly allocating space?
+                PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
+                sync.BroadcastAction(moveAction);
+            }
         }
 
         void BallMovement(BALL ball)
@@ -1475,14 +1474,14 @@ namespace GameEngine
                     objct.room = roomDefs[objct.room].roomRight;
                 }
 
-                ////// If the objct has a linked object
-                ////if ((objct == bat) && (bat.linkedObject != Board.OBJECT_NONE))
-                ////{
-                ////    OBJECT linkedObj = gameBoard[bat.linkedObject];
-                ////    linkedObj.x = objct.x + bat.linkedObjectX;
-                ////    linkedObj.y = objct.y + bat.linkedObjectY;
-                ////    linkedObj.room = objct.room;
-                ////}
+                // If the objct has a linked object
+                if ((objct == bat) && (bat.linkedObject != Board.OBJECT_NONE))
+                {
+                    OBJECT linkedObj = gameBoard[bat.linkedObject];
+                    linkedObj.x = objct.x + bat.linkedObjectX;
+                    linkedObj.y = objct.y + bat.linkedObjectY;
+                    linkedObj.room = objct.room;
+                }
             }
         }
 
@@ -1610,28 +1609,23 @@ namespace GameEngine
                         ////    action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
                         ////}
 
-                        ////// If the bat is holding the object we do some of the pickup things but not all.
-                        ////// We drop our current object and play the pickup sound, but we don't actually
-                        ////// pick up the object.
-                        ////// NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
-                        ////// not totally sure what should be done.  As a guess, we just set linkedObject to none and
-                        ////// play the sound.
-                        ////if (bat.exists() && (bat.linkedObject == hitIndex))
-                        ////{
-                        ////    if (dropIndex > OBJECT_NONE)
-                        ////    {
-                        ////        // Drop our current object and broadcast it
-                        ////        objectBall.linkedObject = OBJECT_NONE;
-                        ////        sync.BroadcastAction(action);
-                        ////    }
-                        ////    else
-                        ////    {
-                        ////        // Don't need the action.
-                        ////        delete action;
-                        ////    }
-                        ////}
-                        ////else
-                        ////{
+                        // If the bat is holding the object we do some of the pickup things but not all.
+                        // We drop our current object and play the pickup sound, but we don't actually
+                        // pick up the object.
+                        // NOTE: Discrepancy here between C++ port behavior and original Atari behavior so
+                        // not totally sure what should be done.  As a guess, we just set linkedObject to none and
+                        // play the sound.
+                        if (bat.exists() && (bat.linkedObject == hitIndex))
+                        {
+                            if (dropIndex > Board.OBJECT_NONE)
+                            {
+                                // Drop our current object and broadcast it
+                                objectBall.linkedObject = Board.OBJECT_NONE;
+                                ////sync.BroadcastAction(action);
+                            }
+                        }
+                        else
+                        {
 
                             // Pick up this object!
                             objectBall.linkedObject = hitIndex;
@@ -1658,7 +1652,7 @@ namespace GameEngine
                             ////action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
                             ////sync.BroadcastAction(action);
 
-                        ////}
+                        }
 
                         // Play the sound
                         view.Platform_MakeSound(SOUND.PICKUP, MAX.VOLUME);
@@ -2557,7 +2551,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         //
         // Object locations (room and coordinate) for game 01
         //        - object, room, x, y, state, movement(x/y)
-        private readonly byte[,] game1Objects = new byte[,]
+        private readonly int[,] game1Objects = new int[,]
         {
             {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
             {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
@@ -2581,57 +2575,45 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
 
 
 
-////// Object locations (room and coordinate) for Games 02 and 03
-//////        - object, room, x, y, state, movement(x/y)
-////static const byte game2Objects[] =
-////{
-////    OBJECT_YELLOW_PORT, GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
-////    OBJECT_COPPER_PORT, COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 4
-////    OBJECT_JADE_PORT, JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 5
-////    OBJECT_WHITE_PORT, WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 2
-////    OBJECT_BLACK_PORT, BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
-////    OBJECT_CRYSTAL_PORT, CRYSTAL_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
-////    OBJECT_NAME, ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00, // Robinett message
-////    OBJECT_NUMBER, NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00, // Starting number
-////    OBJECT_REDDRAGON, BLACK_MAZE_2, 0x50, 0x20, 0x00, 3, 3, // Red Dragon
-////    OBJECT_YELLOWDRAGON, RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3, // Yellow Dragon
-////#ifdef DEBUG_EASTEREGG
-////    OBJECT_GREENDRAGON, NUMBER_ROOM, 0x50, 0x20, 0x00, 3, 3, // Green Dragon
-////#else
-////    OBJECT_GREENDRAGON, BLUE_MAZE_3, 0x50, 0x20, 0x00, 3, 3, // Green Dragon
-////#endif
-////    OBJECT_SWORD, GOLD_CASTLE, 0x20, 0x20, 0x00, 0x00, 0x00, // Sword
-////#ifdef DEBUG_EASTEREGG
-////    OBJECT_BRIDGE, MAIN_HALL_RIGHT, 0x40, 0x40, 0x00, 0x00, 0x00, // Bridge
-////    OBJECT_YELLOWKEY, MAIN_HALL_RIGHT, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
-////    OBJECT_COPPERKEY, MAIN_HALL_RIGHT, 0x7a, 0x40, 0x00, 0x00, 0x00, // Copper Key
-////#else
-////    OBJECT_BRIDGE, WHITE_MAZE_3, 0x40, 0x40, 0x00, 0x00, 0x00, // Bridge
-////    OBJECT_YELLOWKEY, WHITE_MAZE_2, 0x20, 0x40, 0x00, 0x00, 0x00, // Yellow Key
-////    OBJECT_COPPERKEY, WHITE_MAZE_2, 0x7a, 0x40, 0x00, 0x00, 0x00, // Copper Key
-////#endif
-////    OBJECT_JADEKEY, BLUE_MAZE_4, 0x7a, 0x40, 0x00, 0x00, 0x00, // Jade Key
-////    OBJECT_WHITEKEY, BLUE_MAZE_3, 0x20, 0x40, 0x00, 0x00, 0x00, // White Key
-////    OBJECT_BLACKKEY, RED_MAZE_4, 0x20, 0x40, 0x00, 0x00, 0x00, // Black Key
-////#ifdef DEBUG_EASTEREGG
-////    OBJECT_CRYSTALKEY1, CRYSTAL_CASTLE, 0x16, 0x41, 0x00, 0x00, 0x00, // Crystal Key for Player 1
-////    OBJECT_CRYSTALKEY2, CRYSTAL_CASTLE, 0x16, 0x41, 0x00, 0x00, 0x00, // Crystal Key for Player 2
-////    OBJECT_CRYSTALKEY3, CRYSTAL_CASTLE, 0x16, 0x41, 0x00, 0x00, 0x00, // Crystal Key for Player 3
-////#else
-////    OBJECT_CRYSTALKEY1, CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00, // Crystal Key for Player 1
-////    OBJECT_CRYSTALKEY2, CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00, // Crystal Key for Player 2
-////    OBJECT_CRYSTALKEY3, CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00, // Crystal Key for Player 3
-////#endif
-////    OBJECT_BAT, MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3, // Bat
-////#ifdef DEBUG_EASTEREGG
-////    OBJECT_DOT, MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00, // Dot
-////#else
-////    OBJECT_DOT, BLACK_MAZE_3, 0x45, 0x12, 0x00, 0x00, 0x00, // Dot
-////#endif
-////    OBJECT_CHALISE, BLACK_MAZE_2, 0x30, 0x20, 0x00, 0x00, 0x00, // Challise
-////    OBJECT_MAGNET, SOUTHWEST_ROOM, 0x80, 0x20, 0x00, 0x00, 0x00, // Magnet
-////    0xff,0,0,0,0,0,0
-////};
+        // Object locations (room and coordinate) for Games 02 and 03
+        //        - object, room, x, y, state, movement(x/y)
+        private readonly int[,] game2Objects = new int[,]
+        {
+            {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
+            {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
+            {Board.OBJECT_JADE_PORT, Map.JADE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 5
+            {Board.OBJECT_WHITE_PORT, Map.WHITE_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 2
+            {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
+            {Board.OBJECT_CRYSTAL_PORT, Map.CRYSTAL_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
+            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
+            {Board. OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
+            {Board.OBJECT_REDDRAGON, Map.BLACK_MAZE_2, 0x50, 0x20, 0x00, 3, 3}, // Red Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3}, // Yellow Dragon
+            // Commented out sections are for easy testing of Easter Egg
+            //{Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x50, 0x20, 0x00, 3, 3}, // Green Dragon
+            {Board.OBJECT_GREENDRAGON, Map.BLUE_MAZE_3, 0x50, 0x20, 0x00, 3, 3}, // Green Dragon
+            {Board.OBJECT_SWORD, Map.GOLD_CASTLE, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
+            //{Board.OBJECT_BRIDGE, Map.MAIN_HALL_RIGHT, 0x40, 0x40, 0x00, 0x00, 0x00}, // Bridge
+            //{Board.OBJECT_YELLOWKEY, Map.MAIN_HALL_RIGHT, 0x20, 0x40, 0x00, 0x00, 0x00}, // Yellow Key
+            //{Board.OBJECT_COPPERKEY, Map.MAIN_HALL_RIGHT, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Copper Key
+            {Board.OBJECT_BRIDGE, Map.WHITE_MAZE_3, 0x40, 0x40, 0x00, 0x00, 0x00}, // Bridge
+            {Board.OBJECT_YELLOWKEY, Map.WHITE_MAZE_2, 0x20, 0x40, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_COPPERKEY, Map.WHITE_MAZE_2, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Copper Key
+            {Board.OBJECT_JADEKEY, Map.BLUE_MAZE_4, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Jade Key
+            {Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x20, 0x40, 0x00, 0x00, 0x00}, // White Key
+            {Board.OBJECT_BLACKKEY, Map.RED_MAZE_4, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
+            //{Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x16, 0x41, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
+            //{Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x16, 0x41, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
+            //{Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x16, 0x41, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
+            ////{Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
+            ////{Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
+            ////{Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
+            {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
+            //{Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
+            {Board.OBJECT_DOT, Map.BLACK_MAZE_3, 0x45, 0x12, 0x00, 0x00, 0x00}, // Dot
+            {Board.OBJECT_CHALISE, Map.BLACK_MAZE_2, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
+            {Board.OBJECT_MAGNET, Map.SOUTHWEST_ROOM, 0x80, 0x20, 0x00, 0x00, 0x00}, // Magnet
+        };
 
 ////// Object locations (room and coordinate) for game 01
 //////        - object, room, x, y, state, movement(x/y)

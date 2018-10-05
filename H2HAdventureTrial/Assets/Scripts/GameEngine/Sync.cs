@@ -1,16 +1,292 @@
 ﻿using System;
+using System.Collections.Generic;
 namespace GameEngine
 {
-    public abstract class Sync
+    public class Sync
     {
-        public abstract void BroadcastAction(RemoteAction action);
+        private List<RemoteAction> batActions;
+        private List<RemoteAction> dragonActions;
+        private List<PlayerPickupAction> playerPickups;
+        private List<PlayerResetAction> playerResets;
+        private List<PortcullisStateAction> gateStateChanges;
+        private List<ObjectMoveAction> mazeSetupActions;
+        private PlayerMoveAction[] playersLastMove;
+        private PlayerWinAction gameWon;
 
-    }
+        private const int CHECK_PERIOD = 15000; // Fifteen seconds
 
-    //// TEMP - NO-OP Implementation
-    public class NoopSync: Sync {
-        public override void BroadcastAction(RemoteAction action) {
-            
+        private Transport transport;
+
+        private int thisPlayer;
+
+        private int numPlayers;
+
+        private int frameNum;
+
+        private int[] msgsRcvdFromPlayer;
+
+        public Sync(int inNumPlayers, int inThisPlayer, Transport inTransport)
+        {
+            numPlayers = inNumPlayers;
+            thisPlayer = inThisPlayer;
+            gameWon = null;
+            transport = inTransport;
+            frameNum = 0;
+            playersLastMove = new PlayerMoveAction[numPlayers];
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                playersLastMove[ctr] = null;
+            }
+            msgsRcvdFromPlayer = new int[numPlayers];
+            resetMessagesReceived();
         }
+
+        /**
+         * Call this before the start of each frame.
+         * Allows the syncer to correlate how many frames ago an action was performed.
+         */
+        public void StartFrame()
+        {
+            ++frameNum;
+        }
+
+
+        /**
+         * This pulls messages off the socket until there are none waiting.
+         * This does not process them, but demuxes them and puts them where they can be grabbed
+         * when it is time to process that type of message.
+         */
+        public void PullLatestMessages()
+        {
+            RemoteAction nextAction = (transport != null ? transport.get() : null);
+
+            while (nextAction != null)
+            {
+                bool hitError = false;
+                switch (nextAction.typeCode)
+                {
+                    case "PM":
+                        int messageSender = nextAction.sender;
+                        playersLastMove[messageSender] = (PlayerMoveAction)nextAction;
+                        break;
+                    case "PP":
+                        playerPickups.Add((PlayerPickupAction)nextAction);
+                        break;
+                    case "PR":
+                        playerResets.Add((PlayerResetAction)nextAction);
+                        break;
+                    case "PW":
+                        // Don't know how we'd get this, but we ignore any win message after we receive the first one.
+                        if (gameWon == null)
+                        {
+                            gameWon = (PlayerWinAction)nextAction;
+                        }
+                        break;
+                    case "DM":
+                    case "DS":
+                        dragonActions.Add(nextAction);
+                        break;
+                    case "BM":
+                    case "BP":
+                        batActions.Add(nextAction);
+                        break;
+                    case "GS":
+                        gateStateChanges.Add((PortcullisStateAction)nextAction);
+                        break;
+                    case "MO":
+                        mazeSetupActions.Add((ObjectMoveAction)nextAction);
+                        break;
+                    case "XX":
+                        break;
+                    default:
+                        // Hit unknown type
+                        hitError = true;
+                        break;
+                }
+                if (!hitError)
+                {
+                    handled(nextAction);
+                }
+
+                nextAction = transport.get();
+            }
+        }
+
+
+        /**
+         *  Get the latest changes to another player.  Returns the last known state of a
+         * player including their position and velocity.  Caller must delete this object.
+         * If no changes have been received since the last call, this will return
+         * null.
+         */
+        public PlayerMoveAction GetLatestBallSync(int player)
+        {
+            PlayerMoveAction rtn = playersLastMove[player];
+            playersLastMove[player] = null;
+            return rtn;
+        }
+
+        /**
+         * Get the next player pickup or player drop action.
+         * Caller must delete this action.
+         * If no actions have been received, this will return null.
+         */
+        public PlayerPickupAction GetNextPickupAction()
+        {
+            PlayerPickupAction next = null;
+            if (playerPickups.Count > 0)
+            {
+                next = playerPickups[0];
+                playerPickups.RemoveAt(0);
+            }
+            return next;
+
+        }
+
+        /**
+         * Get the next player reset action.
+         * Caller must delete this action.
+         * If no actions have been received, this will return null.
+         */
+        public PlayerResetAction GetNextResetAction()
+        {
+            PlayerResetAction next = null;
+            if (playerResets.Count > 0)
+            {
+                next = playerResets[0];
+                playerResets.RemoveAt(0);
+            }
+            return next;
+        }
+
+        /**
+         * If another player has won, this will return that action.
+         * Otherwise will return null.
+         * Caller must delete this action.
+         */
+        public PlayerWinAction GetGameWon()
+        {
+            PlayerWinAction next = gameWon;
+            gameWon = null;
+            return next;
+        }
+
+        /**
+         * Get the next dragon action.  Caller must delete this object.
+         * Caller must delete this action.
+         * If no actions have been received, this will return null.
+         */
+        public RemoteAction GetNextDragonAction()
+        {
+            RemoteAction next = null;
+            if (dragonActions.Count > 0)
+            {
+                next = dragonActions[0];
+                dragonActions.RemoveAt(0);
+            }
+            return next;
+        }
+
+        /**
+         * Get the next portcullis action.  Caller must delete this object.
+         * Caller must delete this action.
+         * If no actions have been received, this will return null.
+         */
+        public PortcullisStateAction GetNextPortcullisAction()
+        {
+            PortcullisStateAction next = null;
+            if (gateStateChanges.Count > 0)
+            {
+                next = gateStateChanges[0];
+                gateStateChanges.RemoveAt(0);
+            }
+            return next;
+        }
+
+        /**
+         * Get the next bat action.  Caller must delete this object.
+         * Caller must delete this action.
+         * If no actions have been received, this will return null.
+         */
+        public RemoteAction GetNextBatAction()
+        {
+            RemoteAction next = null;
+            if (batActions.Count > 0)
+            {
+                next = batActions[0];
+                batActions.RemoveAt(0);
+            }
+            return next;
+        }
+
+        /**
+         * Get the next maze setup action.
+         * Caller must delete this action.
+         * If no actions have been received, this will return null.
+         */
+        public ObjectMoveAction GetNextSetupAction()
+        {
+            ObjectMoveAction next = null;
+            if (mazeSetupActions.Count > 0)
+            {
+                next = mazeSetupActions[0];
+                mazeSetupActions.RemoveAt(0);
+            }
+            return next;
+        }
+
+        /**
+         * Broadcast an event to the other players
+         * @param action an action to broadcast.  The Sync now owns this action and is responsible
+         * for deleting it.
+         */
+        public void BroadcastAction(RemoteAction action)
+        {
+            if (action != null)
+            {
+                action.setSender(thisPlayer);
+                if (transport != null)
+                {
+                    transport.send(action);
+                }
+
+                Logger.log("Sent \"" + action + "\" on frame #" + frameNum);
+
+            }
+
+        }
+
+
+        public int getFrameNumber()
+        {
+            return frameNum;
+        }
+
+        public int getMessagesReceived(int player)
+        {
+            return msgsRcvdFromPlayer[player];
+        }
+
+        public void resetMessagesReceived()
+        {
+            for (int ctr = 0; ctr < numPlayers; ++ctr)
+            {
+                msgsRcvdFromPlayer[ctr] = 0;
+            }
+        }
+
+        private void handled(RemoteAction action)
+        {
+            // Record we got a message from the sender
+            if (action != null)
+            {
+                int sender = action.sender;
+                if ((sender >= 0) && (sender < numPlayers))
+                {
+                    ++msgsRcvdFromPlayer[sender];
+                }
+            }
+        }
+
     }
 }

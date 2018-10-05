@@ -17,8 +17,10 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
     private AdventureGame gameEngine;
     private int at = 0;
 
+    private PlayerSync playerSync;
+
     public void AdventureSetup(RenderTexture inRenderTexture, Texture2D inTexture) {
-        gameEngine = new AdventureGame(this, 2, 0, 0, false, false);
+        gameEngine = new AdventureGame(this, 2, 0, 1, false, false);
         renderTexture = inRenderTexture;
         texture = inTexture;
 
@@ -62,6 +64,10 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
             texture.Apply();
             RenderTexture.active = null; //don't forget to set it back to null once you finished playing with it. 
         }
+    }
+
+    public void registerSync(PlayerSync inPlayerSync) {
+        playerSync = inPlayerSync;
     }
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)

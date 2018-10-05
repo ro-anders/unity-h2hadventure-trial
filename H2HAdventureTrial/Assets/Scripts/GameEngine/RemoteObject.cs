@@ -54,34 +54,46 @@ namespace GameEngine
 
     }
 
-    ////class PlayerPickupAction : public RemoteAction {
-    ////public:
-    ////    int pickupObject;
-    ////int pickupX;
-    ////int pickupY;
-    ////int dropObject;
-    ////int dropRoom;
-    ////int dropX;
-    ////int dropY;
+    public class PlayerPickupAction : RemoteAction {
+        public int pickupObject;
+        public int pickupX;
+        public int pickupY;
+        public int dropObject;
+        public int dropRoom;
+        public int dropX;
+        public int dropY;
 
-    ////static const char* CODE;
+        public const String CODE = "PP";
 
-    ////PlayerPickupAction();
+        public PlayerPickupAction():
+        base(CODE) {}
 
-    ////PlayerPickupAction(int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
+        public PlayerPickupAction(int inPickupObject, int inPickupX, int inPickupY, int inDropObject, int inDropRoom, int inDropX, int inDropY):
+        base(CODE) {
+            pickupObject = inPickupObject;
+            pickupX = inPickupX;
+            pickupY = inPickupY;
+            dropObject = inDropObject;
+            dropRoom = inDropRoom;
+            dropX = inDropX;
+            dropY = inDropY;
+        }
 
-    ////~PlayerPickupAction();
+        public void setPickup(int inPickupObject, int inPickupX, int inPickupY) {
+            pickupObject = inPickupObject;
+            pickupX = inPickupX;
+            pickupY = inPickupY;
+        }
 
-    ////void setPickup(int inPickupObject, int inPickupX, int inPickupY);
+        public void setDrop(int inDropObject, int inDropRoom, int inDropX, int inDropY) {
+            dropObject = inDropObject;
+            dropRoom = inDropRoom;
+            dropX = inDropX;    
+            dropY = inDropY;
+        }
+    };
 
-    ////void setDrop(int inDropObject, int inDropRoom, int inDropX, int inDropY);
-
-    ////int serialize(char* buffer, int bufferLength);
-
-    ////void deserialize(const char* message);
-    ////};
-
-    class PlayerResetAction : RemoteAction {
+    public class PlayerResetAction : RemoteAction {
 
         public static String CODE = "PR";
 
@@ -91,22 +103,19 @@ namespace GameEngine
 
     };
 
-    ////class PlayerWinAction : public RemoteAction {
-    ////public:
-    ////    int winInRoom;
+    public class PlayerWinAction : RemoteAction {
+        public int winInRoom;
 
-    ////static const char* CODE;
+        public const String CODE = "PW";
 
-    ////PlayerWinAction();
+        public PlayerWinAction(): 
+        base(CODE) {}
 
-    ////PlayerWinAction(int winInRoom);
-
-    ////~PlayerWinAction();
-
-    ////int serialize(char* buffer, int bufferLength);
-
-    ////void deserialize(const char* message);
-    ////};
+        public PlayerWinAction(int inWinInRoom):
+        base(CODE) {
+            winInRoom = inWinInRoom;
+        }
+    };
 
 
     public class DragonMoveAction : MoveAction {
@@ -174,46 +183,46 @@ namespace GameEngine
         }
     }
 
-    ////class BatMoveAction : public MoveAction {
-    ////public:
+    public class BatMoveAction : MoveAction {
+        public int distance;           // Distance from player reporting position
 
-    ////    int distance;           // Distance from player reporting position
+        public const String CODE = "BM";
 
-    ////static const char* CODE;
+        public BatMoveAction():
+        base(CODE) {}
 
-    ////BatMoveAction();
+        public BatMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely, int inDistance) :
+                    base(CODE, inRoom, inPosx, inPosy, inVelx, inVely)
+        {
+            distance = inDistance;
+        }
+    };
 
-    ////BatMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely, int inDistance);
+    public class BatPickupAction : RemoteAction {
+        public int pickupObject;
+        public int pickupX;
+        public int pickupY;
+        public int dropObject;
+        public int dropRoom;
+        public int dropX;
+        public int dropY;
 
-    ////~BatMoveAction();
+        public const String CODE = "BP";
 
-    ////int serialize(char* buffer, int bufferLength);
+        public BatPickupAction():
+        base(CODE) {}
 
-    ////void deserialize(const char* message);
-    ////};
-
-    ////class BatPickupAction : public RemoteAction {
-    ////public:
-    ////    int pickupObject;
-    ////int pickupX;
-    ////int pickupY;
-    ////int dropObject;
-    ////int dropRoom;
-    ////int dropX;
-    ////int dropY;
-
-    ////static const char* CODE;
-
-    ////BatPickupAction();
-
-    ////BatPickupAction(int inPickupObject, int inPickupX, int inPickupY, int dropObject, int inRoom, int dropX, int dropY);
-
-    ////~BatPickupAction();
-
-    ////int serialize(char* buffer, int bufferLength);
-
-    ////void deserialize(const char* message);
-    ////};
+        public BatPickupAction(int inPickupObject, int inPickupX, int inPickupY, int inDropObject, int inDropRoom, int inDropX, int inDropY):
+        base(CODE) {
+            pickupObject = inPickupObject;
+            pickupX = inPickupX;
+            pickupY = inPickupY;
+            dropObject = inDropObject;
+            dropRoom = inDropRoom;
+            dropX = inDropX;
+            dropY = inDropY;
+        }
+    };
 
     /**
      * This places an object.  It is used when an object touches a gate and in level 3 when one client randomly
@@ -244,22 +253,10 @@ namespace GameEngine
         }
     }
 
-////class PingAction : public RemoteAction {
-////public:
-////    static const char* CODE;
+    public class PingAction : RemoteAction
+    {
+        public const String CODE = "XX";
 
-////PingAction();
-
-////~PingAction();
-
-////int serialize(char* buffer, int bufferLength);
-
-////void deserialize(const char* message);
-////};
-
-
-
-
-
-//#endif /* RemoteAction_hpp */
+        PingAction() : base(CODE) { }
+    }
 }
