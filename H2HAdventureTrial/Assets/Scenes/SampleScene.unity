@@ -263,7 +263,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   renderTexture: {fileID: 8400000, guid: d72e90d2377e54168af4fb44504e36a5, type: 2}
   quadRenderer: {fileID: 1114811357}
-  view: {fileID: 1114811360}
 --- !u!64 &1114811356
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -346,6 +345,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   adv_audio: {fileID: 2014092215}
   adv_input: {fileID: 161095024}
+  screenRenderer: {fileID: 1114811355}
 --- !u!1 &2014092214
 GameObject:
   m_ObjectHideFlags: 0
