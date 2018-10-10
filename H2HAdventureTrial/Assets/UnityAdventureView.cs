@@ -15,32 +15,52 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
 
     private AdventureGame gameEngine;
 
-    private PlayerSync playerSync;
+    private PlayerSync thisPlayer;
+
+    private List<PlayerSync> allPlayers = new List<PlayerSync>();
+
+    // This is only used by the view on the server
+    private int lastUsedSlot = 2;
 
     public void Start()
     {
         Debug.Log("UnityAdventureView started");
-        AdventureSetup();
     }
 
     // Update is called once per frame
     void Update()
     {
-        AdventureUpdate();
+        if (thisPlayer == null)
+        {
+            Debug.Log("Trying to update without a local player.");
+        }
+        else
+        {
+            AdventureUpdate();
+        }
     }
 
     public void AdventureSetup() {
-        gameEngine = new AdventureGame(this, 2, 0, 1, false, false);
+        if (thisPlayer == null)
+        {
+            Debug.LogError("Don't have a local player registered yet.");
+        }
+        gameEngine = new AdventureGame(this, 2, thisPlayer.getSlot(), 1, false, false);
     }
 
     public void AdventureUpdate() {
         screenRenderer.StartUpdate();
         gameEngine.Adventure_Run();
         screenRenderer.EndUpdate();
-   }
+    }
 
-    public void registerSync(PlayerSync inPlayerSync) {
-        playerSync = inPlayerSync;
+    public void registerSync(PlayerSync inPlayerSync, bool isLocal) {
+        Debug.Log("Registering " + (isLocal ? "local " : "remote ") + "player # " + (inPlayerSync.getSlot()+1));
+        allPlayers.Add(inPlayerSync);
+        if (isLocal) {
+            thisPlayer = inPlayerSync;
+            AdventureSetup();
+        }
     }
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)
@@ -64,6 +84,11 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
 
     public void Platform_MakeSound(SOUND sound, float volume) {
         adv_audio.play(sound, volume);
+    }
+
+    public int assignPlayerSlot() {
+        int newPlayerSlot = --lastUsedSlot;
+        return newPlayerSlot;
     }
 
 }

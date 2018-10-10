@@ -5,9 +5,13 @@ using UnityEngine.Networking;
 
 public class AdvNetworkManager : NetworkManager {
 
+    public void Start()
+    {
+        Debug.Log("AdvNetworkManager started");
+    }
+
     public override void OnClientConnect(NetworkConnection conn)
     {
-        base.OnClientConnect(conn);
-        Debug.LogError("Client connected!");
+        Debug.Log("Client connected!");
     }
 }
