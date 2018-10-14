@@ -6,6 +6,7 @@ namespace GameEngine
     {
         public int sender;             // The number of the player sending this action (1-3)
         public String typeCode;
+        public RemoteAction() {}
         public RemoteAction(String inCode)
         {
             typeCode = inCode;

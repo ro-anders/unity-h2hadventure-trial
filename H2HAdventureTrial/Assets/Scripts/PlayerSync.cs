@@ -1,23 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using GameEngine;
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class PlayerSync : NetworkBehaviour
 {
+    public int slot = -1;
 
-    public UnityAdventureView syncController;
-
-    private int slot = -1;
-    private UnityAdventureView view;
+    public UnityTransport xport;
 
     // Use this for initialization
     void Start()
     {
         Debug.Log("PlayerSync started");
         GameObject quadGameObject = GameObject.Find("Quad");
-        view = quadGameObject.GetComponent<UnityAdventureView>();
-        CmdAskServerForSlot();
+        xport = quadGameObject.GetComponent<UnityTransport>();
+        CmdAssignSlot();
     }
 
     public int getSlot() {
@@ -25,22 +24,40 @@ public class PlayerSync : NetworkBehaviour
     }
 
     [Command]
-    public void CmdAskServerForSlot() {
-        if (slot < 0)
-        {
-            slot = view.assignPlayerSlot();
+    public void CmdAssignSlot() {
+        if (slot < 0) {
+            slot = xport.assignPlayerSlot();
+            // This code is repeated from client RPC
+            xport.registerSync(this);
+            Debug.Log("Player #" + slot + " setup." +
+                      (isLocalPlayer ? " This is the local player." : "") +
+                      (isServer ? " This is on the server." : ""));
         }
-        RpcAssignSlotToClients(slot);
+        RpcAssignSlot(slot);
     }
 
     [ClientRpc]
-    public void RpcAssignSlotToClients(int inSlot) {
-        slot = inSlot;
-        // Start() may not have been called.  Discern view.
-        GameObject quadGameObject = GameObject.Find("Quad");
-        view = quadGameObject.GetComponent<UnityAdventureView>();
-        view.registerSync(this, isLocalPlayer);
+    public void RpcAssignSlot(int inSlot) {
+        if (slot < 0)
+        {
+            slot = inSlot;
+            // Repeat this code in server CMD
+            xport.registerSync(this);
+            Debug.Log("Player #" + slot + " setup." +
+                      (isLocalPlayer ? " This is the local player." : "") +
+                      (isServer ? " This is on the server." : ""));
+        }
     }
 
+    [Command]
+    public void CmdBroadcast(RemoteAction remoteAction) {
+        RpcReceiveBroadcast(remoteAction);
+    }
+
+    [ClientRpc]
+    public void RpcReceiveBroadcast(RemoteAction remoteAction) {
+        Debug.Log("Player #" + slot + " Received " + remoteAction.typeCode + " message from player #" + (remoteAction.sender + 1));
+        xport.receiveBroadcast(slot, remoteAction);
+    }
 
 }

@@ -15,22 +15,12 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
 
     private AdventureGame gameEngine;
 
-    private PlayerSync thisPlayer;
-
-    private List<PlayerSync> allPlayers = new List<PlayerSync>();
-
-    // This is only used by the view on the server
-    private int lastUsedSlot = 2;
-
-    public void Start()
-    {
-        Debug.Log("UnityAdventureView started");
-    }
+    private int localPlayerSlot = -1;
 
     // Update is called once per frame
     void Update()
     {
-        if (thisPlayer == null)
+        if (localPlayerSlot == -1)
         {
             Debug.Log("Trying to update without a local player.");
         }
@@ -40,27 +30,18 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
         }
     }
 
-    public void AdventureSetup() {
-        if (thisPlayer == null)
-        {
-            Debug.LogError("Don't have a local player registered yet.");
-        }
-        gameEngine = new AdventureGame(this, 2, thisPlayer.getSlot(), 1, false, false);
+    public void AdventureSetup(int inLocalPlayerSlot) {
+        Debug.Log("Starting game.");
+        localPlayerSlot = inLocalPlayerSlot;
+        GameObject quadGameObject = GameObject.Find("Quad");
+        Transport xport = quadGameObject.GetComponent<UnityTransport>();
+        gameEngine = new AdventureGame(this, 2, localPlayerSlot, xport, 0, false, false);
     }
 
     public void AdventureUpdate() {
         screenRenderer.StartUpdate();
         gameEngine.Adventure_Run();
         screenRenderer.EndUpdate();
-    }
-
-    public void registerSync(PlayerSync inPlayerSync, bool isLocal) {
-        Debug.Log("Registering " + (isLocal ? "local " : "remote ") + "player # " + (inPlayerSync.getSlot()+1));
-        allPlayers.Add(inPlayerSync);
-        if (isLocal) {
-            thisPlayer = inPlayerSync;
-            AdventureSetup();
-        }
     }
 
     public void Platform_PaintPixel(int r, int g, int b, int x, int y, int width, int height)
@@ -84,11 +65,6 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
 
     public void Platform_MakeSound(SOUND sound, float volume) {
         adv_audio.play(sound, volume);
-    }
-
-    public int assignPlayerSlot() {
-        int newPlayerSlot = --lastUsedSlot;
-        return newPlayerSlot;
     }
 
 }

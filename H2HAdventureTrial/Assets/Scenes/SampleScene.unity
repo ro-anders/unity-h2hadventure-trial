@@ -243,6 +243,7 @@ GameObject:
   - component: {fileID: 1114811356}
   - component: {fileID: 1114811355}
   - component: {fileID: 1114811360}
+  - component: {fileID: 1114811361}
   m_Layer: 0
   m_Name: Quad
   m_TagString: Untagged
@@ -346,6 +347,17 @@ MonoBehaviour:
   adv_audio: {fileID: 2014092215}
   adv_input: {fileID: 161095024}
   screenRenderer: {fileID: 1114811355}
+--- !u!114 &1114811361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1114811354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8250e473b8bd4f4eb9c7889cd97a75e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2014092214
 GameObject:
   m_ObjectHideFlags: 0

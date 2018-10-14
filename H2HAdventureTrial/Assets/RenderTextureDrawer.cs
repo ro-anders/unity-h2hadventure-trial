@@ -11,7 +11,6 @@ public class RenderTextureDrawer : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("RenderTextureDrawer started");
         texture = new Texture2D(renderTexture.width, renderTexture.height);
         quadRenderer.material.mainTexture = texture;
 

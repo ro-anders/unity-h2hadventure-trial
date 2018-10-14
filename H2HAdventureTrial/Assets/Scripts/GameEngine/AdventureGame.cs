@@ -65,7 +65,7 @@ namespace GameEngine
         private bool switchReset = false;
 
         private Sync sync;
-////static Transport* transport;
+        private Transport transport;
         private int thisPlayer;
         private BALL objectBall;
 
@@ -93,7 +93,7 @@ namespace GameEngine
         // It is a bitwise or of each game option
         private int gameOptions = GAMEOPTION_NO_HIDE_KEY_IN_CASTLE;
 
-        public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer,//// Transport* inTransport,
+        public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer, Transport inTransport,
                              int inGameNum
                              ,bool leftDifficultyOn, bool rightDifficultyOn
                              ) {
@@ -206,19 +206,18 @@ namespace GameEngine
             }
             objectBall = gameBoard.getPlayer(thisPlayer);
 
-            ////            // Setup the transport
-            ////            transport = inTransport;
-            ////            sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
-            ////                                                      new Sync(numPlayers, thisPlayer, transport));
-            sync = new Sync(numPlayers, thisPlayer, null); //// TEMP
+            // Setup the transport
+            transport = inTransport;
+            ////sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
+            ////                                          new Sync(numPlayers, thisPlayer, transport));
+            sync = new Sync(numPlayers, thisPlayer, transport); //// TEMP
 
-////            // Need to have the transport setup before we setup the objects,
-////            // because we may be broadcasting randomized locations to other machines
+            // Need to have the transport setup before we setup the objects,
+            // because we may be broadcasting randomized locations to other machines
             SetupRoomObjects();
 
             ResetPlayers(); //// TEMP
-////            Logger::log() << "Player " << thisPlayer << " starting game at " << Sys::datetime() << "." << Logger::EOM;
-////        }
+            ////Logger.log("Player " + thisPlayer + " starting game at " + Sys::datetime() + ".");
         }
 
         public void PrintDisplay()
