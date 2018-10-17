@@ -428,15 +428,15 @@ namespace GameEngine
             }
             }
 
-////        void SyncWithOthers()
-////        {
-////            sync.PullLatestMessages();
+        void SyncWithOthers()
+        {
+            sync.PullLatestMessages();
 
 ////            // Check for any setup messages first.
 ////            handleSetupMessages();
 
-////            // Move all the other players
-////            OtherBallMovement();
+            // Move all the other players
+            OtherBallMovement();
 ////            OthersPickupPutdown();
 
 ////            // move the dragons
@@ -482,7 +482,7 @@ namespace GameEngine
 ////            }
 
 
-////        }
+        }
 
 ////        void Adventure_CheckTime(float currentScale)
 ////        {
@@ -534,7 +534,7 @@ namespace GameEngine
         public void Adventure_Run()
         {
 ////            sync.StartFrame();
-////            SyncWithOthers();
+            SyncWithOthers();
 ////            checkPlayers();
 
 ////            // read the console switches every frame
@@ -1282,31 +1282,32 @@ namespace GameEngine
         }
 
 
-////        void OtherBallMovement()
-////        {
-////            for (int i = 0; i < numPlayers; ++i)
-////            {
-////                // Unless we are scripting we ignore messages to move our own player
-////                if ((gameMode == GAME_MODE_SCRIPTING) || (i != thisPlayer))
-////                {
-////                    BALL* nextPayer = gameBoard.getPlayer(i);
-////                    PlayerMoveAction* movement = sync.GetLatestBallSync(i);
-////                    if (movement != 0x0)
-////                    {
-////                        nextPayer.room = movement.room;
-////                        nextPayer.previousRoom = movement.room;
-////                        nextPayer.displayedRoom = movement.room;
-////                        nextPayer.x = movement.posx;
-////                        nextPayer.previousX = movement.posx - movement.velx;
-////                        nextPayer.y = movement.posy;
-////                        nextPayer.previousY = movement.posy - movement.vely;
-////                        nextPayer.velx = movement.velx;
-////                        nextPayer.vely = movement.vely;
-////                    }
-////                }
-////            }
+        void OtherBallMovement()
+        {
+            for (int i = 0; i < numPlayers; ++i)
+            {
+                // Unless we are scripting we ignore messages to move our own player
+                if ((gameMode == GAME_MODE_SCRIPTING) || (i != thisPlayer))
+                {
+                    BALL nextPayer = gameBoard.getPlayer(i);
+                    PlayerMoveAction movement = sync.GetLatestBallSync(i);
+                    if (movement != null)
+                    {
+                        Logger.log("Processing remote player #" + movement.sender + " with new velocity (" + movement.velx + "," + movement.vely + ")"); 
+                        nextPayer.room = movement.room;
+                        nextPayer.previousRoom = movement.room;
+                        nextPayer.displayedRoom = movement.room;
+                        nextPayer.x = movement.posx;
+                        nextPayer.previousX = movement.posx - movement.velx;
+                        nextPayer.y = movement.posy;
+                        nextPayer.previousY = movement.posy - movement.vely;
+                        nextPayer.velx = movement.velx;
+                        nextPayer.vely = movement.vely;
+                    }
+                }
+            }
 
-////        }
+        }
 
 ////        void SyncDragons()
 ////        {

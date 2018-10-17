@@ -1,13 +1,27 @@
 ﻿using System;
 namespace GameEngine
 {
+    public enum ActionType
+    {
+        PING = 1,
+        PLAYER_MOVE,
+        PLAYER_PICKUP,
+        PLAYER_RESET,
+        PLAYER_WIN,
+        DRAGON_MOVE,
+        DRAGON_STATE,
+        PORTCULLIS_STATE,
+        BAT_MOVE,
+        BAT_PICKUP,
+        OBJECT_MOVE
+    }
 
-    public class RemoteAction
+
+    public abstract class RemoteAction
     {
         public int sender;             // The number of the player sending this action (1-3)
-        public String typeCode;
-        public RemoteAction() {}
-        public RemoteAction(String inCode)
+        public ActionType typeCode;
+        public RemoteAction(ActionType inCode)
         {
             typeCode = inCode;
         }
@@ -16,10 +30,14 @@ namespace GameEngine
         {
             sender = inSender;
         }
+
+        public abstract int[] serialize();
+
+        public abstract void deserialize(int[] serialized);
     }
 
 
-    public class MoveAction : RemoteAction
+    public abstract class MoveAction : RemoteAction
     {
         public int room;               // The room the player was in
         public int posx;               // The x-coordinate of the player in the room
@@ -27,11 +45,11 @@ namespace GameEngine
         public int velx;               // -1 for moving left, 1 for right, and 0 for still or just up/down
         public int vely;               // -1 for down, 1 for up, and 0 for still or just left/right
 
-        public MoveAction(String inCode) :
+        public MoveAction(ActionType inCode) :
         base(inCode)
         { }
 
-        public MoveAction(String inCode, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
+        public MoveAction(ActionType inCode, int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
         base(inCode)
         {
             room = inRoom;
@@ -44,15 +62,30 @@ namespace GameEngine
 
     public class PlayerMoveAction : MoveAction
     {
-        public static String CODE = "PM";
+        public const ActionType CODE = ActionType.PLAYER_MOVE;
 
         public PlayerMoveAction() :
-    base(CODE)
+            base(CODE)
         { }
 
         public PlayerMoveAction(int inRoom, int inPosx, int inPosy, int inVelx, int inVely) :
         base(CODE, inRoom, inPosx, inPosy, inVelx, inVely) {}
 
+        public override int[] serialize()
+        {
+            int[] serialized = { (int)CODE, sender, room, posx, posy, velx, vely };
+            return serialized;
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            sender = serialized[1];
+            room = serialized[2];
+            posx = serialized[3];
+            posy = serialized[4];
+            velx = serialized[5];
+            vely = serialized[6];
+        }
     }
 
     public class PlayerPickupAction : RemoteAction {
@@ -64,7 +97,7 @@ namespace GameEngine
         public int dropX;
         public int dropY;
 
-        public const String CODE = "PP";
+        public const ActionType CODE = ActionType.PLAYER_PICKUP;
 
         public PlayerPickupAction():
         base(CODE) {}
@@ -92,22 +125,44 @@ namespace GameEngine
             dropX = inDropX;    
             dropY = inDropY;
         }
+
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
+        }
+
     };
 
     public class PlayerResetAction : RemoteAction {
 
-        public static String CODE = "PR";
+        public static ActionType CODE = ActionType.PLAYER_RESET;
 
         public PlayerResetAction() :
         base(CODE)
         { }
+
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
+        }
+
 
     };
 
     public class PlayerWinAction : RemoteAction {
         public int winInRoom;
 
-        public const String CODE = "PW";
+        public const ActionType CODE = ActionType.PLAYER_WIN;
 
         public PlayerWinAction(): 
         base(CODE) {}
@@ -116,6 +171,16 @@ namespace GameEngine
         base(CODE) {
             winInRoom = inWinInRoom;
         }
+
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
+        }
     };
 
 
@@ -123,7 +188,7 @@ namespace GameEngine
         public int dragonNum;          // 0=Rhindle, 1=Yorgle, 2=Grindle
         public int distance;           // Distance from player reporting position
 
-        public const String CODE = "DM";
+        public const ActionType CODE = ActionType.DRAGON_MOVE;
 
         public DragonMoveAction() :
         base(CODE){}
@@ -135,6 +200,15 @@ namespace GameEngine
                 distance = inDistance;
             }
 
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
+        }
     };
 
     public class DragonStateAction : RemoteAction {
@@ -146,7 +220,7 @@ namespace GameEngine
         public int velx;
         public int vely;
 
-        public const String CODE = "DS";
+        public const ActionType CODE = ActionType.DRAGON_STATE;
 
         public DragonStateAction() :
         base(CODE) {}
@@ -161,11 +235,21 @@ namespace GameEngine
             velx = inVelx;
             vely = inVely;
         }
+
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
+        }
     };
 
     public class PortcullisStateAction : RemoteAction
     {
-        public const String CODE = "GS";
+        public const ActionType CODE = ActionType.PORTCULLIS_STATE;
         public int portPkey; // The Object::pkey of the portcullis, nothing to do with the key that unlocks it
         public int newState;
         public bool allowsEntry;
@@ -182,12 +266,22 @@ namespace GameEngine
             newState = inNewState;
             allowsEntry = inAllowsEntry;
         }
+
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
+        }
     }
 
     public class BatMoveAction : MoveAction {
         public int distance;           // Distance from player reporting position
 
-        public const String CODE = "BM";
+        public const ActionType CODE = ActionType.BAT_MOVE;
 
         public BatMoveAction():
         base(CODE) {}
@@ -196,6 +290,16 @@ namespace GameEngine
                     base(CODE, inRoom, inPosx, inPosy, inVelx, inVely)
         {
             distance = inDistance;
+        }
+
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
         }
     };
 
@@ -208,7 +312,7 @@ namespace GameEngine
         public int dropX;
         public int dropY;
 
-        public const String CODE = "BP";
+        public const ActionType CODE = ActionType.BAT_PICKUP;
 
         public BatPickupAction():
         base(CODE) {}
@@ -223,6 +327,16 @@ namespace GameEngine
             dropX = inDropX;
             dropY = inDropY;
         }
+
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
+        }
     };
 
     /**
@@ -232,7 +346,7 @@ namespace GameEngine
      */
     public class ObjectMoveAction : RemoteAction
     {
-        public const String CODE = "MO";
+        public const ActionType CODE = ActionType.OBJECT_MOVE;
 
         public int objct;
         public int room;
@@ -252,12 +366,30 @@ namespace GameEngine
             x = inX;
             y = inY;
         }
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
+        }
     }
 
     public class PingAction : RemoteAction
     {
-        public const String CODE = "XX";
+        public const ActionType CODE = ActionType.PING;
 
         PingAction() : base(CODE) { }
+        public override int[] serialize()
+        {
+            throw new Exception("Not yet implemented");
+        }
+
+        public override void deserialize(int[] serialized)
+        {
+            throw new Exception("Not yet implemented");
+        }
     }
 }

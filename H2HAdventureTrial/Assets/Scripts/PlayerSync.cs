@@ -50,14 +50,17 @@ public class PlayerSync : NetworkBehaviour
     }
 
     [Command]
-    public void CmdBroadcast(RemoteAction remoteAction) {
-        RpcReceiveBroadcast(remoteAction);
+    public void CmdBroadcast(int[] dataPacket)
+    {
+        Debug.Log("Broadcasting " + ((ActionType)dataPacket[0]).ToString("g") + " message for player #" + dataPacket[1]);
+        RpcReceiveBroadcast(dataPacket);
     }
 
     [ClientRpc]
-    public void RpcReceiveBroadcast(RemoteAction remoteAction) {
-        Debug.Log("Player #" + slot + " Received " + remoteAction.typeCode + " message from player #" + (remoteAction.sender + 1));
-        xport.receiveBroadcast(slot, remoteAction);
+    public void RpcReceiveBroadcast(int[] dataPacket)
+    {
+        Debug.Log("Received " + ((ActionType)dataPacket[0]).ToString("g") + " message from player #" + dataPacket[1]);
+        xport.receiveBroadcast(slot, dataPacket);
     }
 
 }

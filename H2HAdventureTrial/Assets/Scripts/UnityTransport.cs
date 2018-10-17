@@ -17,7 +17,7 @@ public class UnityTransport : MonoBehaviour, Transport
 
     public void registerSync(PlayerSync inPlayerSync)
     {
-        Debug.Log("Registering " + (inPlayerSync.isLocalPlayer ? "local " : "remote ") + "player # " + (inPlayerSync.getSlot() + 1));
+        Debug.Log("Registering " + (inPlayerSync.isLocalPlayer ? "local " : "remote ") + "player # " + inPlayerSync.getSlot());
         allPlayers.Add(inPlayerSync);
         if (inPlayerSync.isLocalPlayer)
         {
@@ -39,14 +39,29 @@ public class UnityTransport : MonoBehaviour, Transport
     void Transport.send(RemoteAction action)
     {
         action.setSender(thisPlayer.getSlot());
-        thisPlayer.CmdBroadcast(action);
+        Debug.Log("Sending " + action.typeCode.ToString("g") + " message for player " + action.sender);
+        thisPlayer.CmdBroadcast(action.serialize());
     }
 
-    public void receiveBroadcast(int slot, RemoteAction remoteAction)
+    public void receiveBroadcast(int slot, int[] dataPacket)
     {
-        if (remoteAction.sender != thisPlayer.slot)
+        ActionType type = (ActionType)dataPacket[0];
+        int sender = dataPacket[1];
+        if (sender != thisPlayer.slot)
         {
-            receviedActions.Enqueue(remoteAction);
+            RemoteAction action=null;
+            switch (type)
+            {
+                case ActionType.PLAYER_MOVE:
+                    action = new PlayerMoveAction();
+                    break;
+            }
+            action.deserialize(dataPacket);
+            receviedActions.Enqueue(action);
+            Debug.Log("Now " + receviedActions.Count + " actions in queue");
+        }
+        else {
+            Debug.Log("Ignoring message from this player (player #" + sender + ").");
         }
     }
 

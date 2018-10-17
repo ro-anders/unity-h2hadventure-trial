@@ -62,41 +62,42 @@ namespace GameEngine
 
             while (nextAction != null)
             {
+                Logger.log("Pulled " + nextAction.typeCode + " from player #" + nextAction.sender);
                 bool hitError = false;
                 switch (nextAction.typeCode)
                 {
-                    case "PM":
+                    case ActionType.PLAYER_MOVE:
                         int messageSender = nextAction.sender;
                         playersLastMove[messageSender] = (PlayerMoveAction)nextAction;
                         break;
-                    case "PP":
+                    case ActionType.PLAYER_PICKUP:
                         playerPickups.Add((PlayerPickupAction)nextAction);
                         break;
-                    case "PR":
+                    case ActionType.PLAYER_RESET:
                         playerResets.Add((PlayerResetAction)nextAction);
                         break;
-                    case "PW":
+                    case ActionType.PLAYER_WIN:
                         // Don't know how we'd get this, but we ignore any win message after we receive the first one.
                         if (gameWon == null)
                         {
                             gameWon = (PlayerWinAction)nextAction;
                         }
                         break;
-                    case "DM":
-                    case "DS":
+                    case ActionType.DRAGON_MOVE:
+                    case ActionType.DRAGON_STATE:
                         dragonActions.Add(nextAction);
                         break;
-                    case "BM":
-                    case "BP":
+                    case ActionType.BAT_MOVE:
+                    case ActionType.BAT_PICKUP:
                         batActions.Add(nextAction);
                         break;
-                    case "GS":
+                    case ActionType.PORTCULLIS_STATE:
                         gateStateChanges.Add((PortcullisStateAction)nextAction);
                         break;
-                    case "MO":
+                    case ActionType.OBJECT_MOVE:
                         mazeSetupActions.Add((ObjectMoveAction)nextAction);
                         break;
-                    case "XX":
+                    case ActionType.PING:
                         break;
                     default:
                         // Hit unknown type
