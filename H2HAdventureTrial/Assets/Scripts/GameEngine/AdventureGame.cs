@@ -95,8 +95,9 @@ namespace GameEngine
 
         public AdventureGame(AdventureView inView, int inNumPlayers, int inThisPlayer, Transport inTransport,
                              int inGameNum
-                             ,bool leftDifficultyOn, bool rightDifficultyOn
-                             ) {
+                             , bool leftDifficultyOn, bool rightDifficultyOn
+                             )
+        {
             view = inView;
 
             numPlayers = inNumPlayers;
@@ -112,7 +113,7 @@ namespace GameEngine
             gameMap = new Map(numPlayers, gameMapLayout);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap, view);
-////            EasterEgg::setup(gameBoard);
+            ////            EasterEgg::setup(gameBoard);
 
             surrounds = new OBJECT[numPlayers];
             for (int ctr = 0; ctr < numPlayers; ++ctr)
@@ -121,7 +122,7 @@ namespace GameEngine
             }
 
             Dragon.Difficulty difficulty = (gameMode == GAME_MODE_1 ?
-                                             (leftDifficultyOn ? Dragon.Difficulty.EASY: Dragon.Difficulty.TRIVIAL) :
+                                             (leftDifficultyOn ? Dragon.Difficulty.EASY : Dragon.Difficulty.TRIVIAL) :
                                              (leftDifficultyOn ? Dragon.Difficulty.HARD : Dragon.Difficulty.MODERATE));
             Dragon.setRunFromSword(rightDifficultyOn);
 
@@ -138,12 +139,12 @@ namespace GameEngine
             OBJECT jadeKey = new OBJECT("jade key", objectGfxKey, new byte[0], 0, COLOR.JADE, OBJECT.RandomizedLocations.OUT_IN_OPEN);
             OBJECT whiteKey = new OBJECT("white key", objectGfxKey, new byte[0], 0, COLOR.WHITE);
             OBJECT blackKey = new OBJECT("black key", objectGfxKey, new byte[0], 0, COLOR.BLACK);
-////            OBJECT** crystalKeys = new OBJECT*[3];
-////            for (int ctr = 0; ctr < 3; ++ctr)
-////            {
-////                crystalKeys[ctr] = new OBJECT("crystal key", objectGfxKey, 0, 0, COLOR_CRYSTAL, OBJECT::FIXED_LOCATION);
-////                crystalKeys[ctr].setPrivateToPlayer(ctr);
-////            }
+            ////            OBJECT** crystalKeys = new OBJECT*[3];
+            ////            for (int ctr = 0; ctr < 3; ++ctr)
+            ////            {
+            ////                crystalKeys[ctr] = new OBJECT("crystal key", objectGfxKey, 0, 0, COLOR_CRYSTAL, OBJECT::FIXED_LOCATION);
+            ////                crystalKeys[ctr].setPrivateToPlayer(ctr);
+            ////            }
 
             ports = new Portcullis[6];
             ports[0] = new Portcullis("gold gate", Map.GOLD_CASTLE, gameMap.getRoom(Map.GOLD_FOYER), goldKey); // Gold
@@ -184,14 +185,14 @@ namespace GameEngine
             gameBoard.addObject(Board.OBJECT_JADEKEY, jadeKey);
             gameBoard.addObject(Board.OBJECT_WHITEKEY, whiteKey);
             gameBoard.addObject(Board.OBJECT_BLACKKEY, blackKey);
-////            gameBoard.addObject(OBJECT_CRYSTALKEY1, crystalKeys[0]);
-////            gameBoard.addObject(OBJECT_CRYSTALKEY2, crystalKeys[1]);
-////            gameBoard.addObject(OBJECT_CRYSTALKEY3, crystalKeys[2]);
+            ////            gameBoard.addObject(OBJECT_CRYSTALKEY1, crystalKeys[0]);
+            ////            gameBoard.addObject(OBJECT_CRYSTALKEY2, crystalKeys[1]);
+            ////            gameBoard.addObject(OBJECT_CRYSTALKEY3, crystalKeys[2]);
             gameBoard.addObject(Board.OBJECT_BAT, bat);
             gameBoard.addObject(Board.OBJECT_DOT, new OBJECT("dot", objectGfxDot, new byte[0], 0, COLOR.LTGRAY, OBJECT.RandomizedLocations.FIXED_LOCATION));
             gameBoard.addObject(Board.OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, new byte[0], 0, COLOR.FLASH));
-////            gameBoard.addObject(OBJECT_EASTEREGG, new OBJECT("easteregg", objectGfxEasterEgg, 0, 0, COLOR_FLASH,
-////                                                           OBJECT::OPEN_OR_IN_CASTLE, 0x03));
+            ////            gameBoard.addObject(OBJECT_EASTEREGG, new OBJECT("easteregg", objectGfxEasterEgg, 0, 0, COLOR_FLASH,
+            ////                                                           OBJECT::OPEN_OR_IN_CASTLE, 0x03));
             gameBoard.addObject(Board.OBJECT_MAGNET, new OBJECT("magnet", objectGfxMagnet, new byte[0], 0, COLOR.BLACK));
 
             // Setup the players
@@ -245,7 +246,7 @@ namespace GameEngine
             }
             // get the playfield mirror flag
             bool mirror = (currentRoom.flags & ROOM.FLAG_MIRROR) > 0;
-                
+
             //
             // Extract the playfield register bits and paint the playfield
             // The playfied register is 20 bits wide encoded across 3 bytes
@@ -258,7 +259,7 @@ namespace GameEngine
             //
 
             // mask values for playfield bits
-                byte[] shiftreg = {
+            byte[] shiftreg = {
                 0x10,0x20,0x40,0x80,
                 0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
                 0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
@@ -385,25 +386,25 @@ namespace GameEngine
             }
         }
 
-            private void ResetPlayers()
+        private void ResetPlayers()
+        {
+            for (int ctr = 0; ctr < gameBoard.getNumPlayers(); ++ctr)
             {
-                for (int ctr = 0; ctr < gameBoard.getNumPlayers(); ++ctr)
-                {
-                    ResetPlayer(gameBoard.getPlayer(ctr));
-                }
+                ResetPlayer(gameBoard.getPlayer(ctr));
             }
+        }
 
-            void ResetPlayer(BALL ball)
-            {
-                ball.room = ball.homeGate.room;               // Put us at our home castle
-                ball.previousRoom = ball.room;
-                ball.displayedRoom = ball.room;
-                ball.x = 0x50 * 2;                  //
-                ball.y = 0x20 * 2;                  //
-                ball.previousX = ball.x;
-                ball.previousY = ball.y;
-                ball.linkedObject = Board.OBJECT_NONE;  // Not carrying anything
-                ball.setGlowing(false);
+        void ResetPlayer(BALL ball)
+        {
+            ball.room = ball.homeGate.room;               // Put us at our home castle
+            ball.previousRoom = ball.room;
+            ball.displayedRoom = ball.room;
+            ball.x = 0x50 * 2;                  //
+            ball.y = 0x20 * 2;                  //
+            ball.previousX = ball.x;
+            ball.previousY = ball.y;
+            ball.linkedObject = Board.OBJECT_NONE;  // Not carrying anything
+            ball.setGlowing(false);
 
             // Make the bat want something right away
             // I guess the bat is reset just like the dragons are reset.
@@ -426,325 +427,325 @@ namespace GameEngine
                     dragon.eaten = null;
                 }
             }
-            }
+        }
 
         void SyncWithOthers()
         {
             sync.PullLatestMessages();
 
-////            // Check for any setup messages first.
-////            handleSetupMessages();
+            ////            // Check for any setup messages first.
+            ////            handleSetupMessages();
 
             // Move all the other players
             OtherBallMovement();
-////            OthersPickupPutdown();
+            OthersPickupPutdown();
 
-////            // move the dragons
-////            SyncDragons();
+            ////            // move the dragons
+            ////            SyncDragons();
 
-////            // Move the bat
-////            RemoteAction* batAction = sync.GetNextBatAction();
-////            while ((batAction != NULL) && bat.exists())
-////            {
-////                bat.handleAction(batAction, objectBall);
-////                delete batAction;
-////                batAction = sync.GetNextBatAction();
-////            }
+            ////            // Move the bat
+            ////            RemoteAction* batAction = sync.GetNextBatAction();
+            ////            while ((batAction != NULL) && bat.exists())
+            ////            {
+            ////                bat.handleAction(batAction, objectBall);
+            ////                delete batAction;
+            ////                batAction = sync.GetNextBatAction();
+            ////            }
 
 
 
-////            // Handle any remote changes to the portal.
-////            PortcullisStateAction* nextAction = sync.GetNextPortcullisAction();
-////            while (nextAction != NULL)
-////            {
-////                Portcullis* port = (Portcullis*)gameBoard.getObject(nextAction.portPkey);
-////                port.setState(nextAction.newState, nextAction.allowsEntry);
-////                delete nextAction;
-////                nextAction = sync.GetNextPortcullisAction();
-////            }
+            ////            // Handle any remote changes to the portal.
+            ////            PortcullisStateAction* nextAction = sync.GetNextPortcullisAction();
+            ////            while (nextAction != NULL)
+            ////            {
+            ////                Portcullis* port = (Portcullis*)gameBoard.getObject(nextAction.portPkey);
+            ////                port.setState(nextAction.newState, nextAction.allowsEntry);
+            ////                delete nextAction;
+            ////                nextAction = sync.GetNextPortcullisAction();
+            ////            }
 
-////            // Do reset after dragon and move actions.
-////            PlayerResetAction* otherReset = sync.GetNextResetAction();
-////            while (otherReset != NULL)
-////            {
-////                ResetPlayer(gameBoard.getPlayer(otherReset.sender));
-////                delete otherReset;
-////                otherReset = sync.GetNextResetAction();
-////            }
+            ////            // Do reset after dragon and move actions.
+            ////            PlayerResetAction* otherReset = sync.GetNextResetAction();
+            ////            while (otherReset != NULL)
+            ////            {
+            ////                ResetPlayer(gameBoard.getPlayer(otherReset.sender));
+            ////                delete otherReset;
+            ////                otherReset = sync.GetNextResetAction();
+            ////            }
 
-////            // Handle won games last.
-////            PlayerWinAction* lost = sync.GetGameWon();
-////            if (lost != NULL)
-////            {
-////                WinGame(lost.winInRoom);
-////                delete lost;
-////                lost = NULL;
-////            }
+            ////            // Handle won games last.
+            ////            PlayerWinAction* lost = sync.GetGameWon();
+            ////            if (lost != NULL)
+            ////            {
+            ////                WinGame(lost.winInRoom);
+            ////                delete lost;
+            ////                lost = NULL;
+            ////            }
 
 
         }
 
-////        void Adventure_CheckTime(float currentScale)
-////        {
-////            const int FRAMES_PER_SLOT = 60;
-////            const long TARGET_SLOT_TIME = (long)(FRAMES_PER_SLOT * ADVENTURE_FRAME_PERIOD * 1000);
-////            const int MAX_SLOTS_MISSED = 5;
-////            static float lastScale = 0;
-////            static bool haveWarnedAboutThisScale = false;
-////            static int framesIntoSlot = 0;
-////            static long timeAtStartOfSlot = Sys::runTime();
-////            static int numSlotsMissed = 0;
+        ////        void Adventure_CheckTime(float currentScale)
+        ////        {
+        ////            const int FRAMES_PER_SLOT = 60;
+        ////            const long TARGET_SLOT_TIME = (long)(FRAMES_PER_SLOT * ADVENTURE_FRAME_PERIOD * 1000);
+        ////            const int MAX_SLOTS_MISSED = 5;
+        ////            static float lastScale = 0;
+        ////            static bool haveWarnedAboutThisScale = false;
+        ////            static int framesIntoSlot = 0;
+        ////            static long timeAtStartOfSlot = Sys::runTime();
+        ////            static int numSlotsMissed = 0;
 
-////            if (currentScale != lastScale)
-////            {
-////                // Scale changed.  Reset timing history.
-////                haveWarnedAboutThisScale = false;
-////                framesIntoSlot = 0;
-////                timeAtStartOfSlot = Sys::runTime();
-////                numSlotsMissed = 0;
-////                lastScale = currentScale;
-////            }
-////            else if (!haveWarnedAboutThisScale)
-////            {
-////                ++framesIntoSlot;
-////                if (framesIntoSlot >= FRAMES_PER_SLOT)
-////                {
-////                    long currentTime = Sys::runTime();
-////                    long elapsed = currentTime - timeAtStartOfSlot;
-////                    if (elapsed > TARGET_SLOT_TIME * 1.1)
-////                    { // We allow for 10% slowness.
-////                        ++numSlotsMissed;
-////                        if (numSlotsMissed > MAX_SLOTS_MISSED)
-////                        {
-////                            Platform_DisplayStatus("Your game is running too slow.\nConsider shrinking the window size.", 4);
-////                            haveWarnedAboutThisScale = true;
-////                        }
-////                    }
-////                    else
-////                    {
-////                        numSlotsMissed = 0;
-////                    }
-////                    framesIntoSlot = 0;
-////                    timeAtStartOfSlot = currentTime;
-////                }
-////            }
-////        }
+        ////            if (currentScale != lastScale)
+        ////            {
+        ////                // Scale changed.  Reset timing history.
+        ////                haveWarnedAboutThisScale = false;
+        ////                framesIntoSlot = 0;
+        ////                timeAtStartOfSlot = Sys::runTime();
+        ////                numSlotsMissed = 0;
+        ////                lastScale = currentScale;
+        ////            }
+        ////            else if (!haveWarnedAboutThisScale)
+        ////            {
+        ////                ++framesIntoSlot;
+        ////                if (framesIntoSlot >= FRAMES_PER_SLOT)
+        ////                {
+        ////                    long currentTime = Sys::runTime();
+        ////                    long elapsed = currentTime - timeAtStartOfSlot;
+        ////                    if (elapsed > TARGET_SLOT_TIME * 1.1)
+        ////                    { // We allow for 10% slowness.
+        ////                        ++numSlotsMissed;
+        ////                        if (numSlotsMissed > MAX_SLOTS_MISSED)
+        ////                        {
+        ////                            Platform_DisplayStatus("Your game is running too slow.\nConsider shrinking the window size.", 4);
+        ////                            haveWarnedAboutThisScale = true;
+        ////                        }
+        ////                    }
+        ////                    else
+        ////                    {
+        ////                        numSlotsMissed = 0;
+        ////                    }
+        ////                    framesIntoSlot = 0;
+        ////                    timeAtStartOfSlot = currentTime;
+        ////                }
+        ////            }
+        ////        }
 
 
         public void Adventure_Run()
         {
-////            sync.StartFrame();
+            ////            sync.StartFrame();
             SyncWithOthers();
-////            checkPlayers();
+            ////            checkPlayers();
 
-////            // read the console switches every frame
+            ////            // read the console switches every frame
             bool reset = false;
-////            Platform_ReadConsoleSwitches(&reset);
-////            if (Robot::isOn())
-////            {
-////                Robot::ControlConsoleSwitches(&reset, dragons, numDragons, objectBall);
-////            }
+            ////            Platform_ReadConsoleSwitches(&reset);
+            ////            if (Robot::isOn())
+            ////            {
+            ////                Robot::ControlConsoleSwitches(&reset, dragons, numDragons, objectBall);
+            ////            }
 
-////            // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
-////            // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
-////            if (joystickDisabled && switchReset && !reset)
-////            {
-////                joystickDisabled = false;
-////                switchReset = false;
-////            }
+            ////            // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
+            ////            // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
+            ////            if (joystickDisabled && switchReset && !reset)
+            ////            {
+            ////                joystickDisabled = false;
+            ////                switchReset = false;
+            ////            }
 
-////            // Reset switch
-////            if ((gameState != GAMESTATE_WIN) && switchReset && !reset && (EasterEgg::getEggState() != EasterEgg::EGG_STATE_DEBRIEF))
-////            {
-////                if (gameState != GAMESTATE_GAMESELECT)
-////                {
-////                    ResetPlayer(objectBall);
-////                    // Broadcast to everyone else
-////                    PlayerResetAction* action = new PlayerResetAction();
-////                    sync.BroadcastAction(action);
+            ////            // Reset switch
+            ////            if ((gameState != GAMESTATE_WIN) && switchReset && !reset && (EasterEgg::getEggState() != EasterEgg::EGG_STATE_DEBRIEF))
+            ////            {
+            ////                if (gameState != GAMESTATE_GAMESELECT)
+            ////                {
+            ////                    ResetPlayer(objectBall);
+            ////                    // Broadcast to everyone else
+            ////                    PlayerResetAction* action = new PlayerResetAction();
+            ////                    sync.BroadcastAction(action);
 
-////                }
-////            }
-////            else
-////            {
-                // Is the game active?
-                if (gameState == GAMESTATE_GAMESELECT)
+            ////                }
+            ////            }
+            ////            else
+            ////            {
+            // Is the game active?
+            if (gameState == GAMESTATE_GAMESELECT)
+            {
+                --timeToStartGame;
+                if (timeToStartGame <= 0)
                 {
-                    --timeToStartGame;
-                    if (timeToStartGame <= 0)
-                    {
-                        gameState = GAMESTATE_ACTIVE_1;
-                        ResetPlayers();
-                    }
-                    else
-                    {
-                        int displayNum = timeToStartGame / 60;
-                        gameBoard[Board.OBJECT_NUMBER].state = displayNum;
-
-                        // Display the room and objects
-                        objectBall.room = 0;
-                        objectBall.previousRoom = 0;
-                        objectBall.displayedRoom = 0;
-                        objectBall.x = 0;
-                        objectBall.y = 0;
-                        objectBall.previousX = 0;
-                        objectBall.previousY = 0;
-                        PrintDisplay();
-                    }
+                    gameState = GAMESTATE_ACTIVE_1;
+                    ResetPlayers();
                 }
+                else
+                {
+                    int displayNum = timeToStartGame / 60;
+                    gameBoard[Board.OBJECT_NUMBER].state = displayNum;
+
+                    // Display the room and objects
+                    objectBall.room = 0;
+                    objectBall.previousRoom = 0;
+                    objectBall.displayedRoom = 0;
+                    objectBall.x = 0;
+                    objectBall.y = 0;
+                    objectBall.previousX = 0;
+                    objectBall.previousY = 0;
+                    PrintDisplay();
+                }
+            }
             else if ((gameState == GAMESTATE_ACTIVE_1) || (gameState == GAMESTATE_ACTIVE_2) || (gameState == GAMESTATE_ACTIVE_3))
+            {
+                ////                    // Has someone won the game.
+                ////                    if (checkWonGame())
+                ////                    {
+                ////                        WinGame(objectBall.room);
+                ////                        PlayerWinAction* won = new PlayerWinAction(objectBall.room);
+                ////                        sync.BroadcastAction(won);
+                ////                        // Report back to the server.
+                ////                        Platform_ReportToServer("Has won a game");
+                ////                    }
+                ////                    else if (EasterEgg::isGauntletTimeUp(sync.getFrameNumber()))
+                ////                    {
+                ////                        EasterEgg::endGauntlet();
+                ////                        gameState = GAMESTATE_WIN;
+                ////                        winningRoom = objectBall.displayedRoom;
+                ////                    }
+                ////                    else
+                ////                    {
+                // Read joystick
+                view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
+                ////                        if (Robot::isOn())
+                ////                        {
+                ////                            Robot::ControlJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
+                ////                        }
+
+                ////                        if (EasterEgg::shouldStartGauntlet(sync.getFrameNumber()))
+                ////                        {
+                ////                            EasterEgg::startGauntlet();
+                ////                            gameMode = GAME_MODE_GAUNTLET;
+                ////                        }
+
+                if (gameState == GAMESTATE_ACTIVE_1)
                 {
-////                    // Has someone won the game.
-////                    if (checkWonGame())
-////                    {
-////                        WinGame(objectBall.room);
-////                        PlayerWinAction* won = new PlayerWinAction(objectBall.room);
-////                        sync.BroadcastAction(won);
-////                        // Report back to the server.
-////                        Platform_ReportToServer("Has won a game");
-////                    }
-////                    else if (EasterEgg::isGauntletTimeUp(sync.getFrameNumber()))
-////                    {
-////                        EasterEgg::endGauntlet();
-////                        gameState = GAMESTATE_WIN;
-////                        winningRoom = objectBall.displayedRoom;
-////                    }
-////                    else
-////                    {
-                        // Read joystick
-                        view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
-////                        if (Robot::isOn())
-////                        {
-////                            Robot::ControlJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
-////                        }
-
-////                        if (EasterEgg::shouldStartGauntlet(sync.getFrameNumber()))
-////                        {
-////                            EasterEgg::startGauntlet();
-////                            gameMode = GAME_MODE_GAUNTLET;
-////                        }
-
-                        if (gameState == GAMESTATE_ACTIVE_1)
+                    // Move balls
+                    ThisBallMovement();
+                    for (int i = 0; i < numPlayers; ++i)
+                    {
+                        if (i != thisPlayer)
                         {
-                            // Move balls
-                            ThisBallMovement();
-                            for (int i = 0; i < numPlayers; ++i)
-                            {
-                                if (i != thisPlayer)
-                                {
-                                    BallMovement(gameBoard.getPlayer(i));
-                                }
-                            }
-
-                            // Move the carried object
-                            MoveCarriedObjects();
-
-                            // Collision check the balls in their new coordinates against walls and objects
-                            for (int i = 0; i < numPlayers; ++i)
-                            {
-                                BALL nextBall = gameBoard.getPlayer(i);
-                                CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false);
-                            }
-
-                            // Setup the room and object
-                            PrintDisplay();
-
-                            ++gameState;
+                            BallMovement(gameBoard.getPlayer(i));
                         }
-                        else if (gameState == GAMESTATE_ACTIVE_2)
-                        {
-                            // Deal with object pickup and putdown
-                            PickupPutdown();
+                    }
 
-                            for (int i = 0; i < numPlayers; ++i)
-                            {
-                                ReactToCollisionX(gameBoard.getPlayer(i));
-                            }
+                    // Move the carried object
+                    MoveCarriedObjects();
 
-                            // Increment the last object drawn
-                            ++displayListIndex;
+                    // Collision check the balls in their new coordinates against walls and objects
+                    for (int i = 0; i < numPlayers; ++i)
+                    {
+                        BALL nextBall = gameBoard.getPlayer(i);
+                        CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false);
+                    }
 
-                            // deal with invisible surround moving
-                            Surround();
+                    // Setup the room and object
+                    PrintDisplay();
 
-                            // Move and deal with bat
-                            if (bat.exists())
-                            {
-                                bat.moveOneTurn(sync, objectBall);
-                            }
-
-                            // Move and deal with portcullises
-                            Portals();
-
-                            // Display the room and objects
-                            PrintDisplay();
-
-                            ++gameState;
-                        }
-                        else if (gameState == GAMESTATE_ACTIVE_3)
-                        {
-                            // Move and deal with the dragons
-                            for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
-                            {
-                                Dragon dragon = dragons[dragonCtr];
-                                RemoteAction dragonAction = dragon.move();
-                                if (dragonAction != null)
-                                {
-                                    sync.BroadcastAction(dragonAction);
-                                }
-                                // In gauntlet mode, getting eaten immediately triggers a reset.
-                                if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
-                                {
-                                    ResetPlayer(objectBall);
-                                    // Broadcast to everyone else
-                                    PlayerResetAction action = new PlayerResetAction();
-                                    sync.BroadcastAction(action);
-
-                                }
-                            }
-
-                            for (int i = 0; i < numPlayers; ++i)
-                            {
-                                ReactToCollisionY(gameBoard.getPlayer(i));
-                            }
-
-
-////                            // Deal with the magnet
-////                            Magnet();
-
-                            // Display the room and objects
-                            PrintDisplay();
-
-                            gameState = GAMESTATE_ACTIVE_1;
-                        }
-////                    }
+                    ++gameState;
                 }
-////                else if (gameState == GAMESTATE_WIN)
-////                {
-////                    // We keep the display pointed at your current room while we make the
-////                    // whole board flash, but once the flash is done, we point the display
-////                    // at the winning castle.
-////                    if (winFlashTimer > 0)
-////                    {
-////                        --winFlashTimer;
-////                    }
-////                    else
-////                    {
-////                        displayWinningRoom = true;
-////                    }
+                else if (gameState == GAMESTATE_ACTIVE_2)
+                {
+                    // Deal with object pickup and putdown
+                    PickupPutdown();
 
-////                    // Increment the last object drawn
-////                    if (sync.getFrameNumber() % 3 == 0)
-////                    {
-////                        ++displayListIndex;
-////                    }
+                    for (int i = 0; i < numPlayers; ++i)
+                    {
+                        ReactToCollisionX(gameBoard.getPlayer(i));
+                    }
 
-////                    // Display the room and objects
-////                    PrintDisplay();
-////                }
-////            }
+                    // Increment the last object drawn
+                    ++displayListIndex;
 
-////            switchReset = reset;
+                    // deal with invisible surround moving
+                    Surround();
+
+                    // Move and deal with bat
+                    if (bat.exists())
+                    {
+                        bat.moveOneTurn(sync, objectBall);
+                    }
+
+                    // Move and deal with portcullises
+                    Portals();
+
+                    // Display the room and objects
+                    PrintDisplay();
+
+                    ++gameState;
+                }
+                else if (gameState == GAMESTATE_ACTIVE_3)
+                {
+                    // Move and deal with the dragons
+                    for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
+                    {
+                        Dragon dragon = dragons[dragonCtr];
+                        RemoteAction dragonAction = dragon.move();
+                        if (dragonAction != null)
+                        {
+                            sync.BroadcastAction(dragonAction);
+                        }
+                        // In gauntlet mode, getting eaten immediately triggers a reset.
+                        if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
+                        {
+                            ResetPlayer(objectBall);
+                            // Broadcast to everyone else
+                            PlayerResetAction action = new PlayerResetAction();
+                            sync.BroadcastAction(action);
+
+                        }
+                    }
+
+                    for (int i = 0; i < numPlayers; ++i)
+                    {
+                        ReactToCollisionY(gameBoard.getPlayer(i));
+                    }
+
+
+                    ////                            // Deal with the magnet
+                    ////                            Magnet();
+
+                    // Display the room and objects
+                    PrintDisplay();
+
+                    gameState = GAMESTATE_ACTIVE_1;
+                }
+                ////                    }
+            }
+            ////                else if (gameState == GAMESTATE_WIN)
+            ////                {
+            ////                    // We keep the display pointed at your current room while we make the
+            ////                    // whole board flash, but once the flash is done, we point the display
+            ////                    // at the winning castle.
+            ////                    if (winFlashTimer > 0)
+            ////                    {
+            ////                        --winFlashTimer;
+            ////                    }
+            ////                    else
+            ////                    {
+            ////                        displayWinningRoom = true;
+            ////                    }
+
+            ////                    // Increment the last object drawn
+            ////                    if (sync.getFrameNumber() % 3 == 0)
+            ////                    {
+            ////                        ++displayListIndex;
+            ////                    }
+
+            ////                    // Display the room and objects
+            ////                    PrintDisplay();
+            ////                }
+            ////            }
+
+            ////            switchReset = reset;
             AdvanceFlashColor();
         }
 
@@ -769,7 +770,7 @@ namespace GameEngine
 
 
             // Read the object initialization table for the current game level
-            int[,] p = new int[0,0];
+            int[,] p = new int[0, 0];
             if (gameMode == GAME_MODE_1)
             {
                 p = game1Objects;
@@ -796,221 +797,221 @@ namespace GameEngine
 
                 OBJECT toInit = gameBoard[objct];
                 toInit.init(room, xpos, ypos, state, movementX, movementY);
-            };
+            }
 
-////            // Hide the jade key if only 2 player
-////            if (numPlayers <= 2)
-////            {
-////                board[OBJECT_JADEKEY].setExists(false);
-////                board[OBJECT_JADEKEY].randomPlacement = OBJECT::FIXED_LOCATION;
-////            }
+            ////            // Hide the jade key if only 2 player
+            ////            if (numPlayers <= 2)
+            ////            {
+            ////                board[OBJECT_JADEKEY].setExists(false);
+            ////                board[OBJECT_JADEKEY].randomPlacement = OBJECT::FIXED_LOCATION;
+            ////            }
 
-////            // Put objects in random rooms for level 3.
-////            // Only first player does this and then broadcasts to other players.
-////            if ((gameMode == GAME_MODE_3) && (thisPlayer == 0))
-////            {
-////                randomizeRoomObjects();
-////            }
+            ////            // Put objects in random rooms for level 3.
+            ////            // Only first player does this and then broadcasts to other players.
+            ////            if ((gameMode == GAME_MODE_3) && (thisPlayer == 0))
+            ////            {
+            ////                randomizeRoomObjects();
+            ////            }
 
-////            // Open the gates if running the gauntlet
-////            if (gameMode == GAME_MODE_GAUNTLET)
-////            {
-////                Portcullis* blackPort = (Portcullis*)board[OBJECT_BLACK_PORT];
-////                blackPort.setState(Portcullis::OPEN_STATE, true);
-////                Portcullis* goldPort = (Portcullis*)board[OBJECT_YELLOW_PORT];
-////                goldPort.setState(Portcullis::OPEN_STATE, true);
-////            }
+            ////            // Open the gates if running the gauntlet
+            ////            if (gameMode == GAME_MODE_GAUNTLET)
+            ////            {
+            ////                Portcullis* blackPort = (Portcullis*)board[OBJECT_BLACK_PORT];
+            ////                blackPort.setState(Portcullis::OPEN_STATE, true);
+            ////                Portcullis* goldPort = (Portcullis*)board[OBJECT_YELLOW_PORT];
+            ////                goldPort.setState(Portcullis::OPEN_STATE, true);
+            ////            }
         }
 
-////        /**
-////         * Puts all the objects in random locations.
-////         * This follows a different algorithm than the original game.
-////         * We don't use the original algorithm because
-////         * 1) it had a vulnerability that the gold key could be in the black 
-////         * castle while the black key was in the gold castle
-////         * 2) with three times the number of home castles the algorithm was three
-////         * times more likely to be deadlocked
-////         */
-////        void randomizeRoomObjects()
-////        {
-////            int numRooms = gameMap.getNumRooms();
-////            Portcullis* blackCastle = (Portcullis*)board[OBJECT_BLACK_PORT];
-////            Portcullis* whiteCastle = (Portcullis*)board[OBJECT_WHITE_PORT];
+        ////        /**
+        ////         * Puts all the objects in random locations.
+        ////         * This follows a different algorithm than the original game.
+        ////         * We don't use the original algorithm because
+        ////         * 1) it had a vulnerability that the gold key could be in the black 
+        ////         * castle while the black key was in the gold castle
+        ////         * 2) with three times the number of home castles the algorithm was three
+        ////         * times more likely to be deadlocked
+        ////         */
+        ////        void randomizeRoomObjects()
+        ////        {
+        ////            int numRooms = gameMap.getNumRooms();
+        ////            Portcullis* blackCastle = (Portcullis*)board[OBJECT_BLACK_PORT];
+        ////            Portcullis* whiteCastle = (Portcullis*)board[OBJECT_WHITE_PORT];
 
-////            // Run through all the objects in the game.  The ones that shouldn't be
-////            // randomized will have their random location flag turned off.
-////            int numObjects = gameBoard.getNumObjects();
-////            // TODO: Bug in win4dows requires we reseed now.
-////            Sys::randomized = false;
-////            for (int objCtr = 0; objCtr < numObjects; ++objCtr)
-////            {
-////                OBJECT* nextObj = gameBoard.getObject(objCtr);
-////                if (nextObj.randomPlacement != OBJECT::FIXED_LOCATION)
-////                {
-////                    bool ok = false;
-////                    while (!ok)
-////                    {
-////                        int randomKey = (int)(Sys::random() * numRooms);
-////                        ROOM* randomRoom = gameMap.getRoom(randomKey);
+        ////            // Run through all the objects in the game.  The ones that shouldn't be
+        ////            // randomized will have their random location flag turned off.
+        ////            int numObjects = gameBoard.getNumObjects();
+        ////            // TODO: Bug in win4dows requires we reseed now.
+        ////            Sys::randomized = false;
+        ////            for (int objCtr = 0; objCtr < numObjects; ++objCtr)
+        ////            {
+        ////                OBJECT* nextObj = gameBoard.getObject(objCtr);
+        ////                if (nextObj.randomPlacement != OBJECT::FIXED_LOCATION)
+        ////                {
+        ////                    bool ok = false;
+        ////                    while (!ok)
+        ////                    {
+        ////                        int randomKey = (int)(Sys::random() * numRooms);
+        ////                        ROOM* randomRoom = gameMap.getRoom(randomKey);
 
-////                        // Make sure the object isn't put in a hidden room
-////                        ok = randomRoom.visibility != ROOM::HIDDEN;
+        ////                        // Make sure the object isn't put in a hidden room
+        ////                        ok = randomRoom.visibility != ROOM::HIDDEN;
 
-////                        // if the object can only be in the open, make sure that it's put in the open.
-////                        ok = ok && ((nextObj.randomPlacement != OBJECT::OUT_IN_OPEN) || (randomRoom.visibility == ROOM::OPEN));
+        ////                        // if the object can only be in the open, make sure that it's put in the open.
+        ////                        ok = ok && ((nextObj.randomPlacement != OBJECT::OUT_IN_OPEN) || (randomRoom.visibility == ROOM::OPEN));
 
-////                        // Make sure chalice is in a castle
-////                        if (ok && (objCtr == OBJECT_CHALISE))
-////                        {
-////                            ok = (blackCastle.containsRoom(randomKey) || whiteCastle.containsRoom(randomKey));
-////                        }
+        ////                        // Make sure chalice is in a castle
+        ////                        if (ok && (objCtr == OBJECT_CHALISE))
+        ////                        {
+        ////                            ok = (blackCastle.containsRoom(randomKey) || whiteCastle.containsRoom(randomKey));
+        ////                        }
 
-////                        // Make sure white key not in white castle.
-////                        if (ok && (objCtr == OBJECT_WHITEKEY))
-////                        {
-////                            ok = ok && !whiteCastle.containsRoom(randomKey);
-////                        }
+        ////                        // Make sure white key not in white castle.
+        ////                        if (ok && (objCtr == OBJECT_WHITEKEY))
+        ////                        {
+        ////                            ok = ok && !whiteCastle.containsRoom(randomKey);
+        ////                        }
 
-////                        // Make sure white and black key not cyclical
-////                        // We happen to know that the white key is placed first, so set the black.
-////                        if (ok && (objCtr == OBJECT_BLACKKEY))
-////                        {
-////                            if (blackCastle.containsRoom(board[OBJECT_WHITEKEY].room))
-////                            {
-////                                ok = !whiteCastle.containsRoom(randomKey);
-////                            }
-////                            // Also make sure black key not in black castle
-////                            ok = ok && !blackCastle.containsRoom(randomKey);
-////                        }
+        ////                        // Make sure white and black key not cyclical
+        ////                        // We happen to know that the white key is placed first, so set the black.
+        ////                        if (ok && (objCtr == OBJECT_BLACKKEY))
+        ////                        {
+        ////                            if (blackCastle.containsRoom(board[OBJECT_WHITEKEY].room))
+        ////                            {
+        ////                                ok = !whiteCastle.containsRoom(randomKey);
+        ////                            }
+        ////                            // Also make sure black key not in black castle
+        ////                            ok = ok && !blackCastle.containsRoom(randomKey);
+        ////                        }
 
-////                        // There are parts of the white castle not accessible without the bridge, but the bat
-////                        // can get stuff out of there.  So make sure, if the black key is in the white castle
-////                        // that the bat is not in the black castle.
-////                        if (ok && (objCtr == OBJECT_BAT))
-////                        {
-////                            if (whiteCastle.containsRoom(board[OBJECT_BLACKKEY].room))
-////                            {
-////                                ok = !blackCastle.containsRoom(randomKey);
-////                            }
-////                        }
+        ////                        // There are parts of the white castle not accessible without the bridge, but the bat
+        ////                        // can get stuff out of there.  So make sure, if the black key is in the white castle
+        ////                        // that the bat is not in the black castle.
+        ////                        if (ok && (objCtr == OBJECT_BAT))
+        ////                        {
+        ////                            if (whiteCastle.containsRoom(board[OBJECT_BLACKKEY].room))
+        ////                            {
+        ////                                ok = !blackCastle.containsRoom(randomKey);
+        ////                            }
+        ////                        }
 
-////                        if (ok)
-////                        {
-////                            nextObj.room = randomKey;
-////                            ObjectMoveAction* action = new ObjectMoveAction(objCtr, randomKey, nextObj.x, nextObj.y);
-////                            sync.BroadcastAction(action);
-////                        }
-////                    }
-////                }
-////            }
+        ////                        if (ok)
+        ////                        {
+        ////                            nextObj.room = randomKey;
+        ////                            ObjectMoveAction* action = new ObjectMoveAction(objCtr, randomKey, nextObj.x, nextObj.y);
+        ////                            sync.BroadcastAction(action);
+        ////                        }
+        ////                    }
+        ////                }
+        ////            }
 
-////            // Print out where everything was randomized to
-////            // Only for debugging - keep commented out
-////#if 0
-////    for(int objCtr=0; objCtr < numObjects; ++objCtr) {
-////        OBJECT* nextObj = gameBoard.getObject(objCtr);
-////        if (nextObj.randomPlacement != OBJECT::FIXED_LOCATION) {
-////            printf("%s placed in %s.\n", nextObj.label, gameMap.getRoom(nextObj.room).label);
-////        }
-////    }
-////#endif
+        ////            // Print out where everything was randomized to
+        ////            // Only for debugging - keep commented out
+        ////#if 0
+        ////    for(int objCtr=0; objCtr < numObjects; ++objCtr) {
+        ////        OBJECT* nextObj = gameBoard.getObject(objCtr);
+        ////        if (nextObj.randomPlacement != OBJECT::FIXED_LOCATION) {
+        ////            printf("%s placed in %s.\n", nextObj.label, gameMap.getRoom(nextObj.room).label);
+        ////        }
+        ////    }
+        ////#endif
 
-////        }
+        ////        }
 
-////        /**
-////         * If this was a randomized game, look for another game to define where the objects are placed.
-////         */
-////        void handleSetupMessages()
-////        {
-////            ObjectMoveAction* nextMsg = sync.GetNextSetupAction();
-////            while (nextMsg != NULL)
-////            {
-////                OBJECT* toSetup = board[nextMsg.object];
-////                toSetup.room = nextMsg.room;
-////                toSetup.x = nextMsg.x;
-////                toSetup.y = nextMsg.y;
-////                nextMsg = sync.GetNextSetupAction();
-////            }
-////        }
+        ////        /**
+        ////         * If this was a randomized game, look for another game to define where the objects are placed.
+        ////         */
+        ////        void handleSetupMessages()
+        ////        {
+        ////            ObjectMoveAction* nextMsg = sync.GetNextSetupAction();
+        ////            while (nextMsg != NULL)
+        ////            {
+        ////                OBJECT* toSetup = board[nextMsg.object];
+        ////                toSetup.room = nextMsg.room;
+        ////                toSetup.x = nextMsg.x;
+        ////                toSetup.y = nextMsg.y;
+        ////                nextMsg = sync.GetNextSetupAction();
+        ////            }
+        ////        }
 
-////        float volumeAtDistance(int room)
-////        {
-////            float NEAR_VOLUME = MAX_VOLUME / 3;
-////            float FAR_VOLUME = MAX_VOLUME / 9;
+                float volumeAtDistance(int room)
+                {
+                    float NEAR_VOLUME = MAX.VOLUME / 3;
+                    float FAR_VOLUME = MAX.VOLUME / 9;
 
-////            int distance = gameMap.distance(room, objectBall.room);
+                    int distance = gameMap.distance(room, objectBall.room);
 
-////            float volume = 0.0;
-////            switch (distance)
-////            {
-////                case 0:
-////                    volume = MAX_VOLUME;
-////                    break;
-////                case 1:
-////                    volume = NEAR_VOLUME;
-////                    break;
-////                case 2:
-////                    volume = FAR_VOLUME;
-////                    break;
-////                default:
-////                    volume = 0;
-////                    break;
-////            }
-////            return volume;
-////        }
+                    float volume = 0.0f;
+                    switch (distance)
+                    {
+                        case 0:
+                            volume = MAX.VOLUME;
+                            break;
+                        case 1:
+                            volume = NEAR_VOLUME;
+                            break;
+                        case 2:
+                            volume = FAR_VOLUME;
+                            break;
+                        default:
+                            volume = 0;
+                            break;
+                    }
+                    return volume;
+                }
 
-////        /**
-////         * Returns true if this player has gotten the chalise to their home castle and won the game, or, if
-////         * this is the gauntlet, if the player has reached the gold castle.
-////         */
-////        bool checkWonGame()
-////        {
-////            bool won = false;
-////            if (gameMode == GAME_MODE_GAUNTLET)
-////            {
-////                won = (objectBall.isGlowing() && (objectBall.room == objectBall.homeGate.insideRoom));
-////                if (won && (EasterEgg::getEggState() == EasterEgg::EGG_STATE_IN_GAUNTLET))
-////                {
-////                    EasterEgg::winEgg();
-////                }
-////            }
-////            else
-////            {
-////                // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
-////                // Another player can't win for you.
-////                if ((objectBall.linkedObject == OBJECT_CHALISE) ||
-////                    ((objectBall.linkedObject == OBJECT_BAT) && (bat.linkedObject == OBJECT_CHALISE)))
-////                {
-////                    // Player either has to bring the chalise into the castle or touch the chalise to the gate
-////                    if (board[OBJECT_CHALISE].room == objectBall.homeGate.insideRoom)
-////                    {
-////                        won = true;
-////                    }
-////                    else
-////                    {
-////                        if ((objectBall.room == objectBall.homeGate.room) &&
-////                            (objectBall.homeGate.state == Portcullis::OPEN_STATE) &&
-////                            gameBoard.CollisionCheckObjectObject(objectBall.homeGate, board[OBJECT_CHALISE]))
-////                        {
+        ////        /**
+        ////         * Returns true if this player has gotten the chalise to their home castle and won the game, or, if
+        ////         * this is the gauntlet, if the player has reached the gold castle.
+        ////         */
+        ////        bool checkWonGame()
+        ////        {
+        ////            bool won = false;
+        ////            if (gameMode == GAME_MODE_GAUNTLET)
+        ////            {
+        ////                won = (objectBall.isGlowing() && (objectBall.room == objectBall.homeGate.insideRoom));
+        ////                if (won && (EasterEgg::getEggState() == EasterEgg::EGG_STATE_IN_GAUNTLET))
+        ////                {
+        ////                    EasterEgg::winEgg();
+        ////                }
+        ////            }
+        ////            else
+        ////            {
+        ////                // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
+        ////                // Another player can't win for you.
+        ////                if ((objectBall.linkedObject == OBJECT_CHALISE) ||
+        ////                    ((objectBall.linkedObject == OBJECT_BAT) && (bat.linkedObject == OBJECT_CHALISE)))
+        ////                {
+        ////                    // Player either has to bring the chalise into the castle or touch the chalise to the gate
+        ////                    if (board[OBJECT_CHALISE].room == objectBall.homeGate.insideRoom)
+        ////                    {
+        ////                        won = true;
+        ////                    }
+        ////                    else
+        ////                    {
+        ////                        if ((objectBall.room == objectBall.homeGate.room) &&
+        ////                            (objectBall.homeGate.state == Portcullis::OPEN_STATE) &&
+        ////                            gameBoard.CollisionCheckObjectObject(objectBall.homeGate, board[OBJECT_CHALISE]))
+        ////                        {
 
-////                            won = true;
-////                        }
-////                    }
-////                }
-////            }
-////            return won;
-////        }
+        ////                            won = true;
+        ////                        }
+        ////                    }
+        ////                }
+        ////            }
+        ////            return won;
+        ////        }
 
-////        void WinGame(int winRoom)
-////        {
-////            // Go to won state
-////            gameState = GAMESTATE_WIN;
-////            winFlashTimer = 0xff;
-////            winningRoom = winRoom;
+        ////        void WinGame(int winRoom)
+        ////        {
+        ////            // Go to won state
+        ////            gameState = GAMESTATE_WIN;
+        ////            winFlashTimer = 0xff;
+        ////            winningRoom = winRoom;
 
-////            // Play the sound
-////            Platform_MakeSound(SOUND_WON, MAX_VOLUME);
-////        }
+        ////            // Play the sound
+        ////            Platform_MakeSound(SOUND_WON, MAX_VOLUME);
+        ////        }
 
         void ReactToCollisionX(BALL ball)
         {
@@ -1023,11 +1024,11 @@ namespace GameEngine
                         ball.linkedObjectX += ball.velx;
                         if (ball == objectBall)
                         {
-                            ////// If this is adjusting how the current player holds an object,
-                            ////// we broadcast to other players as a pickup action
-                            ////PlayerPickupAction* action = new PlayerPickupAction(ball.hitObject,
-                            ////    objectBall.linkedObjectX, objectBall.linkedObjectY, OBJECT_NONE, 0, 0, 0);
-                            ////sync.BroadcastAction(action);
+                            // If this is adjusting how the current player holds an object,
+                            // we broadcast to other players as a pickup action
+                            PlayerPickupAction action = new PlayerPickupAction(ball.hitObject,
+                                objectBall.linkedObjectX, objectBall.linkedObjectY, Board.OBJECT_NONE, 0, 0, 0);
+                            sync.BroadcastAction(action);
                         }
                     }
 
@@ -1052,11 +1053,11 @@ namespace GameEngine
                     ball.linkedObjectY += ball.vely;
                     if (ball == objectBall)
                     {
-                        ////// If this is adjusting how the current player holds an object,
-                        ////// we broadcast to other players as a pickup action
-                        ////PlayerPickupAction* action = new PlayerPickupAction(ball.hitObject,
-                        ////    objectBall.linkedObjectX, objectBall.linkedObjectY, OBJECT_NONE, 0, 0, 0);
-                        ////sync.BroadcastAction(action);
+                        // If this is adjusting how the current player holds an object,
+                        // we broadcast to other players as a pickup action
+                        PlayerPickupAction action = new PlayerPickupAction(ball.hitObject,
+                            objectBall.linkedObjectX, objectBall.linkedObjectY, Board.OBJECT_NONE, 0, 0, 0);
+                        sync.BroadcastAction(action);
                     }
                 }
 
@@ -1178,7 +1179,8 @@ namespace GameEngine
                 for (int portalCtr = 0; !leftCastle && (portalCtr < ports.Length); ++portalCtr)
                 {
                     Portcullis port = ports[portalCtr];
-                    if (port.exists()) {
+                    if (port.exists())
+                    {
                         if ((ball.room == port.insideRoom) &&
                             ((port.state != Portcullis.CLOSED_STATE) || canUnlockFromInside))
                         {
@@ -1244,17 +1246,17 @@ namespace GameEngine
                 }
             }
 
-////            if (ball == objectBall)
-////            {
-////                if (ball.room == CRYSTAL_CASTLE)
-////                {
-////                    EasterEgg::foundCastle(objectBall);
-////                }
-////                else if (ball.room == ROBINETT_ROOM)
-////                {
-////                    EasterEgg::enteredRobinettRoom();
-////                }
-////            }
+            ////            if (ball == objectBall)
+            ////            {
+            ////                if (ball.room == CRYSTAL_CASTLE)
+            ////                {
+            ////                    EasterEgg::foundCastle(objectBall);
+            ////                }
+            ////                else if (ball.room == ROBINETT_ROOM)
+            ////                {
+            ////                    EasterEgg::enteredRobinettRoom();
+            ////                }
+            ////            }
 
             ball.displayedRoom = ball.room;
 
@@ -1293,7 +1295,6 @@ namespace GameEngine
                     PlayerMoveAction movement = sync.GetLatestBallSync(i);
                     if (movement != null)
                     {
-                        Logger.log("Processing remote player #" + movement.sender + " with new velocity (" + movement.velx + "," + movement.vely + ")"); 
                         nextPayer.room = movement.room;
                         nextPayer.previousRoom = movement.room;
                         nextPayer.displayedRoom = movement.room;
@@ -1309,39 +1310,39 @@ namespace GameEngine
 
         }
 
-////        void SyncDragons()
-////        {
-////            RemoteAction* next = sync.GetNextDragonAction();
-////            while (next != NULL)
-////            {
-////                if (next.typeCode == DragonStateAction::CODE)
-////                {
-////                    DragonStateAction* nextState = (DragonStateAction*)next;
-////                    Dragon* dragon = dragons[nextState.dragonNum];
-////                    // If something causes a sound, we need to know how far away it is.
-////                    float volume = volumeAtDistance(dragon.room);
-////                    dragon.syncAction(nextState, volume);
-////                }
-////                else
-////                {
-////                    // If we are in the same room as the dragon and are closer to it than the reporting player,
-////                    // then we ignore reports and trust our internal state.
-////                    // If the dragon is not in stalking state we ignore it.
-////                    // Otherwise, you use the reported state.
-////                    DragonMoveAction* nextMove = (DragonMoveAction*)next;
-////                    Dragon* dragon = dragons[nextMove.dragonNum];
-////                    if ((dragon.state == Dragon::STALKING) &&
-////                        ((dragon.room != objectBall.room) ||
-////                        (objectBall.distanceTo(dragon.x, dragon.y) > nextMove.distance)))
-////                    {
+        ////        void SyncDragons()
+        ////        {
+        ////            RemoteAction* next = sync.GetNextDragonAction();
+        ////            while (next != NULL)
+        ////            {
+        ////                if (next.typeCode == DragonStateAction::CODE)
+        ////                {
+        ////                    DragonStateAction* nextState = (DragonStateAction*)next;
+        ////                    Dragon* dragon = dragons[nextState.dragonNum];
+        ////                    // If something causes a sound, we need to know how far away it is.
+        ////                    float volume = volumeAtDistance(dragon.room);
+        ////                    dragon.syncAction(nextState, volume);
+        ////                }
+        ////                else
+        ////                {
+        ////                    // If we are in the same room as the dragon and are closer to it than the reporting player,
+        ////                    // then we ignore reports and trust our internal state.
+        ////                    // If the dragon is not in stalking state we ignore it.
+        ////                    // Otherwise, you use the reported state.
+        ////                    DragonMoveAction* nextMove = (DragonMoveAction*)next;
+        ////                    Dragon* dragon = dragons[nextMove.dragonNum];
+        ////                    if ((dragon.state == Dragon::STALKING) &&
+        ////                        ((dragon.room != objectBall.room) ||
+        ////                        (objectBall.distanceTo(dragon.x, dragon.y) > nextMove.distance)))
+        ////                    {
 
-////                        dragon.syncAction(nextMove);
-////                    }
-////                }
-////                delete next;
-////                next = sync.GetNextDragonAction();
-////            }
-////        }
+        ////                        dragon.syncAction(nextMove);
+        ////                    }
+        ////                }
+        ////                delete next;
+        ////                next = sync.GetNextDragonAction();
+        ////            }
+        ////        }
 
         void MoveCarriedObjects()
         {
@@ -1485,56 +1486,55 @@ namespace GameEngine
             }
         }
 
-////        void OthersPickupPutdown()
-////        {
-////            PlayerPickupAction* action = sync.GetNextPickupAction();
-////            while (action != NULL)
-////            {
-////                int actorNum = action.sender;
-////                BALL* actor = gameBoard.getPlayer(actorNum);
-////                if (action.dropObject != OBJECT_NONE)
-////                {
-////                }
-////                if ((action.dropObject != OBJECT_NONE) && (actor.linkedObject == action.dropObject))
-////                {
-////                    actor.linkedObject = OBJECT_NONE;
-////                    OBJECT* dropped = board[action.dropObject];
-////                    dropped.room = action.dropRoom;
-////                    dropped.x = action.dropX;
-////                    dropped.y = action.dropY;
-////                    // Only play a sound if the drop isn't caused by picking up a different object.
-////                    if (action.pickupObject == OBJECT_NONE)
-////                    {
-////                        Platform_MakeSound(SOUND_PUTDOWN, volumeAtDistance(actor.room));
-////                    }
-////                }
-////                if (action.pickupObject != OBJECT_NONE)
-////                {
-////                    actor.linkedObject = action.pickupObject;
-////                    actor.linkedObjectX = action.pickupX;
-////                    actor.linkedObjectY = action.pickupY;
-////                    // If anybody else was carrying this object, take it away.
-////                    for (int ctr = 0; ctr < numPlayers; ++ctr)
-////                    {
-////                        if ((ctr != actorNum) && (gameBoard.getPlayer(ctr).linkedObject == action.pickupObject))
-////                        {
-////                            gameBoard.getPlayer(ctr).linkedObject = OBJECT_NONE;
-////                        }
-////                    }
+        void OthersPickupPutdown()
+        {
+            PlayerPickupAction newaction = sync.GetNextPickupAction();
+            while (newaction != null)
+            {
+                int actorNum = newaction.sender;
+                BALL actor = gameBoard.getPlayer(actorNum);
+                if (newaction.dropObject != Board.OBJECT_NONE)
+                {
+                }
+                if ((newaction.dropObject != Board.OBJECT_NONE) && (actor.linkedObject == newaction.dropObject))
+                {
+                    actor.linkedObject = Board.OBJECT_NONE;
+                    OBJECT dropped = gameBoard[newaction.dropObject];
+                    dropped.room = newaction.dropRoom;
+                    dropped.x = newaction.dropX;
+                    dropped.y = newaction.dropY;
+                    // Only play a sound if the drop isn't caused by picking up a different object.
+                    if (newaction.pickupObject == Board.OBJECT_NONE)
+                    {
+                        gameBoard.makeSound(SOUND.PUTDOWN, volumeAtDistance(actor.room));
+                    }
+                }
+                if (newaction.pickupObject != Board.OBJECT_NONE)
+                {
+                    actor.linkedObject = newaction.pickupObject;
+                    actor.linkedObjectX = newaction.pickupX;
+                    actor.linkedObjectY = newaction.pickupY;
+                    // If anybody else was carrying this object, take it away.
+                    for (int ctr = 0; ctr < numPlayers; ++ctr)
+                    {
+                        if ((ctr != actorNum) && (gameBoard.getPlayer(ctr).linkedObject == newaction.pickupObject))
+                        {
+                            gameBoard.getPlayer(ctr).linkedObject = Board.OBJECT_NONE;
+                        }
+                    }
 
-////                    if ((EasterEgg::getCrystalShade() < COLOR_DARK_CRYSTAL2) && (action.pickupObject >= OBJECT_CRYSTALKEY1) &&
-////                        (action.pickupObject <= OBJECT_CRYSTALKEY3))
-////                    {
-////                        EasterEgg::darkenCastle(COLOR_DARK_CRYSTAL2);
-////                    }
+                    ////if ((EasterEgg::getCrystalShade() < COLOR_DARK_CRYSTAL2) && (newaction.pickupObject >= OBJECT_CRYSTALKEY1) &&
+                    ////    (newaction.pickupObject <= OBJECT_CRYSTALKEY3))
+                    ////{
+                    ////    EasterEgg::darkenCastle(COLOR_DARK_CRYSTAL2);
+                    ////}
 
-////                    // If they are within hearing distance play the pickup sound
-////                    Platform_MakeSound(SOUND_PICKUP, volumeAtDistance(actor.room));
-////                }
-////                delete action;
-////                action = sync.GetNextPickupAction();
-////            }
-////        }
+                    // If they are within hearing distance play the pickup sound
+                    gameBoard.makeSound(SOUND.PICKUP, volumeAtDistance(actor.room));
+                }
+                newaction = sync.GetNextPickupAction();
+            }
+        }
 
         /**
          * To make game play more fun, you can't shove your key inside the walls of your own castle.  If you try, it will
@@ -1576,10 +1576,10 @@ namespace GameEngine
                     unhideKey(droppedObject);
                 }
 
-                ////// Tell other clients about the drop
-                ////PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, dropped, droppedObject.room,
-                ////                                                   droppedObject.x, droppedObject.y);
-                ////sync.BroadcastAction(action);
+                // Tell other clients about the drop
+                PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, dropped, droppedObject.room,
+                                                                   droppedObject.x, droppedObject.y);
+                sync.BroadcastAction(action);
 
                 // Play the sound
                 view.Platform_MakeSound(SOUND.PUTDOWN, MAX.VOLUME);
@@ -1601,13 +1601,13 @@ namespace GameEngine
                     if (hitIndex > Board.OBJECT_NONE)
                     {
                         // Collect info about whether we are also dropping an object (for when we broadcast the action)
-                        ////PlayerPickupAction* action = new PlayerPickupAction(OBJECT_NONE, 0, 0, OBJECT_NONE, 0, 0, 0);
+                        PlayerPickupAction action = new PlayerPickupAction(Board.OBJECT_NONE, 0, 0, Board.OBJECT_NONE, 0, 0, 0);
                         int dropIndex = objectBall.linkedObject;
-                        ////if (dropIndex > Board.OBJECT_NONE)
-                        ////{
-                        ////    OBJECT dropped = gameBoard[dropIndex];
-                        ////    action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
-                        ////}
+                        if (dropIndex > Board.OBJECT_NONE)
+                        {
+                            OBJECT dropped = gameBoard[dropIndex];
+                            action.setDrop(dropIndex, dropped.room, dropped.x, dropped.y);
+                        }
 
                         // If the bat is holding the object we do some of the pickup things but not all.
                         // We drop our current object and play the pickup sound, but we don't actually
@@ -1621,7 +1621,7 @@ namespace GameEngine
                             {
                                 // Drop our current object and broadcast it
                                 objectBall.linkedObject = Board.OBJECT_NONE;
-                                ////sync.BroadcastAction(action);
+                                sync.BroadcastAction(action);
                             }
                         }
                         else
@@ -1648,9 +1648,9 @@ namespace GameEngine
                             ////    EasterEgg::foundKey();
                             ////}
                             
-                            ////// Broadcast that we picked up an object
-                            ////action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
-                            ////sync.BroadcastAction(action);
+                            // Broadcast that we picked up an object
+                            action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
+                            sync.BroadcastAction(action);
 
                         }
 
@@ -2070,7 +2070,7 @@ private bool CrossingBridge(int room, int x, int y, BALL ball)
     return false;
 }
 
-/**
+/*
  * Checks if ball is colliding with any other object.  Returns first object it finds or OBJECT_NONE
  * if no collisions.
  */
@@ -2080,7 +2080,7 @@ private int CollisionCheckBallWithAllObjects(BALL ball)
     return CollisionCheckBallWithObjects(ball, iter);
 }
 
-/**
+/*
  * Checks if ball is colliding with any of the objects in the iterable collection.
  * Returns first object it finds or OBJECT_NONE if no collisions.
  */

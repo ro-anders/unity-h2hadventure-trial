@@ -13,7 +13,6 @@ public class PlayerSync : NetworkBehaviour
     // Use this for initialization
     void Start()
     {
-        Debug.Log("PlayerSync started");
         Initialize();
         CmdAssignSlot();
     }
@@ -63,14 +62,12 @@ public class PlayerSync : NetworkBehaviour
     [Command]
     public void CmdBroadcast(int[] dataPacket)
     {
-        Debug.Log("Broadcasting " + ((ActionType)dataPacket[0]).ToString("g") + " message for player #" + dataPacket[1]);
         RpcReceiveBroadcast(dataPacket);
     }
 
     [ClientRpc]
     public void RpcReceiveBroadcast(int[] dataPacket)
     {
-        Debug.Log("Received " + ((ActionType)dataPacket[0]).ToString("g") + " message from player #" + dataPacket[1]);
         if (xport == null)
         {
             Initialize();

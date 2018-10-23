@@ -4,12 +4,12 @@ namespace GameEngine
 {
     public class Sync
     {
-        private List<RemoteAction> batActions;
-        private List<RemoteAction> dragonActions;
-        private List<PlayerPickupAction> playerPickups;
-        private List<PlayerResetAction> playerResets;
-        private List<PortcullisStateAction> gateStateChanges;
-        private List<ObjectMoveAction> mazeSetupActions;
+        private List<RemoteAction> batActions = new List<RemoteAction>();
+        private List<RemoteAction> dragonActions = new List<RemoteAction>();
+        private List<PlayerPickupAction> playerPickups = new List<PlayerPickupAction>();
+        private List<PlayerResetAction> playerResets = new List<PlayerResetAction>();
+        private List<PortcullisStateAction> gateStateChanges = new List<PortcullisStateAction>();
+        private List<ObjectMoveAction> mazeSetupActions = new List<ObjectMoveAction>();
         private PlayerMoveAction[] playersLastMove;
         private PlayerWinAction gameWon;
 
@@ -62,7 +62,6 @@ namespace GameEngine
 
             while (nextAction != null)
             {
-                Logger.log("Pulled " + nextAction.typeCode + " from player #" + nextAction.sender);
                 bool hitError = false;
                 switch (nextAction.typeCode)
                 {
@@ -250,9 +249,6 @@ namespace GameEngine
                 {
                     transport.send(action);
                 }
-
-                Logger.log("Sent \"" + action + "\" on frame #" + frameNum);
-
             }
 
         }

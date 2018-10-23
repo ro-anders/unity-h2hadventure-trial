@@ -194,90 +194,85 @@ namespace GameEngine
             }
         }
 
+        void ComputeDistances(Portcullis[] ports)
+        {
+            // This may get called more than once.
+            distances = new int[numRooms, numRooms];
+            for (int ctr1 = 0; ctr1 < numRooms; ++ctr1)
+            {
+                for (int ctr2 = 0; ctr2 < numRooms; ++ctr2)
+                {
+                    if (ctr1 == ctr2)
+                    {
+                        distances[ctr1, ctr2] = 0;
+                    }
+                    else if (isNextTo(ctr1, ctr2))
+                    {
+                        distances[ctr1, ctr2] = 1;
+                    }
+                    else
+                    {
+                        distances[ctr1, ctr2] = LONG_WAY;
+                    }
+                }
+            }
 
+            // Adjust for castles
+            if (ports.Length > 0)
+            {
+                for (int ctr = 0; ctr < ports.Length; ++ctr)
+                {
+                    Portcullis nextPort = ports[ctr];
+                    distances[nextPort.room, nextPort.insideRoom] = 1;
+                    distances[nextPort.insideRoom, nextPort.room] = 1;
+                }
+            }
 
+            // Adjust for Robinett room
+            distances[ROBINETT_ROOM, MAIN_HALL_LEFT] = 1;
+            distances[MAIN_HALL_LEFT, ROBINETT_ROOM] = 1;
+            distances[ROBINETT_ROOM, MAIN_HALL_RIGHT] = 1;
+            distances[MAIN_HALL_RIGHT, ROBINETT_ROOM] = 1;
 
+            // Remove paths that aren't really paths because full length walls block them.
+            distances[MAIN_HALL_RIGHT, BLUE_MAZE_3] = LONG_WAY;
+            distances[BLUE_MAZE_3, MAIN_HALL_RIGHT] = LONG_WAY;
+            distances[MAIN_HALL_LEFT, MAIN_HALL_RIGHT] = LONG_WAY;
+            distances[MAIN_HALL_RIGHT, MAIN_HALL_LEFT] = LONG_WAY;
+            distances[MAIN_HALL_LEFT, BLACK_CASTLE] = LONG_WAY;
+            distances[BLACK_CASTLE, MAIN_HALL_LEFT] = LONG_WAY;
+            distances[WHITE_CASTLE, SOUTHWEST_ROOM] = LONG_WAY;
+            distances[SOUTHWEST_ROOM, WHITE_CASTLE] = LONG_WAY;
+            distances[SOUTH_HALL_LEFT, SOUTH_HALL_RIGHT] = LONG_WAY;
+            distances[SOUTH_HALL_RIGHT, SOUTH_HALL_LEFT] = LONG_WAY;
 
-
-        ////void ComputeDistances(Portcullis[] ports)
-        ////{
-        ////    // This may get called more than once.
-        ////    distances = new int[numRooms, numRooms];
-        ////    for (int ctr1 = 0; ctr1 < numRooms; ++ctr1)
-        ////    {
-        ////        for (int ctr2 = 0; ctr2 < numRooms; ++ctr2)
-        ////        {
-        ////            if (ctr1 == ctr2)
-        ////            {
-        ////                distances[ctr1, ctr2] = 0;
-        ////            }
-        ////            else if (isNextTo(ctr1, ctr2))
-        ////            {
-        ////                distances[ctr1, ctr2] = 1;
-        ////            }
-        ////            else
-        ////            {
-        ////                distances[ctr1, ctr2] = LONG_WAY;
-        ////            }
-        ////        }
-        ////    }
-
-        ////    // Adjust for castles
-        ////    if (ports.Length > 0)
-        ////    {
-        ////        for (int ctr = 0; ctr < ports.Length; ++ctr)
-        ////        {
-        ////            Portcullis nextPort = ports[ctr];
-        ////            distances[nextPort.room, nextPort.insideRoom] = 1;
-        ////            distances[nextPort.insideRoom, nextPort.room] = 1;
-        ////        }
-        ////    }
-
-        ////    // Adjust for Robinett room
-        ////    distances[ROBINETT_ROOM, MAIN_HALL_LEFT] = 1;
-        ////    distances[MAIN_HALL_LEFT, ROBINETT_ROOM] = 1;
-        ////    distances[ROBINETT_ROOM, MAIN_HALL_RIGHT] = 1;
-        ////    distances[MAIN_HALL_RIGHT, ROBINETT_ROOM] = 1;
-
-        ////    // Remove paths that aren't really paths because full length walls block them.
-        ////    distances[MAIN_HALL_RIGHT, BLUE_MAZE_3] = LONG_WAY;
-        ////    distances[BLUE_MAZE_3, MAIN_HALL_RIGHT] = LONG_WAY;
-        ////    distances[MAIN_HALL_LEFT, MAIN_HALL_RIGHT] = LONG_WAY;
-        ////    distances[MAIN_HALL_RIGHT, MAIN_HALL_LEFT] = LONG_WAY;
-        ////    distances[MAIN_HALL_LEFT, BLACK_CASTLE] = LONG_WAY;
-        ////    distances[BLACK_CASTLE, MAIN_HALL_LEFT] = LONG_WAY;
-        ////    distances[WHITE_CASTLE, SOUTHWEST_ROOM] = LONG_WAY;
-        ////    distances[SOUTHWEST_ROOM, WHITE_CASTLE] = LONG_WAY;
-        ////    distances[SOUTH_HALL_LEFT, SOUTH_HALL_RIGHT] = LONG_WAY;
-        ////    distances[SOUTH_HALL_RIGHT, SOUTH_HALL_LEFT] = LONG_WAY;
-
-        ////    int tracker = LONG_WAY;
-        ////    // Now compute the distances using isNextTo()
-        ////    for (int step = 2; step < LONG_WAY; ++step)
-        ////    {
-        ////        for (int ctr1 = 0; ctr1 < numRooms; ++ctr1)
-        ////        {
-        ////            for (int ctr2 = 0; ctr2 < numRooms; ++ctr2)
-        ////            {
-        ////                if (distances[ctr1, ctr2] == LONG_WAY)
-        ////                {
-        ////                    for (int ctr3 = 0; ctr3 < numRooms; ++ctr3)
-        ////                    {
-        ////                        if ((distances[ctr3, ctr2] < step) && (distances[ctr1, ctr3] == 1))
-        ////                        {
-        ////                            distances[ctr1, ctr2] = distances[ctr3, ctr2] + 1;
-        ////                            break;
-        ////                        }
-        ////                    }
-        ////                }
-        ////                if (distances[MAIN_HALL_RIGHT, MAIN_HALL_CENTER] != tracker)
-        ////                {
-        ////                    tracker = distances[MAIN_HALL_RIGHT, MAIN_HALL_CENTER];
-        ////                }
-        ////            }
-        ////        }
-        ////    }
-        ////}
+            int tracker = LONG_WAY;
+            // Now compute the distances using isNextTo()
+            for (int step = 2; step < LONG_WAY; ++step)
+            {
+                for (int ctr1 = 0; ctr1 < numRooms; ++ctr1)
+                {
+                    for (int ctr2 = 0; ctr2 < numRooms; ++ctr2)
+                    {
+                        if (distances[ctr1, ctr2] == LONG_WAY)
+                        {
+                            for (int ctr3 = 0; ctr3 < numRooms; ++ctr3)
+                            {
+                                if ((distances[ctr3, ctr2] < step) && (distances[ctr1, ctr3] == 1))
+                                {
+                                    distances[ctr1, ctr2] = distances[ctr3, ctr2] + 1;
+                                    break;
+                                }
+                            }
+                        }
+                        if (distances[MAIN_HALL_RIGHT, MAIN_HALL_CENTER] != tracker)
+                        {
+                            tracker = distances[MAIN_HALL_RIGHT, MAIN_HALL_CENTER];
+                        }
+                    }
+                }
+            }
+        }
 
         private void addRoom(int key, ROOM newRoom)
         {
@@ -298,7 +293,7 @@ namespace GameEngine
         }
 
 
-        int distance(int fromRoom, int toRoom)
+        public int distance(int fromRoom, int toRoom)
         {
             return distances[fromRoom, toRoom];
         }
@@ -316,7 +311,7 @@ namespace GameEngine
 
         public void addCastles(Portcullis[] ports)
         {
-        ////    ComputeDistances(ports);
+            ComputeDistances(ports);
         }
 
         // Close exit to crystal castle to keep everyone there until the race starts
@@ -356,7 +351,7 @@ namespace GameEngine
 
         }
 
-        //// ROOM SHAPES ////////////////////////////////////////////////////////////////
+        //-- ROOM SHAPES ------------------------------------------------------
         // Left of Name Room
         private static readonly byte[] roomGfxLeftOfName = {
             0xF0,0xFF,0xFF,     // XXXXXXXXXXXXXXXXXXXXRRRRRRRRRRRRRRRRRRRRRRRR

@@ -55,13 +55,39 @@ public class UnityTransport : MonoBehaviour, Transport
                 case ActionType.PLAYER_MOVE:
                     action = new PlayerMoveAction();
                     break;
+                case ActionType.PLAYER_PICKUP:
+                    action = new PlayerPickupAction();
+                    break;
+                case ActionType.PLAYER_RESET:
+                    action = new PlayerResetAction();
+                    break;
+                case ActionType.PLAYER_WIN:
+                    action = new PlayerWinAction();
+                    break;
+                case ActionType.DRAGON_MOVE:
+                    action = new DragonMoveAction();
+                    break;
+                case ActionType.DRAGON_STATE:
+                    action = new DragonStateAction();
+                    break;
+                case ActionType.PORTCULLIS_STATE:
+                    action = new PortcullisStateAction();
+                    break;
+                case ActionType.BAT_MOVE:
+                    action = new BatMoveAction();
+                    break;
+                case ActionType.BAT_PICKUP:
+                    action = new BatPickupAction();
+                    break;
+                case ActionType.OBJECT_MOVE:
+                    action = new ObjectMoveAction();
+                    break;
+                case ActionType.PING:
+                    action = new PingAction();
+                    break;
             }
             action.deserialize(dataPacket);
             receviedActions.Enqueue(action);
-            Debug.Log("Now " + receviedActions.Count + " actions in queue");
-        }
-        else {
-            Debug.Log("Ignoring message from this player (player #" + sender + ").");
         }
     }
 
@@ -74,7 +100,7 @@ public class UnityTransport : MonoBehaviour, Transport
         else
         {
             RemoteAction nextAction = receviedActions.Dequeue();
-            Debug.Log("Dequeuing " + nextAction + " action.");
+            Debug.Log("Received " + nextAction.typeCode + " action from player #" + nextAction.sender + ".");
             return nextAction;
         }
     }

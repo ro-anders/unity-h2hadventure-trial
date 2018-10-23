@@ -128,12 +128,20 @@ namespace GameEngine
 
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, sender, pickupObject, pickupX, pickupY, dropObject, dropRoom, dropX, dropY };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
+            pickupObject = serialized[2];
+            pickupX = serialized[3];
+            pickupY = serialized[4];
+            dropObject = serialized[5];
+            dropRoom = serialized[6];
+            dropX = serialized[7];
+            dropY = serialized[8];
         }
 
     };
@@ -148,12 +156,13 @@ namespace GameEngine
 
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, sender };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
         }
 
 
@@ -174,12 +183,14 @@ namespace GameEngine
 
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, sender, winInRoom };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
+            winInRoom = serialized[2];
         }
     };
 
@@ -202,12 +213,20 @@ namespace GameEngine
 
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, sender, dragonNum, room, posx, posy, velx, vely, distance };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
+            dragonNum = serialized[2];
+            room = serialized[3];
+            posx = serialized[4];
+            posy = serialized[5];
+            velx = serialized[6];
+            vely = serialized[7];
+            distance = serialized[8];
         }
     };
 
@@ -238,12 +257,20 @@ namespace GameEngine
 
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, sender, dragonNum, newState, room, posx, posy, velx, vely };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
+            dragonNum = serialized[2];
+            newState = serialized[3];
+            room = serialized[4];
+            posx = serialized[5];
+            posy = serialized[6];
+            velx = serialized[7];
+            vely = serialized[8];
         }
     };
 
@@ -269,12 +296,16 @@ namespace GameEngine
 
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, sender, portPkey, newState, (allowsEntry ? 1 : 0) };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
+            portPkey = serialized[2];
+            newState = serialized[3];
+            allowsEntry = (serialized[4] > 0);
         }
     }
 
@@ -294,12 +325,19 @@ namespace GameEngine
 
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, sender, room, posx, posy, velx, vely, distance };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
+            room = serialized[2];
+            posx = serialized[3];
+            posy = serialized[4];
+            velx = serialized[5];
+            vely = serialized[6];
+            distance = serialized[7];
         }
     };
 
@@ -330,12 +368,20 @@ namespace GameEngine
 
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, pickupObject, pickupX, pickupY, dropObject, dropRoom, dropX, dropY };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
+            pickupObject = serialized[2];
+            pickupX = serialized[3];
+            pickupY = serialized[4];
+            dropObject = serialized[5];
+            dropRoom = serialized[6];
+            dropX = serialized[7];
+            dropY = serialized[8];
         }
     };
 
@@ -368,12 +414,16 @@ namespace GameEngine
         }
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, sender, room, x, y };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
+            room = serialized[2];
+            x = serialized[3];
+            y = serialized[4];
         }
     }
 
@@ -381,15 +431,16 @@ namespace GameEngine
     {
         public const ActionType CODE = ActionType.PING;
 
-        PingAction() : base(CODE) { }
+        public PingAction() : base(CODE) { }
         public override int[] serialize()
         {
-            throw new Exception("Not yet implemented");
+            int[] serialized = { (int)CODE, sender };
+            return serialized;
         }
 
         public override void deserialize(int[] serialized)
         {
-            throw new Exception("Not yet implemented");
+            sender = serialized[1];
         }
     }
 }
