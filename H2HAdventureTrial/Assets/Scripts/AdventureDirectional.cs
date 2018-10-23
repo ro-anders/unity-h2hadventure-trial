@@ -59,7 +59,7 @@ public class AdventureDirectional : MonoBehaviour
     }
 
     public bool getResetButton() {
-        return false;
+        return Input.GetKey(KeyCode.Return);
     }
 
 

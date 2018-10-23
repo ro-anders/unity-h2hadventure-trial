@@ -8,6 +8,8 @@ namespace GameEngine
 
         void Platform_ReadJoystick(ref bool joyLeft, ref bool joyUp, ref bool joyRight, ref bool joyDown, ref bool joyFire);
 
+        void Platform_ReadConsoleSwitches(ref bool reset);
+
         void Platform_MakeSound(SOUND sound, float volume);
 
     }

@@ -464,14 +464,13 @@ namespace GameEngine
             ////                nextAction = sync.GetNextPortcullisAction();
             ////            }
 
-            ////            // Do reset after dragon and move actions.
-            ////            PlayerResetAction* otherReset = sync.GetNextResetAction();
-            ////            while (otherReset != NULL)
-            ////            {
-            ////                ResetPlayer(gameBoard.getPlayer(otherReset.sender));
-            ////                delete otherReset;
-            ////                otherReset = sync.GetNextResetAction();
-            ////            }
+                        // Do reset after dragon and move actions.
+                        PlayerResetAction otherReset = sync.GetNextResetAction();
+                        while (otherReset != null)
+                        {
+                            ResetPlayer(gameBoard.getPlayer(otherReset.sender));
+                            otherReset = sync.GetNextResetAction();
+                        }
 
             ////            // Handle won games last.
             ////            PlayerWinAction* lost = sync.GetGameWon();
@@ -540,7 +539,7 @@ namespace GameEngine
 
             ////            // read the console switches every frame
             bool reset = false;
-            ////            Platform_ReadConsoleSwitches(&reset);
+            view.Platform_ReadConsoleSwitches(ref reset);
             ////            if (Robot::isOn())
             ////            {
             ////                Robot::ControlConsoleSwitches(&reset, dragons, numDragons, objectBall);
@@ -554,171 +553,172 @@ namespace GameEngine
             ////                switchReset = false;
             ////            }
 
-            ////            // Reset switch
-            ////            if ((gameState != GAMESTATE_WIN) && switchReset && !reset && (EasterEgg::getEggState() != EasterEgg::EGG_STATE_DEBRIEF))
-            ////            {
-            ////                if (gameState != GAMESTATE_GAMESELECT)
-            ////                {
-            ////                    ResetPlayer(objectBall);
-            ////                    // Broadcast to everyone else
-            ////                    PlayerResetAction* action = new PlayerResetAction();
-            ////                    sync.BroadcastAction(action);
-
-            ////                }
-            ////            }
-            ////            else
-            ////            {
-            // Is the game active?
-            if (gameState == GAMESTATE_GAMESELECT)
+            // Reset switch
+            ////if ((gameState != GAMESTATE_WIN) && switchReset && !reset && (EasterEgg::getEggState() != EasterEgg::EGG_STATE_DEBRIEF))
+            if ((gameState != GAMESTATE_WIN) && switchReset && !reset) //// TEMP
             {
-                --timeToStartGame;
-                if (timeToStartGame <= 0)
+                if (gameState != GAMESTATE_GAMESELECT)
                 {
-                    gameState = GAMESTATE_ACTIVE_1;
-                    ResetPlayers();
-                }
-                else
-                {
-                    int displayNum = timeToStartGame / 60;
-                    gameBoard[Board.OBJECT_NUMBER].state = displayNum;
+                    ResetPlayer(objectBall);
+                    // Broadcast to everyone else
+                    PlayerResetAction action = new PlayerResetAction();
+                    sync.BroadcastAction(action);
 
-                    // Display the room and objects
-                    objectBall.room = 0;
-                    objectBall.previousRoom = 0;
-                    objectBall.displayedRoom = 0;
-                    objectBall.x = 0;
-                    objectBall.y = 0;
-                    objectBall.previousX = 0;
-                    objectBall.previousY = 0;
-                    PrintDisplay();
                 }
             }
-            else if ((gameState == GAMESTATE_ACTIVE_1) || (gameState == GAMESTATE_ACTIVE_2) || (gameState == GAMESTATE_ACTIVE_3))
+            else
             {
-                ////                    // Has someone won the game.
-                ////                    if (checkWonGame())
-                ////                    {
-                ////                        WinGame(objectBall.room);
-                ////                        PlayerWinAction* won = new PlayerWinAction(objectBall.room);
-                ////                        sync.BroadcastAction(won);
-                ////                        // Report back to the server.
-                ////                        Platform_ReportToServer("Has won a game");
-                ////                    }
-                ////                    else if (EasterEgg::isGauntletTimeUp(sync.getFrameNumber()))
-                ////                    {
-                ////                        EasterEgg::endGauntlet();
-                ////                        gameState = GAMESTATE_WIN;
-                ////                        winningRoom = objectBall.displayedRoom;
-                ////                    }
-                ////                    else
-                ////                    {
-                // Read joystick
-                view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
-                ////                        if (Robot::isOn())
-                ////                        {
-                ////                            Robot::ControlJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
-                ////                        }
-
-                ////                        if (EasterEgg::shouldStartGauntlet(sync.getFrameNumber()))
-                ////                        {
-                ////                            EasterEgg::startGauntlet();
-                ////                            gameMode = GAME_MODE_GAUNTLET;
-                ////                        }
-
-                if (gameState == GAMESTATE_ACTIVE_1)
+                // Is the game active?
+                if (gameState == GAMESTATE_GAMESELECT)
                 {
-                    // Move balls
-                    ThisBallMovement();
-                    for (int i = 0; i < numPlayers; ++i)
+                    --timeToStartGame;
+                    if (timeToStartGame <= 0)
                     {
-                        if (i != thisPlayer)
-                        {
-                            BallMovement(gameBoard.getPlayer(i));
-                        }
+                        gameState = GAMESTATE_ACTIVE_1;
+                        ResetPlayers();
                     }
-
-                    // Move the carried object
-                    MoveCarriedObjects();
-
-                    // Collision check the balls in their new coordinates against walls and objects
-                    for (int i = 0; i < numPlayers; ++i)
+                    else
                     {
-                        BALL nextBall = gameBoard.getPlayer(i);
-                        CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false);
+                        int displayNum = timeToStartGame / 60;
+                        gameBoard[Board.OBJECT_NUMBER].state = displayNum;
+
+                        // Display the room and objects
+                        objectBall.room = 0;
+                        objectBall.previousRoom = 0;
+                        objectBall.displayedRoom = 0;
+                        objectBall.x = 0;
+                        objectBall.y = 0;
+                        objectBall.previousX = 0;
+                        objectBall.previousY = 0;
+                        PrintDisplay();
                     }
-
-                    // Setup the room and object
-                    PrintDisplay();
-
-                    ++gameState;
                 }
-                else if (gameState == GAMESTATE_ACTIVE_2)
+                else if ((gameState == GAMESTATE_ACTIVE_1) || (gameState == GAMESTATE_ACTIVE_2) || (gameState == GAMESTATE_ACTIVE_3))
                 {
-                    // Deal with object pickup and putdown
-                    PickupPutdown();
+                    ////                    // Has someone won the game.
+                    ////                    if (checkWonGame())
+                    ////                    {
+                    ////                        WinGame(objectBall.room);
+                    ////                        PlayerWinAction* won = new PlayerWinAction(objectBall.room);
+                    ////                        sync.BroadcastAction(won);
+                    ////                        // Report back to the server.
+                    ////                        Platform_ReportToServer("Has won a game");
+                    ////                    }
+                    ////                    else if (EasterEgg::isGauntletTimeUp(sync.getFrameNumber()))
+                    ////                    {
+                    ////                        EasterEgg::endGauntlet();
+                    ////                        gameState = GAMESTATE_WIN;
+                    ////                        winningRoom = objectBall.displayedRoom;
+                    ////                    }
+                    ////                    else
+                    ////                    {
+                    // Read joystick
+                    view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
+                    ////                        if (Robot::isOn())
+                    ////                        {
+                    ////                            Robot::ControlJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
+                    ////                        }
 
-                    for (int i = 0; i < numPlayers; ++i)
+                    ////                        if (EasterEgg::shouldStartGauntlet(sync.getFrameNumber()))
+                    ////                        {
+                    ////                            EasterEgg::startGauntlet();
+                    ////                            gameMode = GAME_MODE_GAUNTLET;
+                    ////                        }
+
+                    if (gameState == GAMESTATE_ACTIVE_1)
                     {
-                        ReactToCollisionX(gameBoard.getPlayer(i));
-                    }
-
-                    // Increment the last object drawn
-                    ++displayListIndex;
-
-                    // deal with invisible surround moving
-                    Surround();
-
-                    // Move and deal with bat
-                    if (bat.exists())
-                    {
-                        bat.moveOneTurn(sync, objectBall);
-                    }
-
-                    // Move and deal with portcullises
-                    Portals();
-
-                    // Display the room and objects
-                    PrintDisplay();
-
-                    ++gameState;
-                }
-                else if (gameState == GAMESTATE_ACTIVE_3)
-                {
-                    // Move and deal with the dragons
-                    for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
-                    {
-                        Dragon dragon = dragons[dragonCtr];
-                        RemoteAction dragonAction = dragon.move();
-                        if (dragonAction != null)
+                        // Move balls
+                        ThisBallMovement();
+                        for (int i = 0; i < numPlayers; ++i)
                         {
-                            sync.BroadcastAction(dragonAction);
+                            if (i != thisPlayer)
+                            {
+                                BallMovement(gameBoard.getPlayer(i));
+                            }
                         }
-                        // In gauntlet mode, getting eaten immediately triggers a reset.
-                        if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
+
+                        // Move the carried object
+                        MoveCarriedObjects();
+
+                        // Collision check the balls in their new coordinates against walls and objects
+                        for (int i = 0; i < numPlayers; ++i)
                         {
-                            ResetPlayer(objectBall);
-                            // Broadcast to everyone else
-                            PlayerResetAction action = new PlayerResetAction();
-                            sync.BroadcastAction(action);
-
+                            BALL nextBall = gameBoard.getPlayer(i);
+                            CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false);
                         }
-                    }
 
-                    for (int i = 0; i < numPlayers; ++i)
+                        // Setup the room and object
+                        PrintDisplay();
+
+                        ++gameState;
+                    }
+                    else if (gameState == GAMESTATE_ACTIVE_2)
                     {
-                        ReactToCollisionY(gameBoard.getPlayer(i));
+                        // Deal with object pickup and putdown
+                        PickupPutdown();
+
+                        for (int i = 0; i < numPlayers; ++i)
+                        {
+                            ReactToCollisionX(gameBoard.getPlayer(i));
+                        }
+
+                        // Increment the last object drawn
+                        ++displayListIndex;
+
+                        // deal with invisible surround moving
+                        Surround();
+
+                        // Move and deal with bat
+                        if (bat.exists())
+                        {
+                            bat.moveOneTurn(sync, objectBall);
+                        }
+
+                        // Move and deal with portcullises
+                        Portals();
+
+                        // Display the room and objects
+                        PrintDisplay();
+
+                        ++gameState;
                     }
+                    else if (gameState == GAMESTATE_ACTIVE_3)
+                    {
+                        // Move and deal with the dragons
+                        for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
+                        {
+                            Dragon dragon = dragons[dragonCtr];
+                            RemoteAction dragonAction = dragon.move();
+                            if (dragonAction != null)
+                            {
+                                sync.BroadcastAction(dragonAction);
+                            }
+                            // In gauntlet mode, getting eaten immediately triggers a reset.
+                            if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
+                            {
+                                ResetPlayer(objectBall);
+                                // Broadcast to everyone else
+                                PlayerResetAction action = new PlayerResetAction();
+                                sync.BroadcastAction(action);
+
+                            }
+                        }
+
+                        for (int i = 0; i < numPlayers; ++i)
+                        {
+                            ReactToCollisionY(gameBoard.getPlayer(i));
+                        }
 
 
-                    ////                            // Deal with the magnet
-                    ////                            Magnet();
+                        ////                            // Deal with the magnet
+                        ////                            Magnet();
 
-                    // Display the room and objects
-                    PrintDisplay();
+                        // Display the room and objects
+                        PrintDisplay();
 
-                    gameState = GAMESTATE_ACTIVE_1;
+                        gameState = GAMESTATE_ACTIVE_1;
+                    }
                 }
-                ////                    }
             }
             ////                else if (gameState == GAMESTATE_WIN)
             ////                {
@@ -745,7 +745,7 @@ namespace GameEngine
             ////                }
             ////            }
 
-            ////            switchReset = reset;
+            switchReset = reset;
             AdvanceFlashColor();
         }
 

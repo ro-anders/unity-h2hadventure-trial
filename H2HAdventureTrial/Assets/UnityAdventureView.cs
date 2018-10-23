@@ -63,6 +63,10 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
         joyFire = adv_input.getDropButton();
     }
 
+    public void Platform_ReadConsoleSwitches(ref bool reset) {
+        reset = adv_input.getResetButton();
+    }
+
     public void Platform_MakeSound(SOUND sound, float volume) {
         adv_audio.play(sound, volume);
     }
