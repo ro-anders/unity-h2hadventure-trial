@@ -14,9 +14,13 @@ public class PlayerSync : NetworkBehaviour
     void Start()
     {
         Debug.Log("PlayerSync started");
+        Initialize();
+        CmdAssignSlot();
+    }
+
+    void Initialize() {
         GameObject quadGameObject = GameObject.Find("Quad");
         xport = quadGameObject.GetComponent<UnityTransport>();
-        CmdAssignSlot();
     }
 
     public int getSlot() {
@@ -26,6 +30,9 @@ public class PlayerSync : NetworkBehaviour
     [Command]
     public void CmdAssignSlot() {
         if (slot < 0) {
+            if (xport == null) {
+                Initialize();
+            }
             slot = xport.assignPlayerSlot();
             // This code is repeated from client RPC
             xport.registerSync(this);
@@ -41,6 +48,10 @@ public class PlayerSync : NetworkBehaviour
         if (slot < 0)
         {
             slot = inSlot;
+            if (xport == null)
+            {
+                Initialize();
+            }
             // Repeat this code in server CMD
             xport.registerSync(this);
             Debug.Log("Player #" + slot + " setup." +
@@ -60,6 +71,10 @@ public class PlayerSync : NetworkBehaviour
     public void RpcReceiveBroadcast(int[] dataPacket)
     {
         Debug.Log("Received " + ((ActionType)dataPacket[0]).ToString("g") + " message from player #" + dataPacket[1]);
+        if (xport == null)
+        {
+            Initialize();
+        }
         xport.receiveBroadcast(slot, dataPacket);
     }
 
