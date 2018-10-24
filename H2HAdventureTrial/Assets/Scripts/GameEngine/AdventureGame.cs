@@ -705,8 +705,8 @@ namespace GameEngine
                         }
 
 
-                        ////                            // Deal with the magnet
-                        ////                            Magnet();
+                        // Deal with the magnet
+                        Magnet();
 
                         // Display the room and objects
                         PrintDisplay();
@@ -1741,35 +1741,34 @@ namespace GameEngine
 
 
 
-////        void Magnet()
-////        {
-////            const OBJECT* magnet = board[OBJECT_MAGNET];
+        void Magnet()
+        {
+            OBJECT magnet = gameBoard[Board.OBJECT_MAGNET];
 
-////            int i = 0;
-////            while (magnetMatrix[i])
-////            {
-////                // Look for items in the magnet matrix that are in the same room as the magnet
-////                OBJECT * object = board[magnetMatrix[i]];
-////                if ((magnetMatrix[i] != objectBall.linkedObject) && (object.room == magnet.room) && (object.exists()))
-////                {
-////                    // horizontal axis
-////                    if (object.x < magnet.x)
-////                        object.x++;
-////            else if (object.x > magnet.x)
-////                        object.x--;
+            for (int i = 0; i < magnetMatrix.Length; ++i)
+            {
+                // Look for items in the magnet matrix that are in the same room as the magnet
+                OBJECT objct = gameBoard[magnetMatrix[i]];
+                if ((magnetMatrix[i] != objectBall.linkedObject) && (objct.room == magnet.room) && (objct.exists()))
+                {
+                    // horizontal axis
+                    if (objct.x < magnet.x)
+                        objct.x++;
+                    else if (objct.x > magnet.x)
+                        objct.x--;
 
-////                    // vertical axis - offset by the height of the magnet so items stick to the "bottom"
-////                    if (object.y < (magnet.y - magnet.gfxData[0]))
-////                        object.y++;
-////            else if (object.y > (magnet.y - magnet.gfxData[0]))
-////                        object.y--;
+                    // vertical axis - offset by the height of the magnet so items stick to the "bottom"
+                    if (objct.y < (magnet.y - magnet.gfxData[0].Length))
+                        objct.y++;
+                    else if (objct.y > (magnet.y - magnet.gfxData[0].Length))
+                        objct.y--;
 
-////                    // Only attract the first item found in the matrix
-////                    break;
-////                }
-////                ++i;
-////            }
-////        }
+                    // Only attract the first item found in the matrix
+                    break;
+                }
+                ++i;
+            }
+        }
 
         void DrawObjects(int room)
         {
@@ -2560,9 +2559,9 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
             {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
             {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
-//CHANGE            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
-            {Board.OBJECT_CHALISE, Map.GOLD_CASTLE, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
-            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
+            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
+//CHANGE            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
+            {Board.OBJECT_MAGNET, Map.MAIN_HALL_CENTER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
         };
 
 
@@ -2623,19 +2622,18 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
 ////};
 
 
-////// Magnet Object Matrix
-////static const int magnetMatrix[] =
-////{
-////       OBJECT_YELLOWKEY,
-////       OBJECT_JADEKEY,
-////       OBJECT_COPPERKEY,
-////       OBJECT_WHITEKEY,
-////       OBJECT_BLACKKEY,
-////       OBJECT_SWORD,
-////       OBJECT_BRIDGE,
-////       OBJECT_CHALISE,
-////       0x00
-////};
+        // Magnet Object Matrix
+        private int[] magnetMatrix =
+        {
+               Board.OBJECT_YELLOWKEY,
+               Board.OBJECT_JADEKEY,
+               Board.OBJECT_COPPERKEY,
+               Board.OBJECT_WHITEKEY,
+               Board.OBJECT_BLACKKEY,
+               Board.OBJECT_SWORD,
+               Board.OBJECT_BRIDGE,
+               Board.OBJECT_CHALISE
+        };
 
         // Green Dragon's Object Matrix                                                                                      
         private int[] greenDragonMatrix =
