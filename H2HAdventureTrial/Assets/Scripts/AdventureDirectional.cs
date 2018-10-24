@@ -5,10 +5,13 @@ using UnityEngine;
 public class AdventureDirectional : MonoBehaviour
 {
 
+#if UNITY_STANDALONE || UNITY_WEBPLAYER
+#else
     private bool joyLeft = false;
     private bool joyRight = false;
     private bool joyUp = false;
     private bool joyDown = false;
+#endif
 
     // Use this for initialization
     void Start()

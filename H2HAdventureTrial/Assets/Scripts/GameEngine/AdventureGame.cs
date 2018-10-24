@@ -36,7 +36,7 @@ namespace GameEngine
         private const int MAX_DISPLAYABLE_OBJECTS = 2;             // The 2600 only has 2 Player (sprite) objects. Accuracy will be compromised if this is changed!
         private static bool SHOW_OBJECT_FLICKER = true;
 
-        ////// finite state machine values
+        // finite state machine values
         private const int GAMESTATE_GAMESELECT = 0;
         private const int GAMESTATE_ACTIVE_1 = 1;
         private const int GAMESTATE_ACTIVE_2 = 2;
@@ -223,13 +223,13 @@ namespace GameEngine
 
         public void PrintDisplay()
         {
-            ////// get the playfield data
+            // get the playfield data
             int displayedRoom = (displayWinningRoom ? winningRoom : objectBall.displayedRoom);
 
             ROOM currentRoom = roomDefs[displayedRoom];
             byte[] roomData = currentRoom.graphicsData;
 
-            //// get the playfield color
+            // get the playfield color
             COLOR color = ((gameState == GAMESTATE_WIN) && (winFlashTimer > 0)) ? GetFlashColor() : COLOR.table(currentRoom.color);
             COLOR colorBackground = COLOR.table(COLOR.LTGRAY);
 
@@ -440,46 +440,41 @@ namespace GameEngine
             OtherBallMovement();
             OthersPickupPutdown();
 
-            ////            // move the dragons
-            ////            SyncDragons();
+            // move the dragons
+            SyncDragons();
 
-            ////            // Move the bat
-            ////            RemoteAction* batAction = sync.GetNextBatAction();
-            ////            while ((batAction != NULL) && bat.exists())
-            ////            {
-            ////                bat.handleAction(batAction, objectBall);
-            ////                delete batAction;
-            ////                batAction = sync.GetNextBatAction();
-            ////            }
+            // Move the bat
+            RemoteAction batAction = sync.GetNextBatAction();
+            while ((batAction != null) && bat.exists())
+            {
+                bat.handleAction(batAction, objectBall);
+                batAction = sync.GetNextBatAction();
+            }
 
+            // Handle any remote changes to the portal.
+            PortcullisStateAction nextAction = sync.GetNextPortcullisAction();
+            while (nextAction != null)
+            {
+                Portcullis port = (Portcullis)gameBoard.getObject(nextAction.portPkey);
+                port.setState(nextAction.newState, nextAction.allowsEntry);
+                nextAction = sync.GetNextPortcullisAction();
+            }
 
+            // Do reset after dragon and move actions.
+            PlayerResetAction otherReset = sync.GetNextResetAction();
+            while (otherReset != null)
+            {
+                ResetPlayer(gameBoard.getPlayer(otherReset.sender));
+                otherReset = sync.GetNextResetAction();
+            }
 
-            ////            // Handle any remote changes to the portal.
-            ////            PortcullisStateAction* nextAction = sync.GetNextPortcullisAction();
-            ////            while (nextAction != NULL)
-            ////            {
-            ////                Portcullis* port = (Portcullis*)gameBoard.getObject(nextAction.portPkey);
-            ////                port.setState(nextAction.newState, nextAction.allowsEntry);
-            ////                delete nextAction;
-            ////                nextAction = sync.GetNextPortcullisAction();
-            ////            }
-
-                        // Do reset after dragon and move actions.
-                        PlayerResetAction otherReset = sync.GetNextResetAction();
-                        while (otherReset != null)
-                        {
-                            ResetPlayer(gameBoard.getPlayer(otherReset.sender));
-                            otherReset = sync.GetNextResetAction();
-                        }
-
-            ////            // Handle won games last.
-            ////            PlayerWinAction* lost = sync.GetGameWon();
-            ////            if (lost != NULL)
-            ////            {
-            ////                WinGame(lost.winInRoom);
-            ////                delete lost;
-            ////                lost = NULL;
-            ////            }
+            // Handle won games last.
+            PlayerWinAction lost = sync.GetGameWon();
+            if (lost != null)
+            {
+                WinGame(lost.winInRoom);
+                lost = null;
+            }
 
 
         }
@@ -595,15 +590,15 @@ namespace GameEngine
                 }
                 else if ((gameState == GAMESTATE_ACTIVE_1) || (gameState == GAMESTATE_ACTIVE_2) || (gameState == GAMESTATE_ACTIVE_3))
                 {
-                    ////                    // Has someone won the game.
-                    ////                    if (checkWonGame())
-                    ////                    {
-                    ////                        WinGame(objectBall.room);
-                    ////                        PlayerWinAction* won = new PlayerWinAction(objectBall.room);
-                    ////                        sync.BroadcastAction(won);
-                    ////                        // Report back to the server.
-                    ////                        Platform_ReportToServer("Has won a game");
-                    ////                    }
+                    // Has someone won the game.
+                    if (checkWonGame())
+                    {
+                        WinGame(objectBall.room);
+                        PlayerWinAction won = new PlayerWinAction(objectBall.room);
+                        sync.BroadcastAction(won);
+                        ////// Report back to the server.
+                        ////Platform_ReportToServer("Has won a game");
+                    }
                     ////                    else if (EasterEgg::isGauntletTimeUp(sync.getFrameNumber()))
                     ////                    {
                     ////                        EasterEgg::endGauntlet();
@@ -719,31 +714,30 @@ namespace GameEngine
                         gameState = GAMESTATE_ACTIVE_1;
                     }
                 }
+                else if (gameState == GAMESTATE_WIN)
+                {
+                    // We keep the display pointed at your current room while we make the
+                    // whole board flash, but once the flash is done, we point the display
+                    // at the winning castle.
+                    if (winFlashTimer > 0)
+                    {
+                        --winFlashTimer;
+                    }
+                    else
+                    {
+                        displayWinningRoom = true;
+                    }
+
+                    // Increment the last object drawn
+                    if (sync.getFrameNumber() % 3 == 0)
+                    {
+                        ++displayListIndex;
+                    }
+
+                    // Display the room and objects
+                    PrintDisplay();
+                }
             }
-            ////                else if (gameState == GAMESTATE_WIN)
-            ////                {
-            ////                    // We keep the display pointed at your current room while we make the
-            ////                    // whole board flash, but once the flash is done, we point the display
-            ////                    // at the winning castle.
-            ////                    if (winFlashTimer > 0)
-            ////                    {
-            ////                        --winFlashTimer;
-            ////                    }
-            ////                    else
-            ////                    {
-            ////                        displayWinningRoom = true;
-            ////                    }
-
-            ////                    // Increment the last object drawn
-            ////                    if (sync.getFrameNumber() % 3 == 0)
-            ////                    {
-            ////                        ++displayListIndex;
-            ////                    }
-
-            ////                    // Display the room and objects
-            ////                    PrintDisplay();
-            ////                }
-            ////            }
 
             switchReset = reset;
             AdvanceFlashColor();
@@ -960,58 +954,58 @@ namespace GameEngine
                     return volume;
                 }
 
-        ////        /**
-        ////         * Returns true if this player has gotten the chalise to their home castle and won the game, or, if
-        ////         * this is the gauntlet, if the player has reached the gold castle.
-        ////         */
-        ////        bool checkWonGame()
-        ////        {
-        ////            bool won = false;
-        ////            if (gameMode == GAME_MODE_GAUNTLET)
-        ////            {
-        ////                won = (objectBall.isGlowing() && (objectBall.room == objectBall.homeGate.insideRoom));
-        ////                if (won && (EasterEgg::getEggState() == EasterEgg::EGG_STATE_IN_GAUNTLET))
-        ////                {
-        ////                    EasterEgg::winEgg();
-        ////                }
-        ////            }
-        ////            else
-        ////            {
-        ////                // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
-        ////                // Another player can't win for you.
-        ////                if ((objectBall.linkedObject == OBJECT_CHALISE) ||
-        ////                    ((objectBall.linkedObject == OBJECT_BAT) && (bat.linkedObject == OBJECT_CHALISE)))
-        ////                {
-        ////                    // Player either has to bring the chalise into the castle or touch the chalise to the gate
-        ////                    if (board[OBJECT_CHALISE].room == objectBall.homeGate.insideRoom)
-        ////                    {
-        ////                        won = true;
-        ////                    }
-        ////                    else
-        ////                    {
-        ////                        if ((objectBall.room == objectBall.homeGate.room) &&
-        ////                            (objectBall.homeGate.state == Portcullis::OPEN_STATE) &&
-        ////                            gameBoard.CollisionCheckObjectObject(objectBall.homeGate, board[OBJECT_CHALISE]))
-        ////                        {
+        /**
+         * Returns true if this player has gotten the chalise to their home castle and won the game, or, if
+         * this is the gauntlet, if the player has reached the gold castle.
+         */
+        bool checkWonGame()
+        {
+            bool won = false;
+            if (gameMode == GAME_MODE_GAUNTLET)
+            {
+                won = (objectBall.isGlowing() && (objectBall.room == objectBall.homeGate.insideRoom));
+                ////if (won && (EasterEgg::getEggState() == EasterEgg::EGG_STATE_IN_GAUNTLET))
+                ////{
+                ////    EasterEgg::winEgg();
+                ////}
+            }
+            else
+            {
+                // Player MUST be holding the chalise to win (or holding the bat holding the chalise).
+                // Another player can't win for you.
+                if ((objectBall.linkedObject == Board.OBJECT_CHALISE) ||
+                    ((objectBall.linkedObject == Board.OBJECT_BAT) && (bat.linkedObject == Board.OBJECT_CHALISE)))
+                {
+                    // Player either has to bring the chalise into the castle or touch the chalise to the gate
+                    if (gameBoard[Board.OBJECT_CHALISE].room == objectBall.homeGate.insideRoom)
+                    {
+                        won = true;
+                    }
+                    else
+                    {
+                        if ((objectBall.room == objectBall.homeGate.room) &&
+                            (objectBall.homeGate.state == Portcullis.OPEN_STATE) &&
+                            gameBoard.CollisionCheckObjectObject(objectBall.homeGate, gameBoard[Board.OBJECT_CHALISE]))
+                        {
 
-        ////                            won = true;
-        ////                        }
-        ////                    }
-        ////                }
-        ////            }
-        ////            return won;
-        ////        }
+                            won = true;
+                        }
+                    }
+                }
+            }
+            return won;
+        }
 
-        ////        void WinGame(int winRoom)
-        ////        {
-        ////            // Go to won state
-        ////            gameState = GAMESTATE_WIN;
-        ////            winFlashTimer = 0xff;
-        ////            winningRoom = winRoom;
+        void WinGame(int winRoom)
+        {
+            // Go to won state
+            gameState = GAMESTATE_WIN;
+            winFlashTimer = 0xff;
+            winningRoom = winRoom;
 
-        ////            // Play the sound
-        ////            Platform_MakeSound(SOUND_WON, MAX_VOLUME);
-        ////        }
+            // Play the sound
+            view.Platform_MakeSound(SOUND.WON, MAX.VOLUME);
+        }
 
         void ReactToCollisionX(BALL ball)
         {
@@ -1128,7 +1122,6 @@ namespace GameEngine
 
             if (!joystickDisabled && ((objectBall.velx != prevVelX) || (objectBall.vely != prevVelY)))
             {
-                // TODO: Do we want to be constantly allocating space?
                 PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
                 sync.BroadcastAction(moveAction);
             }
@@ -1310,39 +1303,38 @@ namespace GameEngine
 
         }
 
-        ////        void SyncDragons()
-        ////        {
-        ////            RemoteAction* next = sync.GetNextDragonAction();
-        ////            while (next != NULL)
-        ////            {
-        ////                if (next.typeCode == DragonStateAction::CODE)
-        ////                {
-        ////                    DragonStateAction* nextState = (DragonStateAction*)next;
-        ////                    Dragon* dragon = dragons[nextState.dragonNum];
-        ////                    // If something causes a sound, we need to know how far away it is.
-        ////                    float volume = volumeAtDistance(dragon.room);
-        ////                    dragon.syncAction(nextState, volume);
-        ////                }
-        ////                else
-        ////                {
-        ////                    // If we are in the same room as the dragon and are closer to it than the reporting player,
-        ////                    // then we ignore reports and trust our internal state.
-        ////                    // If the dragon is not in stalking state we ignore it.
-        ////                    // Otherwise, you use the reported state.
-        ////                    DragonMoveAction* nextMove = (DragonMoveAction*)next;
-        ////                    Dragon* dragon = dragons[nextMove.dragonNum];
-        ////                    if ((dragon.state == Dragon::STALKING) &&
-        ////                        ((dragon.room != objectBall.room) ||
-        ////                        (objectBall.distanceTo(dragon.x, dragon.y) > nextMove.distance)))
-        ////                    {
+        void SyncDragons()
+        {
+            RemoteAction nextAction = sync.GetNextDragonAction();
+            while (nextAction != null)
+            {
+                if (nextAction.typeCode == DragonStateAction.CODE)
+                {
+                    DragonStateAction nextState = (DragonStateAction)nextAction;
+                    Dragon dragon = dragons[nextState.dragonNum];
+                    // If something causes a sound, we need to know how far away it is.
+                    float volume = volumeAtDistance(dragon.room);
+                    dragon.syncAction(nextState, volume);
+                }
+                else
+                {
+                    // If we are in the same room as the dragon and are closer to it than the reporting player,
+                    // then we ignore reports and trust our internal state.
+                    // If the dragon is not in stalking state we ignore it.
+                    // Otherwise, you use the reported state.
+                    DragonMoveAction nextMove = (DragonMoveAction)nextAction;
+                    Dragon dragon = dragons[nextMove.dragonNum];
+                    if ((dragon.state == Dragon.STALKING) &&
+                        ((dragon.room != objectBall.room) ||
+                        (objectBall.distanceTo(dragon.x, dragon.y) > nextMove.distance)))
+                    {
 
-        ////                        dragon.syncAction(nextMove);
-        ////                    }
-        ////                }
-        ////                delete next;
-        ////                next = sync.GetNextDragonAction();
-        ////            }
-        ////        }
+                        dragon.syncAction(nextMove);
+                    }
+                }
+                nextAction = sync.GetNextDragonAction();
+            }
+        }
 
         void MoveCarriedObjects()
         {
@@ -1974,7 +1966,7 @@ bool CollisionCheckBallWithWalls(int room, int x, int y)
             bool mirror = (currentRoom.flags & ROOM.FLAG_MIRROR) > 0;
 
     // mask values for playfield bits
-    byte[] shiftreg = new byte[20]
+    byte[] shiftreg = 
     {
         0x10,0x20,0x40,0x80,
         0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
@@ -2263,7 +2255,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         ////// Object definitions - 1st byte is the height
         //////
 
-        private static byte[][] objectGfxNum = new byte[][]
+        private static byte[][] objectGfxNum = 
         {
             new byte[] {
                 // Object #5 State #1 Graphic :'1'
@@ -2295,13 +2287,13 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         };
 
         // Number states
-        private static byte[] numberStates = new byte[]
+        private static byte[] numberStates = 
         {
             0,1,2
         };
 
         // Object #0B : State FF : Graphic
-        private static byte[][] objectGfxKey = new byte[][]
+        private static byte[][] objectGfxKey = 
         { new byte[] {
                 0x07,                  //      XXX
                 0xFD,                  // XXXXXX X
@@ -2310,7 +2302,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
 
 
         // Object #1 : Graphic
-        private static byte[][] objectGfxSurround = new byte[][]
+        private static byte[][] objectGfxSurround = 
         { new byte[] {
             0xFF,                  // XXXXXXXX                                                                  
             0xFF,                  // XXXXXXXX                                                                  
@@ -2347,7 +2339,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         } };
 
         // Object #0A : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxBridge = new byte[][]
+        private static byte[][] objectGfxBridge = 
         { new byte[] {
             0xC3,                  // XX    XX                                                                  
             0xC3,                  // XX    XX                                                                  
@@ -2376,7 +2368,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         } };
 
         // Object #9 : State FF : Graphics                                                                                   
-        private static byte[][] objectGfxSword = new byte[][]
+        private static byte[][] objectGfxSword =
         { new byte[] {
             0x20,                  //   X                                                                       
             0x40,                  //  X                                                                        
@@ -2386,13 +2378,13 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         } };
 
         // Object #0F : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxDot = new byte[][]
+        private static byte[][] objectGfxDot = 
         { new byte[] {
             0x80                   // X                                                                         
         } };
 
         // Object #4 : State FF : Graphic                                                                                    
-        private static byte[][] objectGfxAuthor = new byte[][]
+        private static byte[][] objectGfxAuthor = 
         { new byte[] {
             0xF0,                  // XXXX                                                                      
             0x80,                  // X                                                                         
@@ -2492,7 +2484,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         } };
 
         // Object #10 : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxChallise = new byte[][]
+        private static byte[][] objectGfxChallise = 
         { new byte[] {
             0x81,                  // X      X                                                                  
             0x81,                  // X      X                                                                  
@@ -2506,7 +2498,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         } };
 
         // Object #X : State FF : Graphic
-        private static byte[][] objectGfxEasterEgg = new byte[][]
+        private static byte[][] objectGfxEasterEgg = 
         { new byte[] {
             0x18,                  //    XX
             0x3C,                  //   XXXX
@@ -2535,7 +2527,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
 
 
         // Object #11 : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxMagnet = new byte[][]
+        private static byte[][] objectGfxMagnet = 
         { new byte[] {
             0x3C,                  //   XXXX                                                                    
             0x7E,                  //  XXXXXX                                                                   
@@ -2551,7 +2543,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         //
         // Object locations (room and coordinate) for game 01
         //        - object, room, x, y, state, movement(x/y)
-        private readonly int[,] game1Objects = new int[,]
+        private readonly int[,] game1Objects = 
         {
             {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
             {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
@@ -2568,7 +2560,8 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
             {Board.OBJECT_COPPERKEY, Map.COPPER_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Copper Key
             {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
-            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
+//CHANGE            {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
+            {Board.OBJECT_CHALISE, Map.GOLD_CASTLE, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
             {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
         };
 
@@ -2577,7 +2570,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
 
         // Object locations (room and coordinate) for Games 02 and 03
         //        - object, room, x, y, state, movement(x/y)
-        private readonly int[,] game2Objects = new int[,]
+        private readonly int[,] game2Objects = 
         {
             {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
             {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4

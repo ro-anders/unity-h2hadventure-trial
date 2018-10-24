@@ -151,9 +151,9 @@ namespace GameEngine
         private BALL[] players;
         private int currentPlayer;
 
-        private int screenWidth;
-        private int screenHeight;
-        private Map map;
+        public int screenWidth;
+        public int screenHeight;
+        public Map map;
         private AdventureView view;
 
         public Board(int inScreenWidth, int inScreenHeight, Map inMap, AdventureView inView)
