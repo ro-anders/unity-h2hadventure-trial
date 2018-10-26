@@ -26,7 +26,7 @@ namespace GameEngine
         DRAGONDIE,
         PUTDOWN,
         PICKUP,
-        SOUND_GLOW
+        GLOW
     }
 
     public static class MAX

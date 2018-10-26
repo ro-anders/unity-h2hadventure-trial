@@ -769,10 +769,10 @@ namespace GameEngine
             {
                 p = game1Objects;
             }
-            ////else if (gameMode == GAME_MODE_GAUNTLET)
-            ////{
-            ////    p = gameGauntletObjects;
-            ////}
+            else if (gameMode == GAME_MODE_GAUNTLET)
+            {
+                p = gameGauntletObjects;
+            }
             else
             {
                 p = game2Objects;
@@ -807,14 +807,14 @@ namespace GameEngine
             ////                randomizeRoomObjects();
             ////            }
 
-            ////            // Open the gates if running the gauntlet
-            ////            if (gameMode == GAME_MODE_GAUNTLET)
-            ////            {
-            ////                Portcullis* blackPort = (Portcullis*)board[OBJECT_BLACK_PORT];
-            ////                blackPort.setState(Portcullis::OPEN_STATE, true);
-            ////                Portcullis* goldPort = (Portcullis*)board[OBJECT_YELLOW_PORT];
-            ////                goldPort.setState(Portcullis::OPEN_STATE, true);
-            ////            }
+            // Open the gates if running the gauntlet
+            if (gameMode == GAME_MODE_GAUNTLET)
+            {
+                Portcullis blackPort = (Portcullis)gameBoard[Board.OBJECT_BLACK_PORT];
+                blackPort.setState(Portcullis.OPEN_STATE, true);
+                Portcullis goldPort = (Portcullis)gameBoard[Board.OBJECT_YELLOW_PORT];
+                goldPort.setState(Portcullis.OPEN_STATE, true);
+            }
         }
 
         ////        /**
@@ -928,31 +928,31 @@ namespace GameEngine
         ////            }
         ////        }
 
-                float volumeAtDistance(int room)
-                {
-                    float NEAR_VOLUME = MAX.VOLUME / 3;
-                    float FAR_VOLUME = MAX.VOLUME / 9;
+        float volumeAtDistance(int room)
+        {
+            float NEAR_VOLUME = MAX.VOLUME / 3;
+            float FAR_VOLUME = MAX.VOLUME / 9;
 
-                    int distance = gameMap.distance(room, objectBall.room);
+            int distance = gameMap.distance(room, objectBall.room);
 
-                    float volume = 0.0f;
-                    switch (distance)
-                    {
-                        case 0:
-                            volume = MAX.VOLUME;
-                            break;
-                        case 1:
-                            volume = NEAR_VOLUME;
-                            break;
-                        case 2:
-                            volume = FAR_VOLUME;
-                            break;
-                        default:
-                            volume = 0;
-                            break;
-                    }
-                    return volume;
-                }
+            float volume = 0.0f;
+            switch (distance)
+            {
+                case 0:
+                    volume = MAX.VOLUME;
+                    break;
+                case 1:
+                    volume = NEAR_VOLUME;
+                    break;
+                case 2:
+                    volume = FAR_VOLUME;
+                    break;
+                default:
+                    volume = 0;
+                    break;
+            }
+            return volume;
+        }
 
         /**
          * Returns true if this player has gotten the chalise to their home castle and won the game, or, if
@@ -1390,12 +1390,12 @@ namespace GameEngine
                             PlayerMoveAction moveAction = new PlayerMoveAction(objectBall.room, objectBall.x, objectBall.y, objectBall.velx, objectBall.vely);
                             sync.BroadcastAction(moveAction);
                         }
-                        ////// If entering the black castle in the gauntlet, glow.
-                        ////if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == gameBoard[OBJECT_BLACK_PORT]) && !nextBall.isGlowing())
-                        ////{
-                        ////    nextBall.setGlowing(true);
-                        ////    view.Platform_MakeSound(SOUND_GLOW, volumeAtDistance(nextBall.room));
-                        ////}
+                        // If entering the black castle in the gauntlet, glow.
+                        if ((gameMode == GAME_MODE_GAUNTLET) && (nextPort == gameBoard[Board.OBJECT_BLACK_PORT]) && !nextBall.isGlowing())
+                        {
+                            nextBall.setGlowing(true);
+                            view.Platform_MakeSound(SOUND.GLOW, volumeAtDistance(nextBall.room));
+                        }
                         ////// If entering the crystal castle, trigger the easter egg
                         ////if ((nextBall.room == CRYSTAL_FOYER) && (EasterEgg::shouldStartChallenge()))
                         ////{
@@ -1639,7 +1639,7 @@ namespace GameEngine
                             ////{
                             ////    EasterEgg::foundKey();
                             ////}
-                            
+
                             // Broadcast that we picked up an object
                             action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
                             sync.BroadcastAction(action);
@@ -1891,20 +1891,20 @@ namespace GameEngine
             int bottom = (ball.y - 10) & ~0x00000001; // Don't know why ball is drawn 2 pixels below y value
 
             // scan the data
-            for (int row = bottom + 7, ctr=0; row >= bottom; --row, ++ctr)
+            for (int row = bottom + 7, ctr = 0; row >= bottom; --row, ++ctr)
             {
                 byte rowByte = ball.gfxData[ctr];
-                for (int bit = 0; bit< 8; bit++)
+                for (int bit = 0; bit < 8; bit++)
                 {
                     // If there is a bit in the graphics matric at this row and bit, paint a pixel
                     if ((rowByte & (1 << (7 - bit))) > 0)
                     {
                         int x = left + bit;
-                        if (x<ADVENTURE_SCREEN_WIDTH)
+                        if (x < ADVENTURE_SCREEN_WIDTH)
                         {
                             view.Platform_PaintPixel(color.r, color.g, color.b, x, row, 1, 1);
-            }
-        }
+                        }
+                    }
                 }
             }
         }
@@ -1950,311 +1950,311 @@ namespace GameEngine
             }
         }
 
-bool CollisionCheckBallWithWalls(int room, int x, int y)
-{
-    bool hitWall = false;
+        bool CollisionCheckBallWithWalls(int room, int x, int y)
+        {
+            bool hitWall = false;
 
-    // The playfield is drawn partially in the overscan area, so shift that out here
-    y -= 30;
+            // The playfield is drawn partially in the overscan area, so shift that out here
+            y -= 30;
 
-    // get the playfield data
-    ROOM currentRoom = roomDefs[room];
-    byte[] roomData = currentRoom.graphicsData;
+            // get the playfield data
+            ROOM currentRoom = roomDefs[room];
+            byte[] roomData = currentRoom.graphicsData;
 
-    // get the playfield mirror flag
+            // get the playfield mirror flag
             bool mirror = (currentRoom.flags & ROOM.FLAG_MIRROR) > 0;
 
-    // mask values for playfield bits
-    byte[] shiftreg = 
-    {
+            // mask values for playfield bits
+            byte[] shiftreg =
+            {
         0x10,0x20,0x40,0x80,
         0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1,
         0x1,0x2,0x4,0x8,0x10,0x20,0x40,0x80
     };
 
-    // each cell is 8 x 32
-    int cell_width = 8;
-    int cell_height = 32;
+            // each cell is 8 x 32
+            int cell_width = 8;
+            int cell_height = 32;
 
-    if (((currentRoom.flags & ROOM.FLAG_LEFTTHINWALL) > 0) && ((x - (4 + 4)) < 0x0D * 2) && ((x + 4) > 0x0D * 2))
-    {
-        hitWall = true;
-    }
-    if (((currentRoom.flags & ROOM.FLAG_RIGHTTHINWALL) > 0) && ((x + 4) > 0x96 * 2) && ((x - (4 + 4) < 0x96 * 2)))
-    {
-        // If the dot is in this room, allow passage through the wall into the Easter Egg room
-        if (gameBoard[Board.OBJECT_DOT].room != room)
-            hitWall = true;
-    }
-
-    // Check each bit of the playfield data to see if they intersect the ball
-    for (int cy = 0; (cy <= 6) & !hitWall; cy++)
-    {
-        byte pf0 = roomData[(cy * 3) + 0];
-        byte pf1 = roomData[(cy * 3) + 1];
-        byte pf2 = roomData[(cy * 3) + 2];
-
-        int ypos = 6 - cy;
-
-        for (int cx = 0; cx < 20; cx++)
-        {
-            byte bit = 0;
-
-            if (cx < 4)
-                bit = (byte)(pf0 & shiftreg[cx]);
-            else if (cx < 12)
-                bit = (byte)(pf1 & shiftreg[cx]);
-            else
-                bit = (byte)(pf2 & shiftreg[cx]);
-
-            if (bit != 0)
+            if (((currentRoom.flags & ROOM.FLAG_LEFTTHINWALL) > 0) && ((x - (4 + 4)) < 0x0D * 2) && ((x + 4) > 0x0D * 2))
             {
-                if (Board.HitTestRects(x - 4, (y - 4), 8, 8, cx * cell_width, (ypos * cell_height), cell_width, cell_height))
-                {
+                hitWall = true;
+            }
+            if (((currentRoom.flags & ROOM.FLAG_RIGHTTHINWALL) > 0) && ((x + 4) > 0x96 * 2) && ((x - (4 + 4) < 0x96 * 2)))
+            {
+                // If the dot is in this room, allow passage through the wall into the Easter Egg room
+                if (gameBoard[Board.OBJECT_DOT].room != room)
                     hitWall = true;
-                    break;
-                }
-
-                if (mirror)
-                {
-                    if (Board.HitTestRects(x - 4, (y - 4), 8, 8, (cx + 20) * cell_width, (ypos * cell_height), cell_width, cell_height))
-                    {
-                        hitWall = true;
-                        break;
-                    }
-                }
-                else
-                {
-                    if (Board.HitTestRects(x - 4, (y - 4), 8, 8, ((40 - (cx + 1)) * cell_width), (ypos * cell_height), cell_width, cell_height))
-                    {
-                        hitWall = true;
-                        break;
-                    }
-                }
-
             }
 
-        }
-    }
-
-    return hitWall;
-}
-
-private bool CrossingBridge(int room, int x, int y, BALL ball)
-{
-    // Check going through the bridge
-    OBJECT bridge = gameBoard[Board.OBJECT_BRIDGE];
-    if ((bridge.room == room)
-        && (ball.linkedObject != Board.OBJECT_BRIDGE))
-    {
-        int xDiff = (x / 2) - bridge.x;
-        if ((xDiff >= 0x0A) && (xDiff <= 0x17))
-        {
-            int yDiff = bridge.y - (y / 2);
-
-            if ((yDiff >= -5) && (yDiff <= 0x15))
+            // Check each bit of the playfield data to see if they intersect the ball
+            for (int cy = 0; (cy <= 6) & !hitWall; cy++)
             {
-                return true;
+                byte pf0 = roomData[(cy * 3) + 0];
+                byte pf1 = roomData[(cy * 3) + 1];
+                byte pf2 = roomData[(cy * 3) + 2];
+
+                int ypos = 6 - cy;
+
+                for (int cx = 0; cx < 20; cx++)
+                {
+                    byte bit = 0;
+
+                    if (cx < 4)
+                        bit = (byte)(pf0 & shiftreg[cx]);
+                    else if (cx < 12)
+                        bit = (byte)(pf1 & shiftreg[cx]);
+                    else
+                        bit = (byte)(pf2 & shiftreg[cx]);
+
+                    if (bit != 0)
+                    {
+                        if (Board.HitTestRects(x - 4, (y - 4), 8, 8, cx * cell_width, (ypos * cell_height), cell_width, cell_height))
+                        {
+                            hitWall = true;
+                            break;
+                        }
+
+                        if (mirror)
+                        {
+                            if (Board.HitTestRects(x - 4, (y - 4), 8, 8, (cx + 20) * cell_width, (ypos * cell_height), cell_width, cell_height))
+                            {
+                                hitWall = true;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (Board.HitTestRects(x - 4, (y - 4), 8, 8, ((40 - (cx + 1)) * cell_width), (ypos * cell_height), cell_width, cell_height))
+                            {
+                                hitWall = true;
+                                break;
+                            }
+                        }
+
+                    }
+
+                }
             }
+
+            return hitWall;
         }
-    }
-    return false;
-}
 
-/*
- * Checks if ball is colliding with any other object.  Returns first object it finds or OBJECT_NONE
- * if no collisions.
- */
-private int CollisionCheckBallWithAllObjects(BALL ball)
-{
-    Board.ObjIter iter = gameBoard.getObjects();
-    return CollisionCheckBallWithObjects(ball, iter);
-}
-
-/*
- * Checks if ball is colliding with any of the objects in the iterable collection.
- * Returns first object it finds or OBJECT_NONE if no collisions.
- */
-private int CollisionCheckBallWithObjects(BALL ball, Board.ObjIter iter)
-{
-    // Go through all the objects
-    while (iter.hasNext())
-    {
-        // If this object is in the current room and can be picked up, check it against the ball
-        OBJECT objct = iter.next();
-        if (CollisionCheckBallWithObject(ball, objct))
+        private bool CrossingBridge(int room, int x, int y, BALL ball)
         {
-            return objct.getPKey();
+            // Check going through the bridge
+            OBJECT bridge = gameBoard[Board.OBJECT_BRIDGE];
+            if ((bridge.room == room)
+                && (ball.linkedObject != Board.OBJECT_BRIDGE))
+            {
+                int xDiff = (x / 2) - bridge.x;
+                if ((xDiff >= 0x0A) && (xDiff <= 0x17))
+                {
+                    int yDiff = bridge.y - (y / 2);
+
+                    if ((yDiff >= -5) && (yDiff <= 0x15))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
-    }
 
-    return Board.OBJECT_NONE;
-}
+        /*
+         * Checks if ball is colliding with any other object.  Returns first object it finds or OBJECT_NONE
+         * if no collisions.
+         */
+        private int CollisionCheckBallWithAllObjects(BALL ball)
+        {
+            Board.ObjIter iter = gameBoard.getObjects();
+            return CollisionCheckBallWithObjects(ball, iter);
+        }
 
-/**
- * Checks if ball is colliding with object.
- */
-private bool CollisionCheckBallWithObject(BALL ball, OBJECT objct)
-{
-    bool collision = (objct.displayed &&
-                      objct.isTangibleTo(thisPlayer) &&
-                      (ball.room == objct.room) &&
-                      (CollisionCheckObject(objct, ball.x - 4, (ball.y - 1), 8, 8)) ? true : false);
-    return collision;
-}
+        /*
+         * Checks if ball is colliding with any of the objects in the iterable collection.
+         * Returns first object it finds or OBJECT_NONE if no collisions.
+         */
+        private int CollisionCheckBallWithObjects(BALL ball, Board.ObjIter iter)
+        {
+            // Go through all the objects
+            while (iter.hasNext())
+            {
+                // If this object is in the current room and can be picked up, check it against the ball
+                OBJECT objct = iter.next();
+                if (CollisionCheckBallWithObject(ball, objct))
+                {
+                    return objct.getPKey();
+                }
+            }
 
-// Checks an object for collision against the specified rectangle
-// On the 2600 this is done in hardware by the Player/Missile collision registers
-private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int height)
-{
-    return gameBoard.CollisionCheckObject(objct, x, y, width, height);
-}
+            return Board.OBJECT_NONE;
+        }
 
+        /**
+         * Checks if ball is colliding with object.
+         */
+        private bool CollisionCheckBallWithObject(BALL ball, OBJECT objct)
+        {
+            bool collision = (objct.displayed &&
+                              objct.isTangibleTo(thisPlayer) &&
+                              (ball.room == objct.room) &&
+                              (CollisionCheckObject(objct, ball.x - 4, (ball.y - 1), 8, 8)) ? true : false);
+            return collision;
+        }
 
-/////**
-//// * If the player has become disconnect them, remove them from the game.
-//// */
-////void dropPlayer(int player)
-////{
-////    // Mostly just move the player to the 0 room, but drop any object they
-////    // are carrying and free any dragon they have been eaten by.
-////    if (player != thisPlayer)
-////    {
-////        BALL* toDrop = gameBoard.getPlayer(player);
-
-////        // Drop anything player is carrying
-////        toDrop.linkedObject = OBJECT_NONE;
-
-////        // Free the dragon if it has eaten the player
-////        for (int ctr = 0; ctr < numDragons; ++ctr)
-////        {
-////            Dragon* dragon = dragons[ctr];
-////            if (dragon.eaten == toDrop)
-////            {
-////                dragon.state = Dragon::STALKING;
-////                dragon.eaten = NULL;
-////            }
-////        }
-
-////        // Move the player to the 0 room.
-////        toDrop.room = 0;
-////    }
-////}
-
-/////**
-//// * Sends a message that a player has gone offlline or come back online.
-//// * playerDropped - the player that dropped off, 0 means no one dropped off.  -1 means two players dropped off.
-//// * playerRejoined - the player that rejoined, 0 means no one rejoined.  -1 means two players rejoined.
-//// */
-////void warnOfDropoffRejoin(int playerDroppedOff, int playerRejoined)
-////{
-////    if ((playerRejoined != 0) || (playerDroppedOff != 0))
-////    {
-////        char firstMessage[1000];
-////        char message[2000];
-////        if (playerRejoined == 0)
-////        {
-////            firstMessage[0] = '\0';
-////        }
-////        else
-////        {
-////            if (playerRejoined < 0)
-////            {
-////                sprintf(firstMessage, "All other players have rejoined the game.\n");
-////            }
-////            else
-////            {
-////                sprintf(firstMessage, "Player %d has rejoined the game.\n", playerRejoined);
-////            }
-////        }
-////        if (playerDroppedOff != 0)
-////        {
-////            if (playerDroppedOff < 0)
-////            {
-////                sprintf(message, "%sAll other players have disconnected.\n", firstMessage);
-////            }
-////            else
-////            {
-////                sprintf(message, "%sPlayer %d has disconnected.\n", firstMessage, playerDroppedOff);
-////            }
-////            Platform_DisplayStatus(message, 5);
-////        }
-////        else
-////        {
-////            Platform_DisplayStatus(firstMessage, 5);
-////        }
-////    }
-////}
-
-/////**
-//// * Report whether  we've gotten messages from other players recently.
-//// * Also send a ping to other players to make sure they see activity from us.
-//// */
-////void checkPlayers()
-////{
-////    // We check for players every 15 seconds (actually every 5 seconds/300 turns we check to see if its
-////    // been 15 seconds) if we've received anything from the other players.  If they've missed 3 15 second marks
-////    // in a row we assume they have disconnected and remove them from the game.
-////    // We also send out a ping every 15 seconds to others so we know they've heard from us.
-////    const int TURNS_BETWEEN_TIME_CHECKS = 300; // About 5 seconds.
-////    const int MILLIS_BETWEEN_MESSAGE_CHECKS = 15000; // 15 seconds
-////    const int MAX_MISSED_CHECKS = 3;
-
-////    static int turnsSinceTimeCheck = 0;
-////    static int long timeSinceLastMessageCheck = Sys::runTime();
-////    static int missedChecks[3] = { 0, 0, 0 };
-
-////    ++turnsSinceTimeCheck;
-////    if (turnsSinceTimeCheck >= TURNS_BETWEEN_TIME_CHECKS)
-////    {
-
-////        // Check the time, and see if it's time for a message check.
-////        long currentTime = Sys::runTime();
-////        if (currentTime - timeSinceLastMessageCheck > MILLIS_BETWEEN_MESSAGE_CHECKS)
-////        {
-////            int offline = 0;
-////            int online = 0;
-////            for (int ctr = 0; ctr < numPlayers; ++ctr)
-////            {
-////                if (ctr != thisPlayer)
-////                {
-////                    if (sync.getMessagesReceived(ctr) == 0)
-////                    {
-////                        ++missedChecks[ctr];
-////                        if (missedChecks[ctr] == MAX_MISSED_CHECKS)
-////                        {
-////                            dropPlayer(ctr);
-////                            offline = (offline == 0 ? ctr + 1 : -1);
-////                        }
-////                    }
-////                    else
-////                    {
-////                        if (missedChecks[ctr] >= MAX_MISSED_CHECKS)
-////                        {
-////                            online = (online == 0 ? ctr + 1 : -1);
-////                        }
-////                        missedChecks[ctr] = 0;
-////                    }
-////                }
-////            }
-////            warnOfDropoffRejoin(offline, online);
-////            PingAction* action = new PingAction();
-////            sync.BroadcastAction(action);
-////            sync.resetMessagesReceived();
-////            timeSinceLastMessageCheck = currentTime;
-////        }
-
-////        turnsSinceTimeCheck = 0;
-////    }
-////}
+        // Checks an object for collision against the specified rectangle
+        // On the 2600 this is done in hardware by the Player/Missile collision registers
+        private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int height)
+        {
+            return gameBoard.CollisionCheckObject(objct, x, y, width, height);
+        }
 
 
+        /////**
+        //// * If the player has become disconnect them, remove them from the game.
+        //// */
+        ////void dropPlayer(int player)
+        ////{
+        ////    // Mostly just move the player to the 0 room, but drop any object they
+        ////    // are carrying and free any dragon they have been eaten by.
+        ////    if (player != thisPlayer)
+        ////    {
+        ////        BALL* toDrop = gameBoard.getPlayer(player);
 
-        //////
-        ////// Object definitions - 1st byte is the height
-        //////
+        ////        // Drop anything player is carrying
+        ////        toDrop.linkedObject = OBJECT_NONE;
 
-        private static byte[][] objectGfxNum = 
+        ////        // Free the dragon if it has eaten the player
+        ////        for (int ctr = 0; ctr < numDragons; ++ctr)
+        ////        {
+        ////            Dragon* dragon = dragons[ctr];
+        ////            if (dragon.eaten == toDrop)
+        ////            {
+        ////                dragon.state = Dragon::STALKING;
+        ////                dragon.eaten = NULL;
+        ////            }
+        ////        }
+
+        ////        // Move the player to the 0 room.
+        ////        toDrop.room = 0;
+        ////    }
+        ////}
+
+        /////**
+        //// * Sends a message that a player has gone offlline or come back online.
+        //// * playerDropped - the player that dropped off, 0 means no one dropped off.  -1 means two players dropped off.
+        //// * playerRejoined - the player that rejoined, 0 means no one rejoined.  -1 means two players rejoined.
+        //// */
+        ////void warnOfDropoffRejoin(int playerDroppedOff, int playerRejoined)
+        ////{
+        ////    if ((playerRejoined != 0) || (playerDroppedOff != 0))
+        ////    {
+        ////        char firstMessage[1000];
+        ////        char message[2000];
+        ////        if (playerRejoined == 0)
+        ////        {
+        ////            firstMessage[0] = '\0';
+        ////        }
+        ////        else
+        ////        {
+        ////            if (playerRejoined < 0)
+        ////            {
+        ////                sprintf(firstMessage, "All other players have rejoined the game.\n");
+        ////            }
+        ////            else
+        ////            {
+        ////                sprintf(firstMessage, "Player %d has rejoined the game.\n", playerRejoined);
+        ////            }
+        ////        }
+        ////        if (playerDroppedOff != 0)
+        ////        {
+        ////            if (playerDroppedOff < 0)
+        ////            {
+        ////                sprintf(message, "%sAll other players have disconnected.\n", firstMessage);
+        ////            }
+        ////            else
+        ////            {
+        ////                sprintf(message, "%sPlayer %d has disconnected.\n", firstMessage, playerDroppedOff);
+        ////            }
+        ////            Platform_DisplayStatus(message, 5);
+        ////        }
+        ////        else
+        ////        {
+        ////            Platform_DisplayStatus(firstMessage, 5);
+        ////        }
+        ////    }
+        ////}
+
+        /////**
+        //// * Report whether  we've gotten messages from other players recently.
+        //// * Also send a ping to other players to make sure they see activity from us.
+        //// */
+        ////void checkPlayers()
+        ////{
+        ////    // We check for players every 15 seconds (actually every 5 seconds/300 turns we check to see if its
+        ////    // been 15 seconds) if we've received anything from the other players.  If they've missed 3 15 second marks
+        ////    // in a row we assume they have disconnected and remove them from the game.
+        ////    // We also send out a ping every 15 seconds to others so we know they've heard from us.
+        ////    const int TURNS_BETWEEN_TIME_CHECKS = 300; // About 5 seconds.
+        ////    const int MILLIS_BETWEEN_MESSAGE_CHECKS = 15000; // 15 seconds
+        ////    const int MAX_MISSED_CHECKS = 3;
+
+        ////    static int turnsSinceTimeCheck = 0;
+        ////    static int long timeSinceLastMessageCheck = Sys::runTime();
+        ////    static int missedChecks[3] = { 0, 0, 0 };
+
+        ////    ++turnsSinceTimeCheck;
+        ////    if (turnsSinceTimeCheck >= TURNS_BETWEEN_TIME_CHECKS)
+        ////    {
+
+        ////        // Check the time, and see if it's time for a message check.
+        ////        long currentTime = Sys::runTime();
+        ////        if (currentTime - timeSinceLastMessageCheck > MILLIS_BETWEEN_MESSAGE_CHECKS)
+        ////        {
+        ////            int offline = 0;
+        ////            int online = 0;
+        ////            for (int ctr = 0; ctr < numPlayers; ++ctr)
+        ////            {
+        ////                if (ctr != thisPlayer)
+        ////                {
+        ////                    if (sync.getMessagesReceived(ctr) == 0)
+        ////                    {
+        ////                        ++missedChecks[ctr];
+        ////                        if (missedChecks[ctr] == MAX_MISSED_CHECKS)
+        ////                        {
+        ////                            dropPlayer(ctr);
+        ////                            offline = (offline == 0 ? ctr + 1 : -1);
+        ////                        }
+        ////                    }
+        ////                    else
+        ////                    {
+        ////                        if (missedChecks[ctr] >= MAX_MISSED_CHECKS)
+        ////                        {
+        ////                            online = (online == 0 ? ctr + 1 : -1);
+        ////                        }
+        ////                        missedChecks[ctr] = 0;
+        ////                    }
+        ////                }
+        ////            }
+        ////            warnOfDropoffRejoin(offline, online);
+        ////            PingAction* action = new PingAction();
+        ////            sync.BroadcastAction(action);
+        ////            sync.resetMessagesReceived();
+        ////            timeSinceLastMessageCheck = currentTime;
+        ////        }
+
+        ////        turnsSinceTimeCheck = 0;
+        ////    }
+        ////}
+
+
+
+        //
+        // Object definitions
+        //
+
+        private static byte[][] objectGfxNum =
         {
             new byte[] {
                 // Object #5 State #1 Graphic :'1'
@@ -2286,13 +2286,13 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         };
 
         // Number states
-        private static byte[] numberStates = 
+        private static byte[] numberStates =
         {
             0,1,2
         };
 
         // Object #0B : State FF : Graphic
-        private static byte[][] objectGfxKey = 
+        private static byte[][] objectGfxKey =
         { new byte[] {
                 0x07,                  //      XXX
                 0xFD,                  // XXXXXX X
@@ -2301,7 +2301,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
 
 
         // Object #1 : Graphic
-        private static byte[][] objectGfxSurround = 
+        private static byte[][] objectGfxSurround =
         { new byte[] {
             0xFF,                  // XXXXXXXX                                                                  
             0xFF,                  // XXXXXXXX                                                                  
@@ -2338,7 +2338,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         } };
 
         // Object #0A : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxBridge = 
+        private static byte[][] objectGfxBridge =
         { new byte[] {
             0xC3,                  // XX    XX                                                                  
             0xC3,                  // XX    XX                                                                  
@@ -2377,13 +2377,13 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         } };
 
         // Object #0F : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxDot = 
+        private static byte[][] objectGfxDot =
         { new byte[] {
             0x80                   // X                                                                         
         } };
 
         // Object #4 : State FF : Graphic                                                                                    
-        private static byte[][] objectGfxAuthor = 
+        private static byte[][] objectGfxAuthor =
         { new byte[] {
             0xF0,                  // XXXX                                                                      
             0x80,                  // X                                                                         
@@ -2483,7 +2483,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         } };
 
         // Object #10 : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxChallise = 
+        private static byte[][] objectGfxChallise =
         { new byte[] {
             0x81,                  // X      X                                                                  
             0x81,                  // X      X                                                                  
@@ -2497,7 +2497,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         } };
 
         // Object #X : State FF : Graphic
-        private static byte[][] objectGfxEasterEgg = 
+        private static byte[][] objectGfxEasterEgg =
         { new byte[] {
             0x18,                  //    XX
             0x3C,                  //   XXXX
@@ -2526,7 +2526,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
 
 
         // Object #11 : State FF : Graphic                                                                                   
-        private static byte[][] objectGfxMagnet = 
+        private static byte[][] objectGfxMagnet =
         { new byte[] {
             0x3C,                  //   XXXX                                                                    
             0x7E,                  //  XXXXXX                                                                   
@@ -2542,7 +2542,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
         //
         // Object locations (room and coordinate) for game 01
         //        - object, room, x, y, state, movement(x/y)
-        private readonly int[,] game1Objects = 
+        private readonly int[,] game1Objects =
         {
             {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
             {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
@@ -2569,7 +2569,7 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
 
         // Object locations (room and coordinate) for Games 02 and 03
         //        - object, room, x, y, state, movement(x/y)
-        private readonly int[,] game2Objects = 
+        private readonly int[,] game2Objects =
         {
             {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
             {Board.OBJECT_COPPER_PORT, Map.COPPER_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 4
@@ -2607,19 +2607,18 @@ private bool CollisionCheckObject(OBJECT objct, int x, int y, int width, int hei
             {Board.OBJECT_MAGNET, Map.SOUTHWEST_ROOM, 0x80, 0x20, 0x00, 0x00, 0x00}, // Magnet
         };
 
-////// Object locations (room and coordinate) for game 01
-//////        - object, room, x, y, state, movement(x/y)
-////static const byte gameGauntletObjects[] =
-////{
-////    OBJECT_YELLOW_PORT, GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 1
-////    OBJECT_BLACK_PORT, BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00, // Port 3
-////    OBJECT_NAME, ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00, // Robinett message
-////    OBJECT_NUMBER, NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00, // Starting number
-////    OBJECT_REDDRAGON, BLUE_MAZE_1, 0x50, 0x20, 0x00, 0x00, 0x00, // Red Dragon
-////    OBJECT_YELLOWDRAGON, MAIN_HALL_CENTER, 0x50, 0x20, 0x00, 0x00, 0x00, // Yellow Dragon
-////    OBJECT_GREENDRAGON, MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00, // Green Dragon
-////    0xff,0,0,0,0,0,0
-////};
+        // Object locations (room and coordinate) for game 01
+        //        - object, room, x, y, state, movement(x/y)
+        private readonly int[,] gameGauntletObjects =
+        {
+            {Board.OBJECT_YELLOW_PORT, Map.GOLD_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 1
+            {Board.OBJECT_BLACK_PORT, Map.BLACK_CASTLE, 0x4d, 0x31, 0x0C, 0x00, 0x00}, // Port 3
+            {Board.OBJECT_NAME, Map.ROBINETT_ROOM, 0x50, 0x69, 0x00, 0x00, 0x00}, // Robinett message
+            {Board.OBJECT_NUMBER, Map.NUMBER_ROOM, 0x50, 0x40, 0x00, 0x00, 0x00}, // Starting number
+            {Board.OBJECT_REDDRAGON, Map.BLUE_MAZE_1, 0x50, 0x20, 0x00, 0x00, 0x00}, // Red Dragon
+            {Board.OBJECT_YELLOWDRAGON, Map.MAIN_HALL_CENTER, 0x50, 0x20, 0x00, 0x00, 0x00}, // Yellow Dragon
+            {Board.OBJECT_GREENDRAGON, Map.MAIN_HALL_LEFT, 0x50, 0x20, 0x00, 0x00, 0x00} // Green Dragon
+        };
 
 
         // Magnet Object Matrix
