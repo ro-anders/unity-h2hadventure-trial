@@ -23,6 +23,7 @@ public class AdventureAudio : MonoBehaviour {
             default:
                 break;
         }
+        speaker.volume = volume / MAX.VOLUME;
         speaker.Play();
 	}
 }
