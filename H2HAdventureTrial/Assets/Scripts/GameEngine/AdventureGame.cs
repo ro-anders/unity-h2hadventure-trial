@@ -20,7 +20,6 @@ namespace GameEngine
 
     public class AdventureGame
     {
-        public const int GAME_MODE_SCRIPTING = -1;
         public const int GAME_MODE_1 = 0;
         public const int GAME_MODE_2 = 1;
         public const int GAME_MODE_3 = 2;
@@ -61,7 +60,7 @@ namespace GameEngine
         private int flashColorLum = 0;
         private int displayListIndex = 0;
         private bool joyLeft, joyUp, joyRight, joyDown, joyFire;
-        private bool joystickDisabled = false;
+        private bool joystickDisabled = false; // No longer ever set, but left in in case we come up with a need
         private bool switchReset = false;
 
         private Sync sync;
@@ -81,8 +80,8 @@ namespace GameEngine
         private Portcullis[] ports;
 
 
-        /** There are five game modes, the original three (but zero justified so game mode 0 means original level 1) and
-         * a new fourth, gameMode 3, which I call The Gauntlet. The fifth is used for generating videos and plays a preplanned script. */
+        /** There are four game modes, the original three (but zero justified so game mode 0 means original level 1) and
+         * a new fourth, gameMode 3, which I call The Gauntlet. */
         private int gameMode = 0;
 
         private ROOM[] roomDefs;
@@ -103,13 +102,10 @@ namespace GameEngine
             numPlayers = inNumPlayers;
             thisPlayer = inThisPlayer;
             gameMode = inGameNum;
-            joystickDisabled = (gameMode == GAME_MODE_SCRIPTING);
             timeToStartGame = 60 * 3;
 
-            // The map for game 3 is the same as 2 and the map for scripting is hard-coded here
-            // so it could be easily changed.
-            gameMapLayout = (gameMode == Adv.GAME_MODE_SCRIPTING ? Adv.GAME_MODE_2 :
-                             (gameMode == Adv.GAME_MODE_3 ? Adv.GAME_MODE_2 : gameMode));
+            // The map for game 3 is the same as 2.
+            gameMapLayout = (gameMode == Adv.GAME_MODE_3 ? Adv.GAME_MODE_2 : gameMode);
             gameMap = new Map(numPlayers, gameMapLayout);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap, view);
@@ -126,7 +122,6 @@ namespace GameEngine
                                              (leftDifficultyOn ? Dragon.Difficulty.HARD : Dragon.Difficulty.MODERATE));
             Dragon.setRunFromSword(rightDifficultyOn);
 
-            if (gameMode == GAME_MODE_SCRIPTING) difficulty = Dragon.Difficulty.EASY;
             Dragon.setDifficulty(difficulty);
             dragons = new Dragon[numDragons];
             dragons[0] = new Dragon("grindle", 0, COLOR.LIMEGREEN, 2, greenDragonMatrix);
@@ -209,9 +204,7 @@ namespace GameEngine
 
             // Setup the transport
             transport = inTransport;
-            ////sync = (gameMode == GAME_MODE_SCRIPTING ? new ScriptedSync(numPlayers, thisPlayer) :
-            ////                                          new Sync(numPlayers, thisPlayer, transport));
-            sync = new Sync(numPlayers, thisPlayer, transport); //// TEMP
+            sync = new Sync(numPlayers, thisPlayer, transport);
 
             // Need to have the transport setup before we setup the objects,
             // because we may be broadcasting randomized locations to other machines
@@ -1086,7 +1079,6 @@ namespace GameEngine
             // Read the joystick and translate into a velocity
             int prevVelX = objectBall.velx;
             int prevVelY = objectBall.vely;
-            // If we are scripting, we don't ever look at the joystick or change the velocity here.
             if (!joystickDisabled)
             {
                 int newVelY = 0;
@@ -1281,8 +1273,8 @@ namespace GameEngine
         {
             for (int i = 0; i < numPlayers; ++i)
             {
-                // Unless we are scripting we ignore messages to move our own player
-                if ((gameMode == GAME_MODE_SCRIPTING) || (i != thisPlayer))
+                // We ignore messages to move our own player
+                if (i != thisPlayer)
                 {
                     BALL nextPayer = gameBoard.getPlayer(i);
                     PlayerMoveAction movement = sync.GetLatestBallSync(i);

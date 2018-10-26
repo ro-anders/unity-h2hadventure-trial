@@ -11,7 +11,6 @@ namespace GameEngine
         public const int ADVENTURE_MAX_NAME_LENGTH = 40;
 
         // The game modes
-        public const int GAME_MODE_SCRIPTING = -1;
         public const int GAME_MODE_1 = 0;
         public const int GAME_MODE_2 = 1;
         public const int GAME_MODE_3 = 2;
