@@ -315,13 +315,13 @@ namespace GameEngine
         }
 
         // Close exit to crystal castle to keep everyone there until the race starts
-        void easterEggLayout1()
+        public void easterEggLayout1()
         {
             roomDefs[CRYSTAL_FOYER].graphicsData = roomGfxClosedRoom;
         }
 
         // Setup map for Easter Egg gauntlet.
-        void easterEggLayout2()
+        public void easterEggLayout2()
         {
             // Block of Jade Castle
             roomDefs[BLUE_MAZE_2].roomUp = MAIN_HALL_RIGHT;

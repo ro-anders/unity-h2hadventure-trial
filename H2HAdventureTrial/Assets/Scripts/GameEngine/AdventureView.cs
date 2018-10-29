@@ -12,5 +12,8 @@ namespace GameEngine
 
         void Platform_MakeSound(SOUND sound, float volume);
 
+        void Platform_ReportToServer(string message);
+
+        void Platform_DisplayStatus(string message, int durationSecs);
     }
 }

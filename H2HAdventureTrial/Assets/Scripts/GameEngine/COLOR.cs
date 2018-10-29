@@ -67,6 +67,11 @@ namespace GameEngine
             return colorTable[color];
         }
 
+        public static string toString(int color) {
+            _COLOR enumColor = (_COLOR)color;
+            return enumColor.ToString();
+        }
+
         private static readonly COLOR[] colorTable = new COLOR[] {
             new COLOR(0x00,0x00,0x00), // black (0x0)
             new COLOR(0xcd,0xcd,0xcd), // light gray (0x08)

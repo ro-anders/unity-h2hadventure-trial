@@ -35,7 +35,7 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
         localPlayerSlot = inLocalPlayerSlot;
         GameObject quadGameObject = GameObject.Find("Quad");
         Transport xport = quadGameObject.GetComponent<UnityTransport>();
-        gameEngine = new AdventureGame(this, 2, localPlayerSlot, xport, 0, false, false);
+        gameEngine = new AdventureGame(this, 2, localPlayerSlot, xport, 1, false, false);
     }
 
     public void AdventureUpdate() {
@@ -70,5 +70,15 @@ public class UnityAdventureView: MonoBehaviour, AdventureView
     public void Platform_MakeSound(SOUND sound, float volume) {
         adv_audio.play(sound, volume);
     }
+
+    public void Platform_ReportToServer(string message) {
+        Debug.Log("Message to server: " + message);
+    }
+
+
+    public void Platform_DisplayStatus(string message, int durationSecs) {
+        Debug.Log("Message for player: " + message);
+    }
+
 
 }

@@ -368,7 +368,7 @@ namespace GameEngine
 
         public override int[] serialize()
         {
-            int[] serialized = { (int)CODE, pickupObject, pickupX, pickupY, dropObject, dropRoom, dropX, dropY };
+            int[] serialized = { (int)CODE, sender, pickupObject, pickupX, pickupY, dropObject, dropRoom, dropX, dropY };
             return serialized;
         }
 

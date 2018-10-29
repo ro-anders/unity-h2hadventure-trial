@@ -69,7 +69,7 @@ namespace GameEngine
         /**
          * Update its internal state for this turn.  This involves lifting the gate if it is currently opening, etc...
          */
-        public void moveOneTurn()
+        public virtual void moveOneTurn()
         {
             if (state == OPEN_STATE)
             {

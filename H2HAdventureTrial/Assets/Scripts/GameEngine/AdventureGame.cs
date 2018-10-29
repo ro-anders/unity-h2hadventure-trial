@@ -10,10 +10,12 @@
 // Any trademarks referenced herein are the property of their respective holders.
 // 
 // Original game written by Warren Robinett. Warren, you rock.
+#define DEBUG_EASTEREGG
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
+
 
 namespace GameEngine
 {
@@ -134,12 +136,12 @@ namespace GameEngine
             OBJECT jadeKey = new OBJECT("jade key", objectGfxKey, new byte[0], 0, COLOR.JADE, OBJECT.RandomizedLocations.OUT_IN_OPEN);
             OBJECT whiteKey = new OBJECT("white key", objectGfxKey, new byte[0], 0, COLOR.WHITE);
             OBJECT blackKey = new OBJECT("black key", objectGfxKey, new byte[0], 0, COLOR.BLACK);
-            ////            OBJECT** crystalKeys = new OBJECT*[3];
-            ////            for (int ctr = 0; ctr < 3; ++ctr)
-            ////            {
-            ////                crystalKeys[ctr] = new OBJECT("crystal key", objectGfxKey, 0, 0, COLOR_CRYSTAL, OBJECT::FIXED_LOCATION);
-            ////                crystalKeys[ctr].setPrivateToPlayer(ctr);
-            ////            }
+            OBJECT[] crystalKeys = new OBJECT[3];
+            for (int ctr = 0; ctr < 3; ++ctr)
+            {
+                crystalKeys[ctr] = new OBJECT("crystal key", objectGfxKey, new byte[0], 0, COLOR.CRYSTAL, OBJECT.RandomizedLocations.FIXED_LOCATION);
+                crystalKeys[ctr].setPrivateToPlayer(ctr);
+            }
 
             ports = new Portcullis[6];
             ports[0] = new Portcullis("gold gate", Map.GOLD_CASTLE, gameMap.getRoom(Map.GOLD_FOYER), goldKey); // Gold
@@ -149,8 +151,7 @@ namespace GameEngine
             addAllRoomsToPort(ports[2], Map.BLACK_MAZE_1, Map.BLACK_MAZE_ENTRY);
             ports[2].addRoom(gameMap.getRoom(Map.BLACK_FOYER));
             ports[2].addRoom(gameMap.getRoom(Map.BLACK_INNERMOST_ROOM));
-            ports[3] = new Portcullis("crystal gate", Map.CRYSTAL_CASTLE, gameMap.getRoom(Map.CRYSTAL_FOYER), goldKey); //// TEMP
-            ////ports[3] = new CrystalPortcullis(gameMap.getRoom(Map.CRYSTAL_FOYER), crystalKeys);
+            ports[3] = new CrystalPortcullis(gameMap.getRoom(Map.CRYSTAL_FOYER), crystalKeys);
             ports[4] = new Portcullis("copper gate", Map.COPPER_CASTLE, gameMap.getRoom(Map.COPPER_FOYER), copperKey);
             ports[5] = new Portcullis("jade gate", Map.JADE_CASTLE, gameMap.getRoom(Map.JADE_FOYER), jadeKey);
             gameMap.addCastles(ports);
@@ -180,14 +181,14 @@ namespace GameEngine
             gameBoard.addObject(Board.OBJECT_JADEKEY, jadeKey);
             gameBoard.addObject(Board.OBJECT_WHITEKEY, whiteKey);
             gameBoard.addObject(Board.OBJECT_BLACKKEY, blackKey);
-            ////            gameBoard.addObject(OBJECT_CRYSTALKEY1, crystalKeys[0]);
-            ////            gameBoard.addObject(OBJECT_CRYSTALKEY2, crystalKeys[1]);
-            ////            gameBoard.addObject(OBJECT_CRYSTALKEY3, crystalKeys[2]);
+            gameBoard.addObject(Board.OBJECT_CRYSTALKEY1, crystalKeys[0]);
+            gameBoard.addObject(Board.OBJECT_CRYSTALKEY2, crystalKeys[1]);
+            gameBoard.addObject(Board.OBJECT_CRYSTALKEY3, crystalKeys[2]);
             gameBoard.addObject(Board.OBJECT_BAT, bat);
             gameBoard.addObject(Board.OBJECT_DOT, new OBJECT("dot", objectGfxDot, new byte[0], 0, COLOR.LTGRAY, OBJECT.RandomizedLocations.FIXED_LOCATION));
             gameBoard.addObject(Board.OBJECT_CHALISE, new OBJECT("chalise", objectGfxChallise, new byte[0], 0, COLOR.FLASH));
-            ////            gameBoard.addObject(OBJECT_EASTEREGG, new OBJECT("easteregg", objectGfxEasterEgg, 0, 0, COLOR_FLASH,
-            ////                                                           OBJECT::OPEN_OR_IN_CASTLE, 0x03));
+            gameBoard.addObject(Board.OBJECT_EASTEREGG, new OBJECT("easteregg", objectGfxEasterEgg, new byte[0], 0, COLOR.FLASH,
+                                                             OBJECT.RandomizedLocations.OPEN_OR_IN_CASTLE, 0x03));
             gameBoard.addObject(Board.OBJECT_MAGNET, new OBJECT("magnet", objectGfxMagnet, new byte[0], 0, COLOR.BLACK));
 
             // Setup the players
@@ -528,18 +529,14 @@ namespace GameEngine
             ////            // read the console switches every frame
             bool reset = false;
             view.Platform_ReadConsoleSwitches(ref reset);
-            ////            if (Robot::isOn())
-            ////            {
-            ////                Robot::ControlConsoleSwitches(&reset, dragons, numDragons, objectBall);
-            ////            }
 
-            ////            // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
-            ////            // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
-            ////            if (joystickDisabled && switchReset && !reset)
-            ////            {
-            ////                joystickDisabled = false;
-            ////                switchReset = false;
-            ////            }
+            // If joystick is disabled and we hit the reset switch we don't treat it as a reset but as
+            // a enable the joystick.  The next time you hit the reset switch it will work as a reset.
+            if (joystickDisabled && switchReset && !reset)
+            {
+                joystickDisabled = false;
+                switchReset = false;
+            }
 
             // Reset switch
             ////if ((gameState != GAMESTATE_WIN) && switchReset && !reset && (EasterEgg::getEggState() != EasterEgg::EGG_STATE_DEBRIEF))
@@ -602,10 +599,6 @@ namespace GameEngine
                     ////                    {
                     // Read joystick
                     view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
-                    ////                        if (Robot::isOn())
-                    ////                        {
-                    ////                            Robot::ControlJoystick(&joyLeft, &joyUp, &joyRight, &joyDown, &joyFire);
-                    ////                        }
 
                     ////                        if (EasterEgg::shouldStartGauntlet(sync.getFrameNumber()))
                     ////                        {
@@ -2552,8 +2545,7 @@ namespace GameEngine
             {Board.OBJECT_JADEKEY, Map.JADE_CASTLE, 0x20, 0x41, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_BLACKKEY, Map.SOUTHEAST_ROOM, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
             {Board.OBJECT_CHALISE, Map.BLACK_INNERMOST_ROOM, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
-//CHANGE            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
-            {Board.OBJECT_MAGNET, Map.MAIN_HALL_CENTER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
+            {Board.OBJECT_MAGNET, Map.BLACK_FOYER, 0x80, 0x20, 0x00, 0x00, 0x00} // Magnet
         };
 
 
@@ -2574,27 +2566,33 @@ namespace GameEngine
             {Board.OBJECT_REDDRAGON, Map.BLACK_MAZE_2, 0x50, 0x20, 0x00, 3, 3}, // Red Dragon
             {Board.OBJECT_YELLOWDRAGON, Map.RED_MAZE_4, 0x50, 0x20, 0x00, 3, 3}, // Yellow Dragon
             // Commented out sections are for easy testing of Easter Egg
-            //{Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x50, 0x20, 0x00, 3, 3}, // Green Dragon
+            #if DEBUG_EASTEREGG
+            {Board.OBJECT_GREENDRAGON, Map.NUMBER_ROOM, 0x50, 0x20, 0x00, 3, 3}, // Green Dragon
+            #else
             {Board.OBJECT_GREENDRAGON, Map.BLUE_MAZE_3, 0x50, 0x20, 0x00, 3, 3}, // Green Dragon
+            #endif
             {Board.OBJECT_SWORD, Map.GOLD_CASTLE, 0x20, 0x20, 0x00, 0x00, 0x00}, // Sword
-            //{Board.OBJECT_BRIDGE, Map.MAIN_HALL_RIGHT, 0x40, 0x40, 0x00, 0x00, 0x00}, // Bridge
-            //{Board.OBJECT_YELLOWKEY, Map.MAIN_HALL_RIGHT, 0x20, 0x40, 0x00, 0x00, 0x00}, // Yellow Key
-            //{Board.OBJECT_COPPERKEY, Map.MAIN_HALL_RIGHT, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Copper Key
+            #if DEBUG_EASTEREGG
+            {Board.OBJECT_BRIDGE, Map.MAIN_HALL_RIGHT, 0x40, 0x40, 0x00, 0x00, 0x00}, // Bridge
+            {Board.OBJECT_YELLOWKEY, Map.MAIN_HALL_RIGHT, 0x20, 0x40, 0x00, 0x00, 0x00}, // Yellow Key
+            {Board.OBJECT_COPPERKEY, Map.MAIN_HALL_RIGHT, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Copper Key
+            #else
             {Board.OBJECT_BRIDGE, Map.WHITE_MAZE_3, 0x40, 0x40, 0x00, 0x00, 0x00}, // Bridge
             {Board.OBJECT_YELLOWKEY, Map.WHITE_MAZE_2, 0x20, 0x40, 0x00, 0x00, 0x00}, // Yellow Key
             {Board.OBJECT_COPPERKEY, Map.WHITE_MAZE_2, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Copper Key
+            #endif
             {Board.OBJECT_JADEKEY, Map.BLUE_MAZE_4, 0x7a, 0x40, 0x00, 0x00, 0x00}, // Jade Key
             {Board.OBJECT_WHITEKEY, Map.BLUE_MAZE_3, 0x20, 0x40, 0x00, 0x00, 0x00}, // White Key
             {Board.OBJECT_BLACKKEY, Map.RED_MAZE_4, 0x20, 0x40, 0x00, 0x00, 0x00}, // Black Key
-            //{Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x16, 0x41, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
-            //{Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x16, 0x41, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
-            //{Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x16, 0x41, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
-            ////{Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
-            ////{Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
-            ////{Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
+            {Board.OBJECT_CRYSTALKEY1, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 1
+            {Board.OBJECT_CRYSTALKEY2, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 2
+            {Board.OBJECT_CRYSTALKEY3, Map.CRYSTAL_CASTLE, 0x4D, 0x55, 0x00, 0x00, 0x00}, // Crystal Key for Player 3
             {Board.OBJECT_BAT, Map.MAIN_HALL_CENTER, 0x20, 0x20, 0x00, 0, -3}, // Bat
-            //{Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
+            #if DEBUG_EASTEREGG
+            {Board.OBJECT_DOT, Map.MAIN_HALL_RIGHT, 0x20, 0x10, 0x00, 0x00, 0x00}, // Dot
+            #else
             {Board.OBJECT_DOT, Map.BLACK_MAZE_3, 0x45, 0x12, 0x00, 0x00, 0x00}, // Dot
+            #endif
             {Board.OBJECT_CHALISE, Map.BLACK_MAZE_2, 0x30, 0x20, 0x00, 0x00, 0x00}, // Challise
             {Board.OBJECT_MAGNET, Map.SOUTHWEST_ROOM, 0x80, 0x20, 0x00, 0x00, 0x00}, // Magnet
         };

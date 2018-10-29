@@ -41,6 +41,7 @@ namespace GameEngine
             states = inStates;
             state = inState;
             color = inColor;
+            Logger.log("Setting " + inLabel + " to color " + COLOR.toString(color));
             room = -1;
             movementX = 0;
             movementY = 0;
@@ -59,7 +60,7 @@ namespace GameEngine
         public void setMovementY(int moveY) { movementY = moveY; }
 
         public bool exists() {return objExists;}
-        void setExists(bool inExists) { objExists = inExists; }
+        public void setExists(bool inExists) { objExists = inExists; }
 
         public void setBoard(Board newBoard, int newPKey)
         {
@@ -89,7 +90,7 @@ namespace GameEngine
          * Only one player can pickup this object.  All other players pass through it.  Used for private magnets.
          * player - player it is private to.  A negative number means obect is not private.
          */
-        void setPrivateToPlayer(int player)
+        public void setPrivateToPlayer(int player)
         {
             privateToPlayer = player;
         }
