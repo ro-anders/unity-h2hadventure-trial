@@ -111,7 +111,7 @@ namespace GameEngine
             gameMap = new Map(numPlayers, gameMapLayout);
             roomDefs = gameMap.roomDefs;
             gameBoard = new Board(Adv.ADVENTURE_SCREEN_WIDTH, Adv.ADVENTURE_SCREEN_HEIGHT, gameMap, view);
-            ////            EasterEgg::setup(gameBoard);
+            EasterEgg.setup(view, gameBoard);
 
             surrounds = new OBJECT[numPlayers];
             for (int ctr = 0; ctr < numPlayers; ++ctr)
@@ -539,8 +539,7 @@ namespace GameEngine
             }
 
             // Reset switch
-            ////if ((gameState != GAMESTATE_WIN) && switchReset && !reset && (EasterEgg::getEggState() != EasterEgg::EGG_STATE_DEBRIEF))
-            if ((gameState != GAMESTATE_WIN) && switchReset && !reset) //// TEMP
+            if ((gameState != GAMESTATE_WIN) && switchReset && !reset && (EasterEgg.eggState != EGG_STATE.DEBRIEF))
             {
                 if (gameState != GAMESTATE_GAMESELECT)
                 {
@@ -586,118 +585,119 @@ namespace GameEngine
                         WinGame(objectBall.room);
                         PlayerWinAction won = new PlayerWinAction(objectBall.room);
                         sync.BroadcastAction(won);
-                        ////// Report back to the server.
-                        ////Platform_ReportToServer("Has won a game");
+                        // Report back to the server.
+                        view.Platform_ReportToServer("Has won a game");
                     }
-                    ////                    else if (EasterEgg::isGauntletTimeUp(sync.getFrameNumber()))
-                    ////                    {
-                    ////                        EasterEgg::endGauntlet();
-                    ////                        gameState = GAMESTATE_WIN;
-                    ////                        winningRoom = objectBall.displayedRoom;
-                    ////                    }
-                    ////                    else
-                    ////                    {
-                    // Read joystick
-                    view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
-
-                    ////                        if (EasterEgg::shouldStartGauntlet(sync.getFrameNumber()))
-                    ////                        {
-                    ////                            EasterEgg::startGauntlet();
-                    ////                            gameMode = GAME_MODE_GAUNTLET;
-                    ////                        }
-
-                    if (gameState == GAMESTATE_ACTIVE_1)
+                    else if (EasterEgg.isGauntletTimeUp(sync.getFrameNumber()))
                     {
-                        // Move balls
-                        ThisBallMovement();
-                        for (int i = 0; i < numPlayers; ++i)
-                        {
-                            if (i != thisPlayer)
-                            {
-                                BallMovement(gameBoard.getPlayer(i));
-                            }
-                        }
-
-                        // Move the carried object
-                        MoveCarriedObjects();
-
-                        // Collision check the balls in their new coordinates against walls and objects
-                        for (int i = 0; i < numPlayers; ++i)
-                        {
-                            BALL nextBall = gameBoard.getPlayer(i);
-                            CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false);
-                        }
-
-                        // Setup the room and object
-                        PrintDisplay();
-
-                        ++gameState;
+                        EasterEgg.endGauntlet();
+                        gameState = GAMESTATE_WIN;
+                        winningRoom = objectBall.displayedRoom;
                     }
-                    else if (gameState == GAMESTATE_ACTIVE_2)
+                    else
                     {
-                        // Deal with object pickup and putdown
-                        PickupPutdown();
+                        // Read joystick
+                        view.Platform_ReadJoystick(ref joyLeft, ref joyUp, ref joyRight, ref joyDown, ref joyFire);
 
-                        for (int i = 0; i < numPlayers; ++i)
+                        if (EasterEgg.shouldStartGauntlet(sync.getFrameNumber()))
                         {
-                            ReactToCollisionX(gameBoard.getPlayer(i));
+                            EasterEgg.startGauntlet();
+                            gameMode = GAME_MODE_GAUNTLET;
                         }
 
-                        // Increment the last object drawn
-                        ++displayListIndex;
-
-                        // deal with invisible surround moving
-                        Surround();
-
-                        // Move and deal with bat
-                        if (bat.exists())
+                        if (gameState == GAMESTATE_ACTIVE_1)
                         {
-                            bat.moveOneTurn(sync, objectBall);
-                        }
-
-                        // Move and deal with portcullises
-                        Portals();
-
-                        // Display the room and objects
-                        PrintDisplay();
-
-                        ++gameState;
-                    }
-                    else if (gameState == GAMESTATE_ACTIVE_3)
-                    {
-                        // Move and deal with the dragons
-                        for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
-                        {
-                            Dragon dragon = dragons[dragonCtr];
-                            RemoteAction dragonAction = dragon.move();
-                            if (dragonAction != null)
+                            // Move balls
+                            ThisBallMovement();
+                            for (int i = 0; i < numPlayers; ++i)
                             {
-                                sync.BroadcastAction(dragonAction);
+                                if (i != thisPlayer)
+                                {
+                                    BallMovement(gameBoard.getPlayer(i));
+                                }
                             }
-                            // In gauntlet mode, getting eaten immediately triggers a reset.
-                            if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
+
+                            // Move the carried object
+                            MoveCarriedObjects();
+
+                            // Collision check the balls in their new coordinates against walls and objects
+                            for (int i = 0; i < numPlayers; ++i)
                             {
-                                ResetPlayer(objectBall);
-                                // Broadcast to everyone else
-                                PlayerResetAction action = new PlayerResetAction();
-                                sync.BroadcastAction(action);
-
+                                BALL nextBall = gameBoard.getPlayer(i);
+                                CollisionCheckBallWithEverything(nextBall, nextBall.room, nextBall.x, nextBall.y, false);
                             }
-                        }
 
-                        for (int i = 0; i < numPlayers; ++i)
+                            // Setup the room and object
+                            PrintDisplay();
+
+                            ++gameState;
+                        }
+                        else if (gameState == GAMESTATE_ACTIVE_2)
                         {
-                            ReactToCollisionY(gameBoard.getPlayer(i));
+                            // Deal with object pickup and putdown
+                            PickupPutdown();
+
+                            for (int i = 0; i < numPlayers; ++i)
+                            {
+                                ReactToCollisionX(gameBoard.getPlayer(i));
+                            }
+
+                            // Increment the last object drawn
+                            ++displayListIndex;
+
+                            // deal with invisible surround moving
+                            Surround();
+
+                            // Move and deal with bat
+                            if (bat.exists())
+                            {
+                                bat.moveOneTurn(sync, objectBall);
+                            }
+
+                            // Move and deal with portcullises
+                            Portals();
+
+                            // Display the room and objects
+                            PrintDisplay();
+
+                            ++gameState;
                         }
+                        else if (gameState == GAMESTATE_ACTIVE_3)
+                        {
+                            // Move and deal with the dragons
+                            for (int dragonCtr = 0; dragonCtr < numDragons; ++dragonCtr)
+                            {
+                                Dragon dragon = dragons[dragonCtr];
+                                RemoteAction dragonAction = dragon.move();
+                                if (dragonAction != null)
+                                {
+                                    sync.BroadcastAction(dragonAction);
+                                }
+                                // In gauntlet mode, getting eaten immediately triggers a reset.
+                                if ((gameMode == GAME_MODE_GAUNTLET) && (dragon.state == Dragon.EATEN) && (dragon.eaten == objectBall))
+                                {
+                                    ResetPlayer(objectBall);
+                                    // Broadcast to everyone else
+                                    PlayerResetAction action = new PlayerResetAction();
+                                    sync.BroadcastAction(action);
+
+                                }
+                            }
+
+                            for (int i = 0; i < numPlayers; ++i)
+                            {
+                                ReactToCollisionY(gameBoard.getPlayer(i));
+                            }
 
 
-                        // Deal with the magnet
-                        Magnet();
+                            // Deal with the magnet
+                            Magnet();
 
-                        // Display the room and objects
-                        PrintDisplay();
+                            // Display the room and objects
+                            PrintDisplay();
 
-                        gameState = GAMESTATE_ACTIVE_1;
+                            gameState = GAMESTATE_ACTIVE_1;
+                        }
                     }
                 }
                 else if (gameState == GAMESTATE_WIN)
@@ -950,10 +950,10 @@ namespace GameEngine
             if (gameMode == GAME_MODE_GAUNTLET)
             {
                 won = (objectBall.isGlowing() && (objectBall.room == objectBall.homeGate.insideRoom));
-                ////if (won && (EasterEgg::getEggState() == EasterEgg::EGG_STATE_IN_GAUNTLET))
-                ////{
-                ////    EasterEgg::winEgg();
-                ////}
+                if (won && (EasterEgg.eggState == EGG_STATE.IN_GAUNTLET))
+                {
+                    EasterEgg.winEgg();
+                }
             }
             else
             {
@@ -1224,17 +1224,17 @@ namespace GameEngine
                 }
             }
 
-            ////            if (ball == objectBall)
-            ////            {
-            ////                if (ball.room == CRYSTAL_CASTLE)
-            ////                {
-            ////                    EasterEgg::foundCastle(objectBall);
-            ////                }
-            ////                else if (ball.room == ROBINETT_ROOM)
-            ////                {
-            ////                    EasterEgg::enteredRobinettRoom();
-            ////                }
-            ////            }
+            if (ball == objectBall)
+            {
+                if (ball.room == Map.CRYSTAL_CASTLE)
+                {
+                    EasterEgg.foundCastle(objectBall);
+                }
+                else if (ball.room == Map.ROBINETT_ROOM)
+                {
+                    EasterEgg.enteredRobinettRoom();
+                }
+            }
 
             ball.displayedRoom = ball.room;
 
@@ -1381,12 +1381,12 @@ namespace GameEngine
                             nextBall.setGlowing(true);
                             view.Platform_MakeSound(SOUND.GLOW, volumeAtDistance(nextBall.room));
                         }
-                        ////// If entering the crystal castle, trigger the easter egg
-                        ////if ((nextBall.room == CRYSTAL_FOYER) && (EasterEgg::shouldStartChallenge()))
-                        ////{
-                        ////    EasterEgg::showChallengeMessage();
-                        ////}
-                        ////break;
+                        // If entering the crystal castle, trigger the easter egg
+                        if ((nextBall.room == Map.CRYSTAL_FOYER) && (EasterEgg.shouldStartChallenge()))
+                        {
+                            EasterEgg.showChallengeMessage();
+                        }
+                        break;
                     }
                 }
             }
@@ -1500,11 +1500,11 @@ namespace GameEngine
                         }
                     }
 
-                    ////if ((EasterEgg::getCrystalShade() < COLOR_DARK_CRYSTAL2) && (newaction.pickupObject >= OBJECT_CRYSTALKEY1) &&
-                    ////    (newaction.pickupObject <= OBJECT_CRYSTALKEY3))
-                    ////{
-                    ////    EasterEgg::darkenCastle(COLOR_DARK_CRYSTAL2);
-                    ////}
+                    if ((EasterEgg.crystalColor < COLOR.DARK_CRYSTAL2) && (newaction.pickupObject >= Board.OBJECT_CRYSTALKEY1) &&
+                        (newaction.pickupObject <= Board.OBJECT_CRYSTALKEY3))
+                    {
+                        EasterEgg.darkenCastle(COLOR.DARK_CRYSTAL2);
+                    }
 
                     // If they are within hearing distance play the pickup sound
                     gameBoard.makeSound(SOUND.PICKUP, volumeAtDistance(actor.room));
@@ -1620,10 +1620,10 @@ namespace GameEngine
                                 }
                             }
 
-                            ////if ((hitIndex >= OBJECT_CRYSTALKEY1) && (hitIndex <= OBJECT_CRYSTALKEY3))
-                            ////{
-                            ////    EasterEgg::foundKey();
-                            ////}
+                            if ((hitIndex >= Board.OBJECT_CRYSTALKEY1) && (hitIndex <= Board.OBJECT_CRYSTALKEY3))
+                            {
+                                EasterEgg.foundKey();
+                            }
 
                             // Broadcast that we picked up an object
                             action.setPickup(hitIndex, objectBall.linkedObjectX, objectBall.linkedObjectY);
